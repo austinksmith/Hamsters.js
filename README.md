@@ -78,6 +78,25 @@ function() {
 
 ```
 
+# Debugging
+
+The library supports two modes of debugging each provide useful information which may assist in fine tune performance & output tuning
+You can invoke debug mode by setting hamsters.debug to true or 'verbose'. Verbose mode provides quite a large amount of console spam and should not be used unless you have a deep understanding of how the library runtime functions. Normal debug mode is useful for performance profling, verbose mode however will introduce it's own slight performance drawbacks. 
+
+# Performance Considerations
+
+Not every task can be easily paralellized and depending on the size of the task putting it onto its own thread may introduce its own performance drawbacks as any benefit may be outweighed by the overhead of the runtime itself. I highly recommend especially for a larger scale application that you spend some time learning about Amdahls Law http://en.wikipedia.org/wiki/Amdahl%27s_law . 
+
+The library attempts to detect the number of available cores on a client machine and formulates a maximum concurrent thread count based on that value, if the library is unable to detect a valid core count it will fallback to a maxThread count of 16. The library will automatically pool and manage execution across all available threads automatically scaling based on demand, and will destroy threads when they do not have pending work to complete, otherwise explicit threads are reused.
+
+Threads are not the same as cores, assuming your machine has 4 logical cores you can ask the library to split a given task across exactly 4 threads, however there is no guarantee that a single thread will have access to it's own core for execution. The operating system manages thread allocation to individual cores, WebHamsters simply manages splitting sequential task across individual threads the library cannot control how the OS manages those threads once they are handed off. 
+
+# Limitations
+
+Currently due to a bug in how javascript handles data aggregation if you wish to have your individual thread outputs aggregated into a final result the maximum number of threads any single function can invoke is 20, there is no limitation on thread count if you are not asking for the library to aggregate your individual thread outputs back together.
+
+IE10 is currently as of v1.0 not officially supported due to its inability to handle transferrable objects, v1.01 will introduce a gracefull fallback for IE10 however it will not be nearly as performant. 
+
 
 
 
