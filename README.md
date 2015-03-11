@@ -15,6 +15,7 @@ Detailed Documentation coming soon check http://www.hamsters.io/guides for detai
 # Release Notes
 
 v1.0 - Initial release
+
 v1.1 - Gracefull fallback for IE10 & IE11, removal of code scare tissue, slight micro-optimizations, improved error handling
 
 # Getting Started
