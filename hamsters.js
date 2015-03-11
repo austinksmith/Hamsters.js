@@ -14,13 +14,12 @@
 
 //** Start Setup **
 var hamsters = {
-	version: '1.0',
+	version: '1.1',
  	debug: false,
  	maxThreads: null,
  	tools: {},
  	_runtime: {
  		legacy: false,
-      	wheels: null,
       	workers: [],
       	queue: {
       		running: [],
@@ -33,7 +32,6 @@ var hamsters = {
       	setup: {}
   	}
 };
-
 /**
 * @function wakeUp
 * @description: Initializes and sets up library functionality
@@ -47,7 +45,6 @@ hamsters._runtime.wakeUp = function() {
 	*/
 	hamsters._runtime.setup.getCoreCount = function() {
 		var count = (navigator.hardwareConcurrency || 8) * 2;
-		hamsters._runtime.wheels = count;
 		hamsters.maxThreads = count;
 		return count;
 	};
@@ -57,11 +54,12 @@ hamsters._runtime.wakeUp = function() {
 	* @description: Detect browser support for web workers
 	*/
 	hamsters._runtime.setup.isLegacy = function() {
-		var isLegacy = true;
-		if(window.Worker) {
-			isLegacy = false;
+		var isIE = function(v) {
+		  return RegExp('msie' + (!isNaN(v) ? ('\\s'+v) : ''), 'i').test(navigator.userAgent);
+		};
+		if(isIE()) { // Internt explorer doesn't support transferable objects, legacy flag
+			hamsters._runtime.legacy = true;
 		}
-		hamsters._runtime.legacy = isLegacy;
 	};
 
 	/**
@@ -95,17 +93,16 @@ hamsters._runtime.wakeUp = function() {
 	*/
 	hamsters.tools.splitArray = function(array, n) {
 	    var tasks = [];
-	    var arr = array;
 	    var i = 0;
-	    if(arr) {
-	    	var len = arr.length;
+	    if(array) {
+	    	var len = array.length;
 		   	var size = Math.ceil((len/n));
 		   	while (i < len) {
-		        tasks.push(arr.slice(i, i += size));
+		        tasks.push(array.slice(i, i += size));
 		    }
 		   	return tasks;
 	    }
-	    return array;
+	    return [];
 	};
 
 
@@ -117,8 +114,13 @@ hamsters._runtime.wakeUp = function() {
 	* @param {function} callback - callback when array ready
 	*/
 	hamsters.tools.randomArray = function(count, callback) {
-		if(!count) {
-			return 'Count not defined';
+		if(!count || !callback) {
+			hamsters._runtime.errors = hamsters._runtime.errors.concat(
+				{
+					'msg': 'Unable to generate random array, missing required params'
+				}
+			);
+			return;
 		}
 		var params = {
 			'count': count
@@ -134,7 +136,7 @@ hamsters._runtime.wakeUp = function() {
 			if(callback) {
 				callback(output);
 			}
-		}, 1, false);
+		}, 1);
 	};
 
 	/**
@@ -164,8 +166,7 @@ hamsters._runtime.wakeUp = function() {
 	hamsters._runtime.setup.getOrCreateElement = function(id) {
 		var script = (document.getElementById('hamster'+id) || null);
 		var work = function() {
-	        var respond = function(bool, rtn, msg) {
-	        	rtn.success = bool;
+	        var respond = function(rtn, msg) {
 	        	self.postMessage(
 	        		{
 		          		'results': rtn || null,
@@ -175,6 +176,9 @@ hamsters._runtime.wakeUp = function() {
 	        };
 	        self.onmessage = function(e) {
 				var params = e.data;
+				if(typeof e.data === 'string') { //Legacy falback for IE..much slower
+					params = JSON.parse(e.data);
+				}
 				var rtn = {
 					'success': false, 
 					'data': []
@@ -182,8 +186,17 @@ hamsters._runtime.wakeUp = function() {
 	    		if(params.fn) {
 	    			var fn = eval('('+params.fn+')');
 	    			if(fn && typeof fn === 'function') {
-	    				fn();
-	    				respond(true, rtn);
+	    				try {
+	    					fn();
+	    				} catch(exception) {
+	    					rtn.success = false;
+	    					rtn.error = exception;
+	    					rtn.msg = 'Error encounted check errors for details';
+	    				} finally {
+	    					respond(rtn);
+	    				}
+	    			} else {
+	    				respond(rtn);
 	    			}
 	    		}
       		};
@@ -295,7 +308,7 @@ hamsters._runtime.wakeUp = function() {
 					'callback': callback
 				}
 			);
-			console.log('Error, unable to match thread to task ' + taskid + ', throwing exception. Check errors for more details');
+			console.error('Error, unable to match thread to task ' + taskid + ', throwing exception. Check errors for more details');
 			return;
 		}
 		var queue = hamsters._runtime.queue;
@@ -324,14 +337,13 @@ hamsters._runtime.wakeUp = function() {
 				}
 			);
 			if(debug === 'verbose') {
-				console.log('Spawning Hamster #' + thread + ' @ ' + new Date().getTime());
+				console.info('Spawning Hamster #' + thread + ' @ ' + new Date().getTime());
 			}
 		}
 		if(!hamster) {
-			var url = (window.webkitURL || window.URL);
 			hamster = hamsters._runtime.setup.getOrCreateElement(thread);
 			var blob = new Blob([hamster.textContent], {type: 'application/javascript'});
-			hamster = new Worker(url.createObjectURL(blob));
+			hamster = new Worker(window.URL.createObjectURL(blob));
 		}
 		hamsters._runtime.trainHamster(thread, aggregate, callback, taskid, thread, hamster);
   		hamsters._runtime.feedHamster(hamster, hamsterfood);
@@ -347,7 +359,7 @@ hamsters._runtime.wakeUp = function() {
 	*/
 	hamsters.tools.aggregate = function(input, task, timeStamp) {
 		if(!input) {
-			return "Missing array";
+			console.error("Missing array");
 		}
 		var output = [];
 		var aggregateTime;
@@ -367,7 +379,7 @@ hamsters._runtime.wakeUp = function() {
 		if(hamsters.debug) {
 			var elapsed = ((timeStamp - task.input[0].start)/1000);
 			var aggregateElapsed = ((new Date().getTime() - aggregateTime)/1000);
-			console.log('Execution Complete! Total Elapsed: ' + (elapsed + aggregateElapsed) + 's ' + 'Aggregation Time: ' + aggregateElapsed + 's');
+			console.info('Execution Complete! Total Elapsed: ' + (elapsed + aggregateElapsed) + 's ' + 'Aggregation Time: ' + aggregateElapsed + 's');
 		}
 	};
 
@@ -436,7 +448,7 @@ hamsters._runtime.wakeUp = function() {
 						'callback': callback
 					}
 				);
-				console.log('Fatal Exception, unable to match thread #'+workerid+' to task #'+ taskid + ', cannot continue. Check errors for more details');
+				console.error('Fatal Exception, unable to match thread #'+workerid+' to task #'+ taskid + ', cannot continue. Check errors for more details');
 				return;
 			}
 			task.workers.splice(task.workers.indexOf(workerid), 1); //Remove thread from task running pool
@@ -447,7 +459,7 @@ hamsters._runtime.wakeUp = function() {
 			task.output[workerid] = e.data.results.data;
 			var debug = hamsters.debug;
 			if(debug === 'verbose') {
-	    		console.log('Hamster #' + id + ' finished ' + '@ ' + e.timeStamp);
+	    		console.info('Hamster #' + id + ' finished ' + '@ ' + e.timeStamp);
 			}
 	    	if(taskComplete) { //Task complete, finish up
 	    		var output = hamsters._runtime.getOutput(task.output);
@@ -456,7 +468,7 @@ hamsters._runtime.wakeUp = function() {
 					hamsters.tools.aggregate(output, task, e.timeStamp);
 				} else if(callback) {
 					if(debug) {
-						console.log('Execution Complete! Elapsed: ' + ((e.timeStamp - task.input[0].start)/1000) + 's');
+						console.info('Execution Complete! Elapsed: ' + ((e.timeStamp - task.input[0].start)/1000) + 's');
 					}
 		    		callback(output);
 				}
@@ -479,7 +491,7 @@ hamsters._runtime.wakeUp = function() {
     				'msg': msg
     			}
     		);
-    		console.log(msg);
+    		console.error(msg);
   		};
 	};
 
@@ -491,16 +503,20 @@ hamsters._runtime.wakeUp = function() {
 	* @param {object} food - params object for worker
 	*/
 	hamsters._runtime.feedHamster = function(hamster, food) {
-		var bufferarray = [];
-		var l = food.length;
-		var i = 0;
-		while(i < l) {
-			if(food[i] instanceof Array) {
-				bufferarray = bufferarray.concat(new ArrayBuffer(food[i]));
+		if(!hamsters.isLegacy()) { // No support for transferrable objects, fallback to structured cloning
+			var bufferarray = [];
+			var l = food.length;
+			var i = 0;
+			while(i < l) {
+				if(food[i] instanceof Array || food[i] instanceof Object) {
+					bufferarray = bufferarray.concat(new ArrayBuffer(food[i]));
+				}
+				i++;
 			}
-			i++;
+			hamster.postMessage(food, bufferarray);
+		} else { //Legacy Fallback..much slower
+			hamster.postMessage(food);
 		}
-		hamster.postMessage(food, bufferarray);
 	};
 
 	//Setup
