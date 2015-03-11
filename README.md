@@ -95,7 +95,7 @@ Threads are not the same as cores, assuming your machine has 4 logical cores you
 
 Currently due to a bug in how javascript handles data aggregation if you wish to have your individual thread outputs aggregated into a final result the maximum number of threads any single function can invoke is 20, there is no limitation on thread count if you are not asking for the library to aggregate your individual thread outputs back together.
 
-IE10 & 11 are as of v1.1 supported by using a graceful fallback for data transfering, however this will be limited per thread by the length that JSON encoding can support approx. 30~ million characters. This graceful fallback will introduce some performance drawbacks as structured cloning is not nearly as fast as trasnferable objects.
+IE10 & 11 are as of v1.1 supported by using a graceful fallback for data transfering, however this will be limited per thread by the length that JSON encoding can support approx. 30~ million characters. This graceful fallback will introduce some performance drawbacks as structured cloning is not nearly as fast as transferable objects.
 
 
 
