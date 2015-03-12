@@ -219,7 +219,7 @@ hamsters._runtime.wakeUp = function() {
 	*/
 	hamsters._runtime.sort = function(property) {
 		if(hamsters.debug === 'verbose') {
-			console.log("Sorting array using index: " + property);
+			console.info("Sorting array using index: " + property);
 		}
 	    var order = 1;
 	    if(property[0] === "-") {
