@@ -77,7 +77,7 @@ hamsters._runtime.wakeUp = function() {
 	hamsters.checkErrors = function() {
 		var errors = hamsters._runtime.errors || [];
 		return {
-			'msg': 'There are currently ' + errors.length + 'errors captured in the runtime',
+			'msg': 'There are currently ' + errors.length + ' errors captured in the runtime',
 			'total': errors.length,
 			'errors': errors
 		};
@@ -188,12 +188,11 @@ hamsters._runtime.wakeUp = function() {
 	    			if(fn && typeof fn === 'function') {
 	    				try {
 	    					fn();
+	    					respond(rtn);
 	    				} catch(exception) {
 	    					rtn.success = false;
 	    					rtn.error = exception;
 	    					rtn.msg = 'Error encounted check errors for details';
-	    				} finally {
-	    					respond(rtn);
 	    				}
 	    			} else {
 	    				respond(rtn);
@@ -272,16 +271,17 @@ hamsters._runtime.wakeUp = function() {
 			}
 		}
 		hamsterfood.fn = String(fn);
-		var workArray = [];
+		var workArray = params.array || [];
 		if(params.array && task.threads !== 1) {
 			workArray = hamsters.tools.splitArray(params.array, task.threads); //Divide our array into equal array sizes
 		}
 		var i = 0;
 		while(i < task.threads) {
 			if(workArray[i]) {
-				hamsterfood.array = workArray[i];
+				hamsters._runtime.newWheel(workArray[i], hamsterfood, aggregate, callback, taskid, i);
+			} else {
+				hamsters._runtime.newWheel(null, hamsterfood, aggregate, callback, taskid, i);
 			}
-			hamsters._runtime.newWheel(hamsterfood, aggregate, callback, taskid, i);
 			i++;
 		}
 	};
@@ -297,7 +297,7 @@ hamsters._runtime.wakeUp = function() {
 	* @param {integer} threadid - global runtime threadid
 	* @param {object} hamster - web worker
 	*/
-	hamsters._runtime.newWheel = function(hamsterfood, aggregate, callback, taskid, threadid, hamster) {
+	hamsters._runtime.newWheel = function(inputArray, hamsterfood, aggregate, callback, taskid, threadid, hamster) {
 		var task = hamsters._runtime.tasks[taskid];
 		if(!task) {
 			hamsters._runtime.errors = hamsters._runtime.errors.concat(
@@ -315,7 +315,9 @@ hamsters._runtime.wakeUp = function() {
 		if(hamsters.maxThreads && hamsters.maxThreads <= queue.running.length) {
 			queue.pending = queue.pending.concat(
 				{
-					'params': hamsterfood, 
+					'input': inputArray,
+					'params': hamsterfood,
+					'workerid': threadid, 
 					'callback': callback, 
 					'taskid': taskid, 
 					'aggregate': aggregate
@@ -329,7 +331,8 @@ hamsters._runtime.wakeUp = function() {
 		var debug = hamsters.debug;
 		if(debug) {
 			task.input = task.input.concat(
-				{
+				{	
+					'input': inputArray,
 					'workerid': thread, 
 					'taskid': taskid, 
 					'params': hamsterfood, 
@@ -346,7 +349,7 @@ hamsters._runtime.wakeUp = function() {
 			hamster = new Worker(window.URL.createObjectURL(blob));
 		}
 		hamsters._runtime.trainHamster(thread, aggregate, callback, taskid, thread, hamster);
-  		hamsters._runtime.feedHamster(hamster, hamsterfood);
+  		hamsters._runtime.feedHamster(hamster, hamsterfood, inputArray);
   		task.count++; //Increment count, thread is running
 	};
 
@@ -406,10 +409,10 @@ hamsters._runtime.wakeUp = function() {
 	* @param {integer} threadid - Most recently finished threadid, for reuse
 	* @param {object} hamster - Most recently finished web worker, for reuse
 	*/
-	hamsters._runtime.processQueue = function(threadid, hamster) {
+	hamsters._runtime.processQueue = function(hamster) {
 		var item = hamsters._runtime.queue.pending.shift(); //Get and remove first item from queue
 		if(item) {
-			hamsters._runtime.newWheel(item.params, item.aggregate, item.callback, item.taskid, threadid, hamster); //Assign most recently finished thread to queue item
+			hamsters._runtime.newWheel(item.input, item.params, item.aggregate, item.callback, item.taskid, item.workerid, hamster); //Assign most recently finished thread to queue item
 		}
 	};
 
@@ -474,7 +477,7 @@ hamsters._runtime.wakeUp = function() {
 				}
 	    	}
 	    	if(queue.pending.length !== 0) {
-	    		hamsters._runtime.processQueue(id, hamster);
+	    		hamsters._runtime.processQueue(hamster);
 	    	}
 	    };
 
@@ -502,7 +505,8 @@ hamsters._runtime.wakeUp = function() {
 	* @param {object} hamster - web worker
 	* @param {object} food - params object for worker
 	*/
-	hamsters._runtime.feedHamster = function(hamster, food) {
+	hamsters._runtime.feedHamster = function(hamster, food, inputArray) {
+		food.array = inputArray;
 		if(!hamsters.isLegacy()) { // No support for transferrable objects, fallback to structured cloning
 			var bufferarray = [];
 			var l = food.length;
