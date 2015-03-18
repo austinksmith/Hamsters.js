@@ -14,7 +14,7 @@
 
 //** Start Setup **
 var hamsters = {
-	version: '1.1',
+	version: '1.3',
  	debug: false,
  	maxThreads: null,
  	tools: {},
@@ -271,16 +271,16 @@ hamsters._runtime.wakeUp = function() {
 			}
 		}
 		hamsterfood.fn = String(fn);
-		var workArray = params.array || [];
+		var workArray = params.array || null;
 		if(params.array && task.threads !== 1) {
 			workArray = hamsters.tools.splitArray(params.array, task.threads); //Divide our array into equal array sizes
 		}
 		var i = 0;
 		while(i < task.threads) {
-			if(workArray[i]) {
+			if(workArray && task.threads !== 1) {
 				hamsters._runtime.newWheel(workArray[i], hamsterfood, aggregate, callback, taskid, i);
 			} else {
-				hamsters._runtime.newWheel(null, hamsterfood, aggregate, callback, taskid, i);
+				hamsters._runtime.newWheel(workArray, hamsterfood, aggregate, callback, taskid, i);
 			}
 			i++;
 		}
@@ -519,7 +519,7 @@ hamsters._runtime.wakeUp = function() {
 			}
 			hamster.postMessage(food, bufferarray);
 		} else { //Legacy Fallback..much slower
-			hamster.postMessage(food);
+			hamster.postMessage(JSONfood);
 		}
 	};
 
