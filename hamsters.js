@@ -14,7 +14,7 @@
 
 //** Start Setup **
 var hamsters = {
-	version: '1.3',
+	version: '1.1',
  	debug: false,
  	maxThreads: null,
  	tools: {},
@@ -49,15 +49,17 @@ hamsters._runtime.wakeUp = function() {
 		return count;
 	};
 
+	hamsters.tools.isIE = function(version) {
+		return true;
+		//return RegExp('msie' + (!isNaN(version) ? ('\\s'+version) : ''), 'i').test(navigator.userAgent);
+	};
+
 	/**
 	* @function isLegacy
 	* @description: Detect browser support for web workers
 	*/
 	hamsters._runtime.setup.isLegacy = function() {
-		var isIE = function(v) {
-		  return RegExp('msie' + (!isNaN(v) ? ('\\s'+v) : ''), 'i').test(navigator.userAgent);
-		};
-		if(isIE()) { // Internt explorer doesn't support transferable objects, legacy flag
+		if(hamsters.tools.isIE()) { // Internt explorer doesn't support transferable objects, legacy flag
 			hamsters._runtime.legacy = true;
 		}
 	};
@@ -286,6 +288,34 @@ hamsters._runtime.wakeUp = function() {
 		}
 	};
 
+
+	hamsters._runtime.legacyProcessor = function(food, inputArray, callback) {
+		var params = food;
+		var rtn = {
+			'success': true, 
+			'data': []
+		};
+		if(params.fn) {
+			params.array = inputArray;
+	    	var fn = eval('('+params.fn+')');
+			if(fn && typeof fn === 'function') {
+				try {
+					fn();
+					if(callback) {
+						callback(rtn); // Return legacy output
+					}
+				} catch(exception) {
+					rtn.success = false;
+					rtn.error = exception;
+					rtn.msg = 'Error encounted check errors for details';
+					if(callback) {
+						callback(rtn); // Return legacy output
+					}
+				}
+			}
+		}
+	};
+
 	/**
 	* @function newWheel
 	* @description: Creates new worker thread with body of work to be completed
@@ -326,8 +356,6 @@ hamsters._runtime.wakeUp = function() {
 			return;
 		}
 		var thread = (threadid || queue.running.length); //Determine threadid depending on currently running threads
-		task.workers = task.workers.concat(thread); //Keep track of threads scoped to current task
-		queue.running = queue.running.concat(thread); //Keep track of all currently running threads
 		var debug = hamsters.debug;
 		if(debug) {
 			task.input = task.input.concat(
@@ -343,14 +371,40 @@ hamsters._runtime.wakeUp = function() {
 				console.info('Spawning Hamster #' + thread + ' @ ' + new Date().getTime());
 			}
 		}
+		if(!window.Worker || hamsters.tools.isIE(10)) { //Legacy fallback for IE10..it doesn't support web workers properly
+			hamsters._runtime.legacyProcessor(hamsterfood, inputArray, function(output) {
+			     task.count++; //Thread finished
+                 task.output[threadid] = output.data;
+                 if(task.count === task.threads) { //Task complete get output and return
+					var rtn = hamsters._runtime.getOutput(task.output);
+		    		hamsters._runtime.tasks[taskid] = null; //Clean up our task, not needed any longer
+		    		if(aggregate) {    		
+						hamsters.tools.aggregate(rtn, task, new Date().getTime());
+					} else if(callback) {
+						if(debug) {
+							console.info('Execution Complete! Elapsed: ' + ((new Date().getTime() - task.input[0].start)/1000) + 's');
+						}
+			    		callback(rtn);
+					}
+				}
+			});
+			return;
+		}
+		task.workers = task.workers.concat(thread); //Keep track of threads scoped to current task
+		queue.running = queue.running.concat(thread); //Keep track of all currently running threads
 		if(!hamster) {
-			hamster = hamsters._runtime.setup.getOrCreateElement(thread);
-			var blob = new Blob([hamster.textContent], {type: 'application/javascript'});
-			hamster = new Worker(window.URL.createObjectURL(blob));
+			hamster = hamsters._runtime.createHamster(thread);
 		}
 		hamsters._runtime.trainHamster(thread, aggregate, callback, taskid, thread, hamster);
   		hamsters._runtime.feedHamster(hamster, hamsterfood, inputArray);
   		task.count++; //Increment count, thread is running
+	};
+
+	hamsters._runtime.createHamster = function(thread) {
+		var hamster = hamsters._runtime.setup.getOrCreateElement(thread);
+		var blob = new Blob([hamster.textContent], {type: 'application/javascript'});
+		hamster = new Worker(window.URL.createObjectURL(blob));
+		return hamster
 	};
 
 	/**
@@ -506,6 +560,7 @@ hamsters._runtime.wakeUp = function() {
 	* @param {object} food - params object for worker
 	*/
 	hamsters._runtime.feedHamster = function(hamster, food, inputArray) {
+		hamsters._runtime.legacyProcessor(food, inputArray);
 		food.array = inputArray;
 		if(!hamsters.isLegacy()) { // No support for transferrable objects, fallback to structured cloning
 			var bufferarray = [];
@@ -518,7 +573,7 @@ hamsters._runtime.wakeUp = function() {
 				i++;
 			}
 			hamster.postMessage(food, bufferarray);
-		} else { //Legacy Fallback..much slower
+		} else {
 			hamster.postMessage(food);
 		}
 	};
