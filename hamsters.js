@@ -50,8 +50,7 @@ hamsters._runtime.wakeUp = function() {
 	};
 
 	hamsters.tools.isIE = function(version) {
-		return true;
-		//return RegExp('msie' + (!isNaN(version) ? ('\\s'+version) : ''), 'i').test(navigator.userAgent);
+		return RegExp('msie' + (!isNaN(version) ? ('\\s'+version) : ''), 'i').test(navigator.userAgent);
 	};
 
 	/**
