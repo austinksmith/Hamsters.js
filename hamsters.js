@@ -14,7 +14,7 @@
 
 //** Start Setup **
 var hamsters = {
-	version: '1.1',
+	version: '1.4',
  	debug: false,
  	maxThreads: null,
  	tools: {},
@@ -49,16 +49,15 @@ hamsters._runtime.wakeUp = function() {
 		return count;
 	};
 
-	hamsters.tools.isIE = function(version) {
-		return RegExp('msie' + (!isNaN(version) ? ('\\s'+version) : ''), 'i').test(navigator.userAgent);
-	};
-
 	/**
 	* @function isLegacy
 	* @description: Detect browser support for web workers
 	*/
 	hamsters._runtime.setup.isLegacy = function() {
-		if(hamsters.tools.isIE()) { // Internt explorer doesn't support transferable objects, legacy flag
+		var isIE = function(v) {
+		  return RegExp('msie' + (!isNaN(v) ? ('\\s'+v) : ''), 'i').test(navigator.userAgent);
+		};
+		if(isIE()) { // Internt explorer doesn't support transferable objects, legacy flag
 			hamsters._runtime.legacy = true;
 		}
 	};
@@ -287,34 +286,6 @@ hamsters._runtime.wakeUp = function() {
 		}
 	};
 
-
-	hamsters._runtime.legacyProcessor = function(food, inputArray, callback) {
-		var params = food;
-		var rtn = {
-			'success': true, 
-			'data': []
-		};
-		if(params.fn) {
-			params.array = inputArray;
-	    	var fn = eval('('+params.fn+')');
-			if(fn && typeof fn === 'function') {
-				try {
-					fn();
-					if(callback) {
-						callback(rtn); // Return legacy output
-					}
-				} catch(exception) {
-					rtn.success = false;
-					rtn.error = exception;
-					rtn.msg = 'Error encounted check errors for details';
-					if(callback) {
-						callback(rtn); // Return legacy output
-					}
-				}
-			}
-		}
-	};
-
 	/**
 	* @function newWheel
 	* @description: Creates new worker thread with body of work to be completed
@@ -370,7 +341,7 @@ hamsters._runtime.wakeUp = function() {
 				console.info('Spawning Hamster #' + thread + ' @ ' + new Date().getTime());
 			}
 		}
-		if(!window.Worker || hamsters.tools.isIE(10)) { //Legacy fallback for IE10..it doesn't support web workers properly
+		if(!window.Worker || hamsters.tools.isIE(10)) { //Legacy fallback for IE10 and older.. these don't support web workers properly
 			hamsters._runtime.legacyProcessor(hamsterfood, inputArray, function(output) {
 			     task.count++; //Thread finished
                  task.output[threadid] = output.data;
@@ -559,7 +530,6 @@ hamsters._runtime.wakeUp = function() {
 	* @param {object} food - params object for worker
 	*/
 	hamsters._runtime.feedHamster = function(hamster, food, inputArray) {
-		hamsters._runtime.legacyProcessor(food, inputArray);
 		food.array = inputArray;
 		if(!hamsters.isLegacy()) { // No support for transferrable objects, fallback to structured cloning
 			var bufferarray = [];
@@ -572,8 +542,8 @@ hamsters._runtime.wakeUp = function() {
 				i++;
 			}
 			hamster.postMessage(food, bufferarray);
-		} else {
-			hamster.postMessage(food);
+		} else { //Legacy Fallback..much slower
+			hamster.postMessage(JSONfood);
 		}
 	};
 
