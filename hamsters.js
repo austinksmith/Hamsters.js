@@ -543,7 +543,7 @@ hamsters._runtime.wakeUp = function() {
 			}
 			hamster.postMessage(food, bufferarray);
 		} else { //Legacy Fallback..much slower
-			hamster.postMessage(JSONfood);
+			hamster.postMessage(food);
 		}
 	};
 
