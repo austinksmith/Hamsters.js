@@ -404,7 +404,7 @@ hamsters._runtime.wakeUp = function() {
 		var hamster = hamsters._runtime.setup.getOrCreateElement(thread);
 		var blob = new Blob([hamster.textContent], {type: 'application/javascript'});
 		hamster = new Worker(window.URL.createObjectURL(blob));
-		return hamster
+		return hamster;
 	};
 
 	/**
