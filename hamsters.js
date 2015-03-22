@@ -49,15 +49,16 @@ hamsters._runtime.wakeUp = function() {
 		return count;
 	};
 
+	hamsters.tools.isIE = function(version) {
+		return RegExp('msie' + (!isNaN(version) ? ('\\s'+version) : ''), 'i').test(navigator.userAgent);
+	};
+
 	/**
 	* @function isLegacy
 	* @description: Detect browser support for web workers
 	*/
 	hamsters._runtime.setup.isLegacy = function() {
-		var isIE = function(v) {
-		  return RegExp('msie' + (!isNaN(v) ? ('\\s'+v) : ''), 'i').test(navigator.userAgent);
-		};
-		if(isIE()) { // Internt explorer doesn't support transferable objects, legacy flag
+		if(hamsters.tools.isIE(11)) { // Internt explorer 11 doesn't support transferable objects, legacy flag
 			hamsters._runtime.legacy = true;
 		}
 	};
@@ -369,6 +370,35 @@ hamsters._runtime.wakeUp = function() {
   		hamsters._runtime.feedHamster(hamster, hamsterfood, inputArray);
   		task.count++; //Increment count, thread is running
 	};
+
+
+	hamsters._runtime.legacyProcessor = function(food, inputArray, callback) {
+		var params = food;
+		var rtn = {
+			'success': true, 
+			'data': []
+		};
+		if(params.fn) {
+			params.array = inputArray;
+	    	var fn = eval('('+params.fn+')');
+			if(fn && typeof fn === 'function') {
+				try {
+					fn();
+					if(callback) {
+						callback(rtn); // Return legacy output
+					}
+				} catch(exception) {
+					rtn.success = false;
+					rtn.error = exception;
+					rtn.msg = 'Error encounted check errors for details';
+					if(callback) {
+						callback(rtn); // Return legacy output
+					}
+				}
+			}
+		}
+	};
+
 
 	hamsters._runtime.createHamster = function(thread) {
 		var hamster = hamsters._runtime.setup.getOrCreateElement(thread);
