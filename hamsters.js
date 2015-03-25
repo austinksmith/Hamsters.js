@@ -14,7 +14,7 @@
 
 //** Start Setup **
 var hamsters = {
-	version: '1.4',
+	version: '1.5',
  	debug: false,
  	maxThreads: null,
  	tools: {},
@@ -342,7 +342,7 @@ hamsters._runtime.wakeUp = function() {
 				console.info('Spawning Hamster #' + thread + ' @ ' + new Date().getTime());
 			}
 		}
-		if(!window.Worker || hamsters.tools.isIE(10)) { //Legacy fallback for IE10 and older.. these don't support web workers properly
+		if(!window.Worker || navigator.userAgent.indexOf('IEMobile') !== -1 || navigator.userAgent.indexOf('Kindle/3.0') !== -1  || hamsters.tools.isIE(10)) { //Legacy fallback for IE10 and older mobile devices.. these don't support web workers properly
 			hamsters._runtime.legacyProcessor(hamsterfood, inputArray, function(output) {
 			     task.count++; //Thread finished
                  task.output[threadid] = output.data;
