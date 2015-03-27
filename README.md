@@ -1,5 +1,3 @@
-
-navigator.userAgent.indexOf('IEMobile') !== -1 || 
 # WebHamsters
 **Author**: Austin K. Smith
 
