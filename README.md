@@ -99,7 +99,8 @@ IE11 as of v1.1 is supported by using a graceful fallback for data transfering, 
 
 # Browser Support
 
-Currently as of v1.4 all browsers are supported by the library, modern browsers such as Chrome, Safari, and Firefox have full web worker support and will give the best performance, Internet Explorer 11 has partial support and is supported with limitations on how quickly data can be passed between the main thread and worker threads. Older browsers such as IE10 and below are supported by using a legacy processor fallback, these computations will be run on the main thread however they still follow the library process of breaking a given task into individual pieces and executing each piece at a time.
+Currently as of v1.4 all browsers are supported by the library, modern browsers such as Chrome, Safari, and Firefox have full web worker support and will give the best performance, Older browsers such as IE10 and below are supported by using a legacy processor fallback, these computations will be run on the main thread however they still follow the library process of breaking a given task into individual pieces and executing each piece at a time.
+
 
 
 
