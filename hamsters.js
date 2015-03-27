@@ -14,7 +14,7 @@
 
 //** Start Setup **
 var hamsters = {
-	version: '1.5',
+	version: '1.6',
  	debug: false,
  	maxThreads: null,
  	tools: {},
@@ -57,8 +57,12 @@ hamsters._runtime.wakeUp = function() {
 	* @function isLegacy
 	* @description: Detect browser support for web workers
 	*/
+	// Internet Explorer 10, Kindle 3, Ipad 1, Internet Explorer Mobile.. don't support web workers properly, legacy flag
+	// Kindle/3.0' - Monochrome Kindle 3
+	// Mobile/8F190 - Ipad 1
+	// IEMobile - Windows Phone 7 - 8.1
 	hamsters._runtime.setup.isLegacy = function() {
-		if(hamsters.tools.isIE(11)) { // Internt explorer 11 doesn't support transferable objects, legacy flag
+		if(!window.Worker || navigator.userAgent.indexOf('Kindle/3.0') !== -1 || navigator.userAgent.indexOf('Mobile/8F190') !== -1  || navigator.userAgent.indexOf('IEMobile') !== -1  || hamsters.tools.isIE(10)) {
 			hamsters._runtime.legacy = true;
 		}
 	};
@@ -342,7 +346,7 @@ hamsters._runtime.wakeUp = function() {
 				console.info('Spawning Hamster #' + thread + ' @ ' + new Date().getTime());
 			}
 		}
-		if(!window.Worker || navigator.userAgent.indexOf('IEMobile') !== -1 || navigator.userAgent.indexOf('Kindle/3.0') !== -1  || hamsters.tools.isIE(10)) { //Legacy fallback for IE10 and older mobile devices.. these don't support web workers properly
+		if(hamsters.isLegacy()) { //Legacy fallback for IE10 and older mobile devices.. these don't support web workers properly
 			hamsters._runtime.legacyProcessor(hamsterfood, inputArray, function(output) {
 			     task.count++; //Thread finished
                  task.output[threadid] = output.data;
@@ -373,36 +377,49 @@ hamsters._runtime.wakeUp = function() {
 
 
 	hamsters._runtime.legacyProcessor = function(food, inputArray, callback) {
-		var params = food;
-		var rtn = {
-			'success': true, 
-			'data': []
-		};
-		if(params.fn) {
-			params.array = inputArray;
-	    	var fn = eval('('+params.fn+')');
-			if(fn && typeof fn === 'function') {
-				try {
-					fn();
-					if(callback) {
-						callback(rtn); // Return legacy output
-					}
-				} catch(exception) {
-					rtn.success = false;
-					rtn.error = exception;
-					rtn.msg = 'Error encounted check errors for details';
-					if(callback) {
-						callback(rtn); // Return legacy output
+		setTimeout(function() {
+			var params = food;
+			var rtn = {
+				'success': true, 
+				'data': []
+			};
+			if(params.fn) {
+				params.array = inputArray;
+		    	var fn = eval('('+params.fn+')');
+				if(fn && typeof fn === 'function') {
+					try {
+						fn();
+						if(callback) {
+							callback(rtn); // Return legacy output
+						}
+					} catch(exception) {
+						rtn.success = false;
+						rtn.error = exception;
+						rtn.msg = 'Error encounted check errors for details';
+						if(callback) {
+							callback(rtn); // Return legacy output
+						}
 					}
 				}
 			}
-		}
+		}, 3); //3ms delay, simulate threading
 	};
 
 
 	hamsters._runtime.createHamster = function(thread) {
 		var hamster = hamsters._runtime.setup.getOrCreateElement(thread);
-		var blob = new Blob([hamster.textContent], {type: 'application/javascript'});
+		var blob;
+		var blobBuilder;
+		try {
+			blob = new Blob([hamster.textContent], {type: 'application/javascript'});
+		} catch(err) { 
+			blobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder || window.MSBlobBuilder;
+			if(blobBuilder) { //Fallback for browsers that don't support blob constructor
+				blob = new blobBuilder();
+				blob.append([hamster.textContent], {type: 'application/javascript'});
+				blob = blob.getBlob();
+			}
+		}
 		hamster = new Worker(window.URL.createObjectURL(blob));
 		return hamster;
 	};
@@ -561,20 +578,15 @@ hamsters._runtime.wakeUp = function() {
 	*/
 	hamsters._runtime.feedHamster = function(hamster, food, inputArray) {
 		food.array = inputArray;
-		if(!hamsters.isLegacy()) { // No support for transferrable objects, fallback to structured cloning
-			var bufferarray = [];
-			var l = food.length;
-			var i = 0;
-			while(i < l) {
-				if(food[i] instanceof Array || food[i] instanceof Object) {
-					bufferarray = bufferarray.concat(new ArrayBuffer(food[i]));
-				}
-				i++;
+		var bufferarray = [];
+		var i = 0;
+		while(i < food.length) {
+			if(food[i] instanceof Array || food[i] instanceof Object) {
+				bufferarray = bufferarray.concat(new ArrayBuffer(food[i]));
 			}
-			hamster.postMessage(food, bufferarray);
-		} else { //Legacy Fallback..much slower
-			hamster.postMessage(food);
+			i++;
 		}
+		hamster.postMessage(food, bufferarray);
 	};
 
 	//Setup
