@@ -14,9 +14,9 @@
 
 //** Start Setup **
 var hamsters = {
-	version: '1.8',
+	version: '1.9',
  	debug: false,
- 	maxThreads: null,
+ 	maxThreads: Math.ceil((navigator.hardwareConcurrency || 1) * 1.25),
  	tools: {},
  	_runtime: {
  		legacy: false,
@@ -37,15 +37,9 @@ hamsters._runtime.wakeUp = function() {
 	"use strict";
 
 	/**
-	* @function getCoreCount
-	* @description: Attempt to get logical core count set max thread count
+	* @function isIE
+	* @description: Detect Internet Explorer by Version IE10 and below
 	*/
-	hamsters._runtime.setup.getCoreCount = function() {
-		var count = Math.ceil((navigator.hardwareConcurrency || 1) * 1.25);
-		hamsters.maxThreads = count;
-		return count;
-	};
-
 	hamsters.tools.isIE = function(version) {
 		return RegExp('msie' + (!isNaN(version) ? ('\\s'+version) : ''), 'i').test(navigator.userAgent);
 	};
@@ -61,6 +55,8 @@ hamsters._runtime.wakeUp = function() {
 	hamsters._runtime.setup.isLegacy = function() {
 		if(!window.Worker || navigator.userAgent.indexOf('Kindle/3.0') !== -1 || navigator.userAgent.indexOf('Mobile/8F190') !== -1  || navigator.userAgent.indexOf('IEMobile') !== -1  || hamsters.tools.isIE(10)) {
 			hamsters._runtime.legacy = true;
+		} else if(navigator.userAgent.toLowerCase().indexOf('firefox') !== -1) {
+			window.firefox = window.firefox || true;
 		}
 	};
 
@@ -397,20 +393,45 @@ hamsters._runtime.wakeUp = function() {
 
 	hamsters._runtime.createHamster = function(thread) {
 		var hamster = hamsters._runtime.setup.getOrCreateElement(thread);
-		var blob;
+		var blob = hamsters._runtime.createBlob(hamster.textContent);
+		var uri = window.URL.createObjectURL(blob);
+		hamster = new Worker(uri);
+		return {'worker': hamster, 'dataBlob': blob, 'blobUri': uri};
+	};
+
+	hamsters._runtime.sendRequest = function(type, url, responseType, callback) {
+		var xhr = new XMLHttpRequest();
+	   	xhr.open(type, url);
+	    xhr.responseType = responseType;
+	    xhr.onload = function() {
+	      	callback(this.response);
+	    };
+	    xhr.send();
+	};
+
+	hamsters._runtime.fetchArrayBuffer = function(string, callback) {
+		var url = window.URL.createObjectURL(hamsters._runtime.createBlob(string));
+    	hamsters._runtime.sendRequest('GET', url, 'arraybuffer', function(arrayBuffer) {
+    		if(callback) {
+    			callback(arrayBuffer);
+    		}
+    	});
+	};
+
+
+	hamsters._runtime.createBlob = function(textContent) {
+  		var blob;
 		try {
-			blob = new Blob([hamster.textContent], {type: 'application/javascript'});
+			blob = new Blob([textContent], {type: 'application/javascript'});
 		} catch(err) { 
 			var blobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder || window.MSBlobBuilder;
 			if(blobBuilder) { //Fallback for browsers that don't support blob constructor
 				blob = new blobBuilder();
-				blob.append([hamster.textContent], {type: 'application/javascript'});
+				blob.append([textContent], {type: 'application/javascript'});
 				blob = blob.getBlob();
 			}
 		}
-		var uri = window.URL.createObjectURL(blob);
-		hamster = new Worker(uri);
-		return {'worker': hamster, 'dataBlob': blob, 'blobUri': uri};
+		return blob;
 	};
 
 	/**
@@ -454,6 +475,7 @@ hamsters._runtime.wakeUp = function() {
 	*/
 	hamsters._runtime.getOutput = function(output) {
 		var rtn = [];
+		rtn[0] = [0]; //V8 optmization, initialize before use
 		var l = output.length;
 		while(l--) {
 			rtn[l] = output[l];
@@ -472,6 +494,23 @@ hamsters._runtime.wakeUp = function() {
 		var item = hamsters._runtime.queue.pending.shift(); //Get and remove first item from queue
 		if(item) {
 			hamsters._runtime.newWheel(item.input, item.params, item.aggregate, item.callback, item.taskid, item.workerid, hamster, dataBlob); //Assign most recently finished thread to queue item
+		}
+	};
+
+	hamsters._runtime.terminateHamster = function(dataBlob) {
+		if(dataBlob) {
+			window.URL.revokeObjectURL(dataBlob.uri);
+			if(dataBlob.blob) {
+				var close = (dataBlob.blob.close || dataBlob.blob.msClose);
+				if(close) {
+					close.call();
+				} else {
+					delete dataBlob.blob;
+					delete dataBlob.uri;
+				}
+
+			}
+			dataBlob = null;
 		}
 	};
 
@@ -496,18 +535,7 @@ hamsters._runtime.wakeUp = function() {
 			var queue = hamsters._runtime.queue;
 			if(queue.pending.length === 0) {
 				hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
-				if(dataBlob) {
-					window.URL.revokeObjectURL(dataBlob.uri);
-					if(dataBlob.blob.close) {
-						dataBlob.blob.close();
-					} else if(dataBlob.blob.msClose) {
-						dataBlob.blob.msClose();
-					} else {
-						delete dataBlob.blob;
-						delete dataBlob.uri;
-						dataBlob = null;
-					}
-				}
+				hamsters._runtime.terminateHamster(dataBlob);
 			}
 			queue.running.splice(queue.running.indexOf(id), 1); //Remove thread from running pool
 			var task = hamsters._runtime.tasks[taskid];
@@ -577,21 +605,21 @@ hamsters._runtime.wakeUp = function() {
 	* @param {object} food - params object for worker
 	*/
 	hamsters._runtime.feedHamster = function(hamster, food, inputArray) {
-		food.array = inputArray;
-		var bufferarray = [];
-		var i = 0;
-		while(i < food.length) {
-			if(food[i] instanceof Array || food[i] instanceof Object) {
-				bufferarray[bufferarray.length] = new ArrayBuffer(food[i]);
-			}
-			i++;
+		if(food.array && (food.array.length > (35000000)) && TextDecoder) { //Create psuedo buffer for large data sets 35M+ introduces latency for smaller datasets
+			hamsters._runtime.fetchArrayBuffer(JSON.stringify(food), function(buffer) {
+				hamster.postMessage(buffer, [buffer]);
+				hamsters._runtime.terminateHamster(buffer);
+			});
+		} else if((window.chrome || window.firefox)) {
+			hamster.postMessage(JSON.stringify(food));
+		} else {
+			hamster.postMessage(food);
 		}
-		hamster.postMessage(food, bufferarray);
 	};
 
 	//Setup
 	hamsters._runtime.setup.isLegacy();
-	hamsters._runtime.setup.populateElements(hamsters._runtime.setup.getCoreCount());
+	hamsters._runtime.setup.populateElements(hamsters.maxThreads);
 };
 
 //Wake 'em up
