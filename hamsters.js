@@ -2,7 +2,6 @@
 /*globals self,Worker,Blob,rtn*/
 /*jslint vars:true, devel:true, browser:true, evil:true*/
 //** End JS Lint Settings **
-
 /*
 * Title: WebHamsters
 * Description: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
@@ -11,10 +10,9 @@
 * Copyright: 2015 Austin K. Smith - austin@asmithdev.com
 * License: Artistic License 2.0
 */
-
 //** Start Setup **
 var hamsters = {
-  version: '1.9',
+  version: '2.0',
   debug: false,
   maxThreads: Math.ceil((navigator.hardwareConcurrency || 1) * 1.25),
   tools: {},
@@ -35,7 +33,6 @@ var hamsters = {
 */
 hamsters.runtime.wakeUp = function() {
   "use strict";
-
   /**
   * @function isIE
   * @description: Detect Internet Explorer by Version IE10 and below
@@ -43,7 +40,6 @@ hamsters.runtime.wakeUp = function() {
   hamsters.tools.isIE = function(version) {
     return (new RegExp('msie' + (!isNaN(version) ? ('\\s'+version) : ''), 'i').test(navigator.userAgent));
   };
-
   /**
   * @function isLegacy
   * @description: Detect browser support for web workers
@@ -59,7 +55,6 @@ hamsters.runtime.wakeUp = function() {
       window.firefox = window.firefox || true;
     }
   };
-
   /**
   * @function isLegacy
   * @description: Return browser support for library
@@ -67,7 +62,6 @@ hamsters.runtime.wakeUp = function() {
   hamsters.isLegacy = function() {
     return hamsters.runtime.legacy;
   };
-
   /**
   * @function checkErrors 
   * @description: Method for checking runtime error log
@@ -80,8 +74,6 @@ hamsters.runtime.wakeUp = function() {
       'errors': errors
     };
   };
-
-
   /**
   * @function splitArray
   * @description: Splits an array into equal sized subarrays for individual workers
@@ -90,6 +82,9 @@ hamsters.runtime.wakeUp = function() {
   * @param {integer} n - total subarrays  
   */
   hamsters.tools.splitArray = function(array, n) {
+    if(array.length && !array.slice) {
+      array = hamsters.runtime.convertArray(array);
+    }
     var tasks = [];
     var i = 0;
     if(array) {
@@ -102,8 +97,6 @@ hamsters.runtime.wakeUp = function() {
     }
     return [];
   };
-
-
   /**
   * @function randomArray
   * @description: Generates a worker which generates an array of random numbers for testing
@@ -113,11 +106,9 @@ hamsters.runtime.wakeUp = function() {
   */
   hamsters.tools.randomArray = function(count, callback) {
     if(!count || !callback) {
-      hamsters.runtime.errors = hamsters.runtime.errors.concat(
-        {
+      hamsters.runtime.errors = hamsters.runtime.errors.concat({
         'msg': 'Unable to generate random array, missing required params'
-        }
-      );
+      });
       return;
     }
     var params = {
@@ -131,12 +122,11 @@ hamsters.runtime.wakeUp = function() {
         i++;
       }
     }, function(output) {
-    if(callback) {
-      callback(output);
-    }
-    }, 1);
+      if(callback) {
+        callback(output);
+      }
+    }, 1, false, 'Int32');
   };
-
   /**
   * @function populateElements
   * @description: Setups dom objects for web worker use with library boilerplate
@@ -145,16 +135,13 @@ hamsters.runtime.wakeUp = function() {
   * @param {function} callback - optional callback once thread boilerplates setup
   */
   hamsters.runtime.setup.populateElements = function(count, callback) {
-    var i = 0;
-    while(i < count) {
+    for (var i = 0, len = count; i < len; i++) {
       hamsters.runtime.setup.getOrCreateElement(i);
-      i++;
     }
     if(callback) {
       callback.call();
     }
   };
-
   /**
   * @function getOrCreateElement
   * @description: Setups dom objects for web worker use with library boilerplate
@@ -163,47 +150,8 @@ hamsters.runtime.wakeUp = function() {
   */
   hamsters.runtime.setup.getOrCreateElement = function(id) {
     var script = (document.getElementById('hamster'+id) || null);
-    var work = function() {
-      var respond = function(rtn, msg) {
-        self.postMessage(
-        {
-          'results': rtn || null,
-          'msg': msg || ''
-        }
-        );
-      };
-      var decodeInput = function(data) {
-        if(self.TextDecoder && typeof data === 'object' && !data.array) {
-          var dataView = new DataView(data);
-          var decoder = new TextDecoder('utf-8');
-          return JSON.parse(decoder.decode(dataView));
-        }
-        if(typeof data === 'string') {
-          return JSON.parse(data);
-        }
-        return data;
-      };
-      self.onmessage = function(e) {
-          var params = decodeInput(e.data);
-          var rtn = {
-            'success': false, 
-            'data': []
-          };
-          if(params.fn) {
-            var fn = eval('('+params.fn+')');
-            if(fn && typeof fn === 'function') {
-              fn();
-              respond(rtn);
-            } else {
-              rtn.success = false;
-              rtn.error = 'Missing function';
-              rtn.msg = 'Error encounted check errors for details';
-              respond(rtn);
-            }
-          }
-        };
-      };
     if(!script) {
+      var work = hamsters.runtime.giveHamsterWork();
       script = document.createElement('script');
       script.type = ('javascript/worker');
       script.id = ('hamster'+id);
@@ -213,7 +161,97 @@ hamsters.runtime.wakeUp = function() {
     }
     return script;
   };
-
+  /**
+  * @function giveHamsterWork
+  * @description: Creates boiler plate logic for worker thread
+  * @constructor
+  */
+  hamsters.runtime.giveHamsterWork = function() {
+    var work = function() {
+      var params;
+      var respond = function(rtn, msg) {
+        if(params.dataType) {
+          var output = processDataType(params.dataType, rtn.data);
+          rtn.data = output.buffer;
+          rtn.dataType = params.dataType;
+          self.postMessage({
+            'results': rtn || null,
+            'msg': msg || ''
+          }, [output.buffer]);
+        } else {
+          self.postMessage({
+            'results': rtn || null,
+            'msg': msg || ''
+          });
+        }
+      };
+      var processDataType = function(dataType, buffer) {
+        if(!dataType) {
+          return buffer;
+        }
+        var arr;
+        switch(dataType.toLowerCase()) {
+          case 'uint32':
+            arr = new Uint32Array(buffer);
+          break;
+          case 'uint16':
+            arr = new Uint16Array(buffer);
+          break;
+          case 'uint8':
+            arr = new Uint8Array(buffer);
+          break;
+          case 'uint8clamped':
+            arr = new Uint8ClampedArray(buffer);
+          break;
+          case 'int32':
+            arr = new Int32Array(buffer);
+          break;
+          case 'int16':
+            arr = new Int16Array(buffer);
+          break;
+          case 'int8':
+            arr = new Int8Array(buffer);
+          break;
+          case 'float32':
+            arr = new Float32Array(buffer);
+          break; 
+          case 'float64':
+            arr = new Float64Array(buffer);
+          break;
+          default:
+            arr = buffer;
+          break;
+        }
+        return arr;
+      };
+      self.onmessage = function(e) {
+        var rtn = {
+          'success': true, 
+          'data': []
+        };
+        params = e.data;
+        if(typeof params === 'string') {
+          params = JSON.parse(e.data);
+        }
+        if(params.dataType && params.array && typeof params.array === 'object') {
+          params.array = processDataType(params.dataType, params.array);
+        }
+        if(params.fn) {
+          var fn = eval('('+params.fn+')');
+          if(fn && typeof fn === 'function') {
+            fn();
+            respond(rtn);
+          } else {
+            rtn.success = false;
+            rtn.error = 'Missing function';
+            rtn.msg = 'Error encounted check errors for details';
+            respond(rtn);
+          }
+        }
+      };
+    };
+    return work;
+  };
   /**
   * @function sort
   * @description: Sorts an array of objects based on incoming property param
@@ -234,7 +272,6 @@ hamsters.runtime.wakeUp = function() {
       return result * order;
     };
   };
-
   /**
   * @function run
   * @description: Takes an incoming sequential function and automatically splits the work across as many defined threads for paralell execution
@@ -245,13 +282,13 @@ hamsters.runtime.wakeUp = function() {
   * @param {integer} workers - total number of threads to use
   * @param {boolean} aggregate - boolean aggregate individual thread outputs into final array  
   */
-  hamsters.run = function(params, fn, callback, workers, aggregate) {
+  hamsters.run = function(params, fn, callback, workers, aggregate, dataType) {
     if(!params || !fn) {
       return 'Error processing for loop, missing params or function';
     }
     var taskid = hamsters.runtime.tasks.length;
     workers = workers || hamsters.maxThreads;
-    hamsters.runtime.tasks[hamsters.runtime.tasks.length] = {
+    hamsters.runtime.tasks.push({
       'id': taskid,
       'workers': [],
       'count': 0,
@@ -259,7 +296,7 @@ hamsters.runtime.wakeUp = function() {
       'input': [], 
       'output': [], 
       'callback': callback
-    };
+    });
     var task = hamsters.runtime.tasks[taskid];
     callback = (callback || null);
     var hamsterfood = {'array':[]};
@@ -272,6 +309,7 @@ hamsters.runtime.wakeUp = function() {
       }
     }
     hamsterfood.fn = fn.toString();
+    hamsterfood.dataType = dataType || null;
     var workArray = params.array || null;
     if(params.array && task.threads !== 1) {
       workArray = hamsters.tools.splitArray(params.array, task.threads); //Divide our array into equal array sizes
@@ -286,7 +324,6 @@ hamsters.runtime.wakeUp = function() {
       i++;
     }
   };
-
   /**
   * @function newWheel
   * @description: Creates new worker thread with body of work to be completed
@@ -344,10 +381,11 @@ hamsters.runtime.wakeUp = function() {
             var rtn = hamsters.runtime.getOutput(task.output);
             hamsters.runtime.tasks[taskid] = null; //Clean up our task, not needed any longer
           if(aggregate) {       
-            hamsters.tools.aggregate(rtn, task, new Date().getTime());
-          } else if(callback) {
+            rtn = hamsters.tools.aggregate(rtn, null);
+          }
+          if(callback) {
             if(debug) {
-            console.info('Execution Complete! Elapsed: ' + ((new Date().getTime() - task.input[0].start)/1000) + 's');
+              console.info('Execution Complete! Elapsed: ' + ((new Date().getTime() - task.input[0].start)/1000) + 's');
             }
             callback(rtn);
           }
@@ -368,7 +406,14 @@ hamsters.runtime.wakeUp = function() {
     hamsters.runtime.feedHamster(hamster, hamsterfood, inputArray);
     task.count++; //Increment count, thread is running
   };
-
+  /**
+  * @function legacyProcessor
+  * @description: Simulates threading for execution on devices that don't support workers
+  * @constructor
+  * @param {object} food - Input params object
+  * @param {array} inputArray - Input array
+  * @param {function} callback - Callback function to return response
+  */
   hamsters.runtime.legacyProcessor = function(food, inputArray, callback) {
     setTimeout(function() {
       var params = food;
@@ -397,8 +442,12 @@ hamsters.runtime.wakeUp = function() {
       }
     }, 4); //4ms delay (HTML5 spec minimum), simulate threading
   };
-
-
+  /**
+  * @function createHamster
+  * @description: Creates web worker thread
+  * @constructor
+  * @param {integer} thread - Thread #
+  */
   hamsters.runtime.createHamster = function(thread) {
     var hamster = hamsters.runtime.setup.getOrCreateElement(thread);
     var blob = hamsters.runtime.createBlob(hamster.textContent);
@@ -406,7 +455,15 @@ hamsters.runtime.wakeUp = function() {
     hamster = new Worker(uri);
     return {'worker': hamster, 'dataBlob': blob, 'blobUri': uri};
   };
-
+  /**
+  * @function sendRequest
+  * @description: Sends ajax request 
+  * @constructor
+  * @param {string} type - 'GET' || 'POST'
+  * @param {string} url - Url to connect to
+  * @param {string} responseType - 'ArrayBuffer','','blob','document','json','text'
+  * @param {string} callback - Callback to return response
+  */
   hamsters.runtime.sendRequest = function(type, url, responseType, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open(type, url);
@@ -416,7 +473,13 @@ hamsters.runtime.wakeUp = function() {
     };
     xhr.send();
   };
-
+  /**
+  * @function fetchArrayBuffer
+  * @description: Creates array buffer by issuing a fake ajax request with response of arraybuffer
+  * @constructor
+  * @param {string} string - input params object
+  * @param {function} callback - callback function to return buffer to
+  */
   hamsters.runtime.fetchArrayBuffer = function(string, callback) {
     var url = window.URL.createObjectURL(hamsters.runtime.createBlob(string));
     hamsters.runtime.sendRequest('GET', url, 'arraybuffer', function(arrayBuffer) {
@@ -425,7 +488,12 @@ hamsters.runtime.wakeUp = function() {
       }
     });
   };
-
+  /**
+  * @function createBlob
+  * @description: Creates dataBlob for worker generation
+  * @constructor
+  * @param {string} textContent - Web worker boiler plate
+  */
   hamsters.runtime.createBlob = function(textContent) {
     var blob;
     try {
@@ -440,7 +508,6 @@ hamsters.runtime.wakeUp = function() {
     }
     return blob;
   };
-
   /**
   * @function aggregate
   * @description: Aggregates individual hamster outputs into a single array
@@ -448,48 +515,42 @@ hamsters.runtime.wakeUp = function() {
   * @param {array} input - incoming array of subarrays
   * @param {function} taskcallback - task callback when all hamsters complete
   */
-  hamsters.tools.aggregate = function(input, task, timeStamp) {
+  hamsters.tools.aggregate = function(input, dataType) {
     if(!input) {
       console.error("Missing array");
+      return;
+    }
+    if(input.length > 20) {
+      return input;
+    }
+    if(dataType) {
+      var out = [];
+      for (var i = 0, len = input.length; i < len; i++) {
+        out.push(hamsters.runtime.convertArray(input[i]));
+      }
+      input = out;
     }
     var output = [];
-    var aggregateTime;
-    if(hamsters.debug) {
-      aggregateTime = new Date().getTime();
-    }
-    if(input.length <= 20) { //Reduce returns inaccurate array missing elements with subarray count > 20
-      output = input.reduce(function(a, b) {
-        return a.concat(b);
-      });
-    } else {
-      output = input;
-    }
-    if(task.callback) {
-      task.callback(output);
-    }
-    if(hamsters.debug) {
-      var elapsed = ((timeStamp - task.input[0].start)/1000);
-      var aggregateElapsed = ((new Date().getTime() - aggregateTime)/1000);
-      console.info('Execution Complete! Total Elapsed: ' + (elapsed + aggregateElapsed) + 's ' + 'Aggregation Time: ' + aggregateElapsed + 's');
-    }
+    output = input.reduce(function(a, b) {
+      return a.concat(b);
+    });
+    return output;
   };
-
   /**
   * @function getOutput
   * @description: Get our nested output values from each task, return array of subarrays
   * @constructor
   * @param {array} output - incoming task output
   */
-  hamsters.runtime.getOutput = function(output) {
-    var rtn = [];
-    rtn[0] = [0]; //V8 optmization, initialize before use
-    var l = output.length;
-    while(l--) {
-      rtn[l] = output[l];
+  hamsters.runtime.getOutput = function(output, aggregate, dataType) {
+    var rtn;
+    if(aggregate) {
+      rtn = hamsters.tools.aggregate(output, dataType);
+    } else {
+      rtn = output;
     }
     return rtn;
   };
-
   /**
   * @function processQueue
   * @description: Process next item in queue
@@ -503,7 +564,12 @@ hamsters.runtime.wakeUp = function() {
       hamsters.runtime.newWheel(item.input, item.params, item.aggregate, item.callback, item.taskid, item.workerid, hamster, dataBlob); //Assign most recently finished thread to queue item
     }
   };
-
+  /**
+  * @function terminateHamster
+  * @description: Cleans up memory used by dataBlob 
+  * @constructor
+  * @param {object} dataBlob - dataBlob to free from memory, critical for IE11 support
+  */
   hamsters.runtime.terminateHamster = function(dataBlob) {
     if(dataBlob) {
       window.URL.revokeObjectURL(dataBlob.uri);
@@ -518,7 +584,6 @@ hamsters.runtime.wakeUp = function() {
       dataBlob = null;
     }
   };
-
   /**
   * @function trainHamster
   * @description: Handle response from worker thread, setup error handling
@@ -531,16 +596,16 @@ hamsters.runtime.wakeUp = function() {
   * @param {object} hamster - web worker
   */
   hamsters.runtime.trainHamster = function(id, aggregate, callback, taskid, workerid, hamster, dataBlob) {
-  /**
-  * @description: Runs when a hamster (thread) finishes it's work
-  * @constructor
-  * @param {object} e - Web Worker event object
-  */
+    /**
+    * @description: Runs when a hamster (thread) finishes it's work
+    * @constructor
+    * @param {object} e - Web Worker event object
+    */
     hamster.onmessage = function(e) {
       var queue = hamsters.runtime.queue;
       if(queue.pending.length === 0) {
         hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
-        hamsters.runtime.terminateHamster(dataBlob);
+        setTimeout(hamsters.runtime.terminateHamster(dataBlob), 4);
       }
       queue.running.splice(queue.running.indexOf(id), 1); //Remove thread from running pool
       var task = hamsters.runtime.tasks[taskid];
@@ -563,17 +628,19 @@ hamsters.runtime.wakeUp = function() {
       if(task.workers.length === 0 && task.count === task.threads) {
         taskComplete = true;
       }
-      task.output[workerid] = e.data.results.data;
+      var results = e.data.results;
+      if(results.dataType && typeof results.data === 'object') {
+        results.data = hamsters.runtime.processDataType(results.dataType, results.data);
+      }
+      task.output[workerid] = results.data;
       var debug = hamsters.debug;
       if(debug === 'verbose') {
         console.info('Hamster #' + id + ' finished ' + '@ ' + e.timeStamp);
       }
       if(taskComplete) { //Task complete, finish up
-        var output = hamsters.runtime.getOutput(task.output);
+        var output = hamsters.runtime.getOutput(task.output, aggregate, results.dataType);
         hamsters.runtime.tasks[taskid] = null; //Clean up our task, not needed any longer
-        if(aggregate) {       
-          hamsters.tools.aggregate(output, task, e.timeStamp);
-        } else if(callback) {
+        if(callback) {
           if(debug) {
             console.info('Execution Complete! Elapsed: ' + ((e.timeStamp - task.input[0].start)/1000) + 's');
           }
@@ -600,7 +667,65 @@ hamsters.runtime.wakeUp = function() {
       console.error(msg);
     };
   };
-
+  /**
+  * @function convertArray
+  * @description: Normalizes typed array into normal array
+  * @constructor
+  * @param {object} input - typedArray input
+  */
+  hamsters.runtime.convertArray = function(input) {
+    var arr = [];
+    for (var n = 0, len = input.length; n < len; n++) {
+      arr.push(input[n]);
+    }
+    return arr;
+  };
+  /**
+  * @function processDataType
+  * @description: Converts array buffer or normal array into a typed array
+  * @constructor
+  * @param {string} dataType - dataType config param
+  * @param {object} buffer - buffer object or normal array
+  */
+  hamsters.runtime.processDataType = function(dataType, buffer) {
+    if(!dataType) {
+      return buffer;
+    }
+    var arr;
+    switch(dataType.toLowerCase()) {
+      case 'uint32':
+        arr = new Uint32Array(buffer);
+      break;
+      case 'uint16':
+        arr = new Uint16Array(buffer);
+      break;
+      case 'uint8':
+        arr = new Uint8Array(buffer);
+      break;
+      case 'uint8clamped':
+        arr = new Uint8ClampedArray(buffer);
+      break;
+      case 'int32':
+        arr = new Int32Array(buffer);
+      break;
+      case 'int16':
+        arr = new Int16Array(buffer);
+      break;
+      case 'int8':
+        arr = new Int8Array(buffer);
+      break;
+      case 'float32':
+        arr = new Float32Array(buffer);
+      break; 
+      case 'float64':
+        arr = new Float64Array(buffer);
+      break;
+      default:
+        arr = buffer;
+      break;
+    }
+    return arr;
+  };
   /**
   * @function feedHamster
   * @description: Sends message to worker thread to invoke execution
@@ -609,23 +734,24 @@ hamsters.runtime.wakeUp = function() {
   * @param {object} food - params object for worker
   */
   hamsters.runtime.feedHamster = function(hamster, food, inputArray) {
-    food.array = inputArray || [];
-    if(food.array.length >= 3000000 && window.TextDecoder) { //Create psuedo buffer for large data sets 30M+ introduces latency for smaller datasets
-      hamsters.runtime.fetchArrayBuffer(JSON.stringify(food), function(buffer) {
-        hamster.postMessage(buffer, [buffer]);
-        hamsters.runtime.terminateHamster(buffer);
-    });
-    } else if((window.chrome || window.firefox) && food.array.length <= 40000000) { //Stringify data for chrome/firefox on less than 40M array size, good performance boost 
+    if(inputArray && food.dataType) { //Transferable object transfer if using typed array
+      food.array = hamsters.runtime.processDataType(food.dataType, inputArray);
+    } else if(inputArray) {
+      food.array = inputArray;
+    }
+    if(food.array && food.array.buffer) {
+      var buffer = food.array.buffer;
+      food.array = buffer;
+      hamster.postMessage(food,  [buffer]);
+    } else if((window.chrome || window.firefox) && food.array.length <= 35000000) { //Stringify data for chrome/firefox on less than 35M array size, good performance boost 
       hamster.postMessage(JSON.stringify(food));
     } else {
       hamster.postMessage(food); //Use structured cloning for Safari/IE or for data sets > 40M+
     }
   };
-
   //Setup
   hamsters.runtime.setup.isLegacy();
   hamsters.runtime.setup.populateElements(hamsters.maxThreads);
 };
-
 //Wake 'em up
 hamsters.runtime.wakeUp();

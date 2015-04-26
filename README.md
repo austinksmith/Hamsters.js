@@ -78,6 +78,33 @@ function() {
 
 ```
 
+# Performance Tweaking
+
+To obtain the best performance possible version 2.0 supports an optional dataType param, if your problem supports being transformed into any of javascripts typed arrays you can see up to 10x the performance boost over previous releases. 
+
+If you do not know what typed arrays are please take a look at this guide https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays 
+
+You may write a function to make use of these like so
+
+```
+//4 threads and use dataType and let's aggregate our individual thread results into one final output
+function() {
+  var params = {'array':[0,1,2,3,4,5,6,7,8,9]};
+  hamsters.run(params, function() {
+      var arr = params.array;
+      arr.forEach(function(item) {
+        rtn.data.push((item * 120)/10)
+      });
+  }, function(output) {
+     return output;
+  }, 4, true, dataType);
+}
+
+```
+
+Where dataType is: 'Int8' || 'Int16' || 'Int32' || 'Uint8' || 'Uint16' || 'Uint32' || 'Float32' || 'Float64'
+
+
 # Debugging
 
 The library supports two modes of debugging each provide useful information which may assist in fine tune performance & output tuning
