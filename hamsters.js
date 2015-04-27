@@ -2,6 +2,7 @@
 /*globals self,Worker,Blob,rtn*/
 /*jslint vars:true, devel:true, browser:true, evil:true*/
 //** End JS Lint Settings **
+
 /*
 * Title: WebHamsters
 * Description: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
@@ -12,7 +13,7 @@
 */
 //** Start Setup **
 var hamsters = {
-  version: '2.0',
+  version: '2.1',
   debug: false,
   maxThreads: Math.ceil((navigator.hardwareConcurrency || 1) * 1.25),
   tools: {},
@@ -83,7 +84,7 @@ hamsters.runtime.wakeUp = function() {
   */
   hamsters.tools.splitArray = function(array, n) {
     if(array.length && !array.slice) {
-      array = hamsters.runtime.convertArray(array);
+      array = hamsters.runtime.normalizeArray(array);
     }
     var tasks = [];
     var i = 0;
@@ -524,11 +525,7 @@ hamsters.runtime.wakeUp = function() {
       return input;
     }
     if(dataType) {
-      var out = [];
-      for (var i = 0, len = input.length; i < len; i++) {
-        out.push(hamsters.runtime.convertArray(input[i]));
-      }
-      input = out;
+      return hamsters.runtime.aggregateTypedArrays(input, dataType);
     }
     var output = [];
     output = input.reduce(function(a, b) {
@@ -673,12 +670,27 @@ hamsters.runtime.wakeUp = function() {
   * @constructor
   * @param {object} input - typedArray input
   */
-  hamsters.runtime.convertArray = function(input) {
+  hamsters.runtime.normalizeArray = function(input) {
     var arr = [];
     for (var n = 0, len = input.length; n < len; n++) {
       arr.push(input[n]);
     }
     return arr;
+  };
+
+  hamsters.runtime.aggregateTypedArrays = function(input, dataType) {
+    var output;
+    var length = 0;
+    var offset = 0;
+    for (var i = 0, len = input.length; i < len; i++) {
+      length += input[i].length;
+    }
+    output = hamsters.runtime.processDataType(dataType, length);
+    for (var n = 0, len2 = input.length; n < len2; n++) {
+      output.set(input[n], offset);
+      offset += input[n].length;
+    }
+    return output;
   };
   /**
   * @function processDataType

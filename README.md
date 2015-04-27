@@ -102,7 +102,7 @@ function() {
 
 ```
 
-Where dataType is: 'Int8' || 'Int16' || 'Int32' || 'Uint8' || 'Uint16' || 'Uint32' || 'Float32' || 'Float64'
+Where dataType is: 'Int8' || 'Int16' || 'Int32' || 'Uint8' || 'Uint8Clamped' || 'Uint16' || 'Uint32' || 'Float32' || 'Float64'
 
 
 # Debugging
