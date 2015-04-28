@@ -13,11 +13,13 @@
 */
 //** Start Setup **
 var hamsters = {
-  version: '2.1',
+  version: '2.2',
   debug: false,
+  cache: false,
   maxThreads: Math.ceil((navigator.hardwareConcurrency || 1) * 1.25),
   tools: {},
   runtime: {
+    cache: null,
     legacy: false,
     queue: {
       running: [],
@@ -128,6 +130,47 @@ hamsters.runtime.wakeUp = function() {
       }
     }, 1, false, 'Int32');
   };
+
+  hamsters.runtime.cacheResult = function(fn, input, output, dataType) {
+    if(hamsters.runtime.checkCache(fn, input, dataType)) {
+      return;
+    }
+    try {
+      sessionStorage.setItem(sessionStorage.length, JSON.stringify({'func': fn, 'input': input, 'output': output, 'dataType': dataType}));
+    } catch(eve) {
+      if(eve.name === 'QuotaExceededError') {
+        sessionStorage.clear();
+        try {
+          sessionStorage.setItem(sessionStorage.length, JSON.stringify({'func': fn, 'input': input, 'output': output, 'dataType': dataType}));
+        } catch(e) { //Do nothing, can't cache this result..too large
+          return;
+        }
+      }
+    }
+  };
+
+  hamsters.runtime.compareArrays = function (array1, array2) {
+      if (array1.length !== array2.length) {
+          return false;
+      }
+      return array1.every(function (el, i) {
+          return (el === array2[i]);
+      });
+  };
+
+  hamsters.runtime.checkCache = function(fn, input, dataType) {
+    var item;
+    for (var i = 0, len = sessionStorage.length; i < len; i++) {
+      item = eval('('+sessionStorage[i]+')');
+      var equals = hamsters.runtime.compareArrays(item.input, input);
+      if(item && item.func === fn && equals  && !item.dataType && !dataType) {
+        return item.output;
+      } else if(item && item.func === fn && equals && item.dataType === dataType) {
+        return hamsters.runtime.processDataType(item.dataType, item.output);
+      }
+    }
+  };
+
   /**
   * @function populateElements
   * @description: Setups dom objects for web worker use with library boilerplate
@@ -294,13 +337,26 @@ hamsters.runtime.wakeUp = function() {
       'workers': [],
       'count': 0,
       'threads': workers, 
-      'input': [], 
+      'input': params.array || [],
+      'dataType': dataType || null,
+      'fn': fn || null,
       'output': [], 
       'callback': callback
     });
     var task = hamsters.runtime.tasks[taskid];
     callback = (callback || null);
     var hamsterfood = {'array':[]};
+    hamsterfood.fn = fn.toString();
+    if(hamsters.cache && params.array) {
+      var result = hamsters.runtime.checkCache(hamsterfood.fn, task.input, dataType);
+      if(result && callback) {
+        setTimeout(function() {
+          hamsters.runtime.tasks[taskid] = null; //Clean up our task, not needed any longer
+          callback(result);
+        }, 4);
+        return;
+      }
+    }
     var key;
     for(key in params) {
       if(params.hasOwnProperty(key)) {
@@ -309,7 +365,6 @@ hamsters.runtime.wakeUp = function() {
         }
       }
     }
-    hamsterfood.fn = fn.toString();
     hamsterfood.dataType = dataType || null;
     var workArray = params.array || null;
     if(params.array && task.threads !== 1) {
@@ -531,6 +586,7 @@ hamsters.runtime.wakeUp = function() {
     output = input.reduce(function(a, b) {
       return a.concat(b);
     });
+    input = null;
     return output;
   };
   /**
@@ -570,14 +626,14 @@ hamsters.runtime.wakeUp = function() {
   hamsters.runtime.terminateHamster = function(dataBlob) {
     if(dataBlob) {
       window.URL.revokeObjectURL(dataBlob.uri);
-      if(dataBlob.blob) {
-        var close = (dataBlob.blob.close || dataBlob.blob.msClose);
-        if(close) {
-          close.call();
-        } else {
-          delete dataBlob.blob;
-        }
+      if(dataBlob.blob.close) {
+        dataBlob.blob.close();
       }
+      if(dataBlob.blob.msClose) {
+        dataBlob.blob.msClose();
+      }
+      delete dataBlob.blob;
+      delete dataBlob.uri;
       dataBlob = null;
     }
   };
@@ -642,6 +698,16 @@ hamsters.runtime.wakeUp = function() {
             console.info('Execution Complete! Elapsed: ' + ((e.timeStamp - task.input[0].start)/1000) + 's');
           }
           callback(output);
+          if(hamsters.cache) {
+            if(task.threads === 1) {
+              output = output[0];
+            }
+            if(task.input.length > 0 && output.length > 0 && !task.dataType) {
+              hamsters.runtime.cacheResult(String(task.fn), task.input, output);
+            } else if(task.input.length > 0 && output.length > 0 && task.dataType) {
+              hamsters.runtime.cacheResult(String(task.fn), task.input, hamsters.runtime.normalizeArray(output), task.dataType);
+            }
+          }
         }
       }
       if(queue.pending.length !== 0) {
@@ -675,6 +741,7 @@ hamsters.runtime.wakeUp = function() {
     for (var n = 0, len = input.length; n < len; n++) {
       arr.push(input[n]);
     }
+    input = null;
     return arr;
   };
 
@@ -690,6 +757,7 @@ hamsters.runtime.wakeUp = function() {
       output.set(input[n], offset);
       offset += input[n].length;
     }
+    input = null;
     return output;
   };
   /**
