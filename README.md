@@ -22,6 +22,7 @@ The basic structure of a WebHamster function is as follows
   }, function(output) {
      //Resulting output callback, do as you wish with your output
   }, 1 //Integer # of threads to invoke , true //Boolean aggregate individual thread outputs);
+
 ```
 
 Inside of your function you have an rtn object available to pass your output into, your function must use this object to push your output into the rtn.data array so the library can manage the data dependencies between each thread efficiently. Failure to use the rtn.data array for your output may lead to unexpected behavior. You've been warned.
@@ -76,6 +77,7 @@ function() {
   }, 4, true);
 }
 
+```
 We can even define a function to split across all available threads like so
 
 Alternatively we can split this task among 4 threads for paralell execution like so
@@ -149,6 +151,8 @@ function() {
      return output;
   }, 4, true, dataType, false);
 }
+```
+
 
 # Debugging
 
