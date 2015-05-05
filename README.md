@@ -51,7 +51,7 @@ function() {
   hamsters.run(params, function() {
       var arr = params.array;
       arr.forEach(function(item) {
-        rtn.data.push((item * 120)/10)
+        rtn.data.push((item * 120)/10);
       });
   }, function(output) {
      return output;
@@ -69,11 +69,29 @@ function() {
   hamsters.run(params, function() {
       var arr = params.array;
       arr.forEach(function(item) {
-        rtn.data.push((item * 120)/10)
+        rtn.data.push((item * 120)/10);
       });
   }, function(output) {
      return output;
   }, 4, true);
+}
+
+We can even define a function to split across all available threads like so
+
+Alternatively we can split this task among 4 threads for paralell execution like so
+
+```
+//All threads and let's aggregate our individual thread results into one final output
+function() {
+  var params = {'array':[0,1,2,3,4,5,6,7,8,9]};
+  hamsters.run(params, function() {
+      var arr = params.array;
+      arr.forEach(function(item) {
+        rtn.data.push((item * 120)/10);
+      });
+  }, function(output) {
+     return output;
+  }, hamsters.maxThreads, true);
 }
 
 ```
@@ -93,7 +111,7 @@ function() {
   hamsters.run(params, function() {
       var arr = params.array;
       arr.forEach(function(item) {
-        rtn.data.push((item * 120)/10)
+        rtn.data.push((item * 120)/10);
       });
   }, function(output) {
      return output;
@@ -105,9 +123,9 @@ function() {
 Where dataType is: 'Int8' || 'Int16' || 'Int32' || 'Uint8' || 'Uint8Clamped' || 'Uint16' || 'Uint32' || 'Float32' || 'Float64'
 
 
-# Result Caching
+# Result Caching (Memoization)
 
-To obtain the best performance possible version 2.2 supports an optional result caching option, if you know you will be performing the same calculation numerous times enabling cache mode can result in a big performance boost as it will pull the result from cache instead of recalculating the output. This cache mode makes use of session storage and is limited to roughly 5MB of space depending on the browser used. The library will attempt to cache as many previous runs as possible and will only clear out past results in the event that session storage is full. Not all outputs can be cached as they may be too large so this is disabled by default. Your mileage may vary.
+To obtain the best performance possible version 2.2 supports an optional result caching option, if you know you will be performing the same calculation numerous times enabling cache mode can result in a big performance boost as it will pull the result from cache instead of recalculating the output. This cache mode makes use of session storage and is limited to roughly 5MB of space depending on the browser used. The library will attempt to cache as many previous runs as possible and will only clear out past results in the event that session storage is full. Not all outputs can be cached as they may be too large so this is disabled by default. However version 2.3 introduces hashing of the input values instead of storing both the input and output, this change roughly doubles the space for memoization making this much more viable. 
  
 
 You may enable cache mode by setting
@@ -115,6 +133,23 @@ You may enable cache mode by setting
 ```
 hamsters.cache = true;
 ```
+
+You can disable caching for individual functions like so 
+
+```
+//All threads and let's aggregate our individual thread results into one final output, no memoization
+function() {
+  var params = {'array':[0,1,2,3,4,5,6,7,8,9]};
+  hamsters.run(params, function() {
+      var arr = params.array;
+      arr.forEach(function(item) {
+        rtn.data.push((item * 120)/10);
+      });
+  }, function(output) {
+     return output;
+  }, 4, true, dataType, false);
+}
+
 # Debugging
 
 The library supports two modes of debugging each provide useful information which may assist in fine tune performance & output tuning
