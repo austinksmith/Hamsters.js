@@ -80,8 +80,6 @@ function() {
 ```
 We can even define a function to split across all available threads like so
 
-Alternatively we can split this task among 4 threads for paralell execution like so
-
 ```
 //All threads and let's aggregate our individual thread results into one final output
 function() {
