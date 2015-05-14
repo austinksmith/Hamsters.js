@@ -11,6 +11,10 @@
 # Guides
 Detailed Documentation coming soon check http://www.hamsters.io/guides for details
 
+# Workflow Diagram
+
+![alt tag](http://www.hamsters.io/guides/workflow.png)
+
 # Getting Started
 The basic structure of a WebHamster function is as follows
 
@@ -174,8 +178,3 @@ IE11 as of v1.7 is fully supported however during testing IE11 will throw out of
 # Browser Support
 
 Currently as of v1.4 all browsers are supported by the library, modern browsers such as Chrome, Safari, and Firefox have full web worker support and will give the best performance, Older browsers such as IE10 and below are supported by using a legacy processor fallback, these computations will be run on the main thread however they still follow the library process of breaking a given task into individual pieces and executing each piece at a time.
-
-
-
-
-
