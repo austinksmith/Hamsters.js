@@ -12,7 +12,7 @@
 * License: Artistic License 2.0
 */
 var hamsters = {
-  version: '2.4',
+  version: '2.5',
   debug: false,
   cache: false,
   maxThreads: Math.ceil((navigator.hardwareConcurrency || 1) * 1.25),
@@ -159,7 +159,7 @@ hamsters.wheel.wakeUp = function() {
       item = JSON.parse(sessionStorage[i]);
       if(item && item['#'] === hash && item.dT === dataType) {
         var rtn = item.oP;
-        if(dataType) {
+        if(dataType && !hamsters.wheel.legacy) {
           rtn = hamsters.wheel.processDataType(dataType, item.oP);
         }
         return rtn;
@@ -414,7 +414,7 @@ hamsters.wheel.wakeUp = function() {
       var hash;
       if(!dataType) {
         hash = hamsters.wheel.hashResult({'func': fn, 'dT': "na", 'input': params.array});
-      } else {
+      } else if(!hamsters.wheel.legacy) {
         hash = hamsters.wheel.hashResult({'func': fn, 'dT': dataType, 'input': params.array});
       }
       var result = hamsters.wheel.checkCache(hash, dataType);
@@ -508,53 +508,9 @@ hamsters.wheel.wakeUp = function() {
         'data': []
       };
       var respond = function(rtn) {
-        if(params.dataType) {
-          var output = processDataType(params.dataType, rtn.data);
-          rtn.data = output;
-          rtn.dataType = params.dataType;
-        }
         if(callback) {
           callback(rtn); // Return legacy output
         }
-      };
-      var processDataType = function(dataType, buffer) {
-        if(!dataType) {
-          return buffer;
-        }
-        var arr;
-        switch(dataType.toLowerCase()) {
-          case 'uint32':
-            arr = new Uint32Array(buffer);
-          break;
-          case 'uint16':
-            arr = new Uint16Array(buffer);
-          break;
-          case 'uint8':
-            arr = new Uint8Array(buffer);
-          break;
-          case 'uint8clamped':
-            arr = new Uint8ClampedArray(buffer);
-          break;
-          case 'int32':
-            arr = new Int32Array(buffer);
-          break;
-          case 'int16':
-            arr = new Int16Array(buffer);
-          break;
-          case 'int8':
-            arr = new Int8Array(buffer);
-          break;
-          case 'float32':
-            arr = new Float32Array(buffer);
-          break; 
-          case 'float64':
-            arr = new Float64Array(buffer);
-          break;
-          default:
-            arr = buffer;
-          break;
-        }
-        return arr;
       };
       if(params.fn) {
         params.array = inputArray;
