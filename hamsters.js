@@ -12,7 +12,7 @@
 * License: Artistic License 2.0
 */
 var hamsters = {
-  version: '2.5',
+  version: '2.6',
   debug: false,
   cache: false,
   maxThreads: Math.ceil((navigator.hardwareConcurrency || 1) * 1.25),
@@ -290,43 +290,34 @@ hamsters.wheel.wakeUp = function() {
        * @return arr
        */
       var processDataType = function(dataType, buffer) {
-        if(!dataType) {
-          return buffer;
+        if (dataType === 'uint32') {
+          return new Uint32Array(buffer);
         }
-        var arr;
-        switch(dataType.toLowerCase()) {
-          case 'uint32':
-            arr = new Uint32Array(buffer);
-          break;
-          case 'uint16':
-            arr = new Uint16Array(buffer);
-          break;
-          case 'uint8':
-            arr = new Uint8Array(buffer);
-          break;
-          case 'uint8clamped':
-            arr = new Uint8ClampedArray(buffer);
-          break;
-          case 'int32':
-            arr = new Int32Array(buffer);
-          break;
-          case 'int16':
-            arr = new Int16Array(buffer);
-          break;
-          case 'int8':
-            arr = new Int8Array(buffer);
-          break;
-          case 'float32':
-            arr = new Float32Array(buffer);
-          break; 
-          case 'float64':
-            arr = new Float64Array(buffer);
-          break;
-          default:
-            arr = buffer;
-          break;
+        if (dataType === 'uint16') {
+          return new Uint16Array(buffer);
         }
-        return arr;
+        if (dataType === 'uint8') {
+          return new Uint8Array(buffer);
+        }
+        if (dataType === 'uint8clamped') {
+          return new Uint8ClampedArray(buffer);
+        }
+        if (dataType === 'int32') {
+          return new Int32Array(buffer);
+        }
+        if (dataType === 'int16') {
+          return new Int16Array(buffer);
+        }
+        if (dataType === 'int8') {
+          return new Int8Array(buffer);
+        }
+        if (dataType === 'float32') {
+          return new Float32Array(buffer);
+        }
+        if (dataType === 'float64') {
+          return new Float64Array(buffer);
+        }
+        return buffer;
       };
 
       /**
@@ -408,20 +399,20 @@ hamsters.wheel.wakeUp = function() {
     var task = hamsters.wheel.tasks[taskid];
     callback = (callback || null);
     var hamsterfood = {'array':[]};
-    hamsterfood.fn = fn.toString();   
+    hamsterfood.fn = fn.toString();
+    if(dataType) {
+      dataType = dataType.toLowerCase();
+    } else {
+      dataType = "na";
+    }
     if(hamsters.cache && params.array && params.array.length !== 0) {
       memoize = memoize || true;
-      var hash;
-      if(!dataType) {
-        hash = hamsters.wheel.hashResult({'func': fn, 'dT': "na", 'input': params.array});
-      } else if(!hamsters.wheel.legacy) {
-        hash = hamsters.wheel.hashResult({'func': fn, 'dT': dataType, 'input': params.array});
-      }
+      var hash = hamsters.wheel.hashResult({'func': fn, 'dT': "na", 'input': params.array});
       var result = hamsters.wheel.checkCache(hash, dataType);
       if(result && callback) {
         setTimeout(function() {
-          hamsters.wheel.tasks[taskid] = null; //Clean up our task, not needed any longer
           callback(result);
+          hamsters.wheel.tasks[taskid] = null; //Clean up our task, not needed any longer
         }, 4);
         return;
       }
@@ -734,12 +725,12 @@ hamsters.wheel.wakeUp = function() {
       task.output[workerid] = results.data;
       if(task.workers.length === 0 && task.count === task.threads) {
         var output = hamsters.wheel.getOutput(task.output, aggregate, results.dataType);
-        hamsters.wheel.tasks[taskid] = null; //Clean up our task, not needed any longer
         if(callback) {
           if(hamsters.debug) {
             console.info('Execution Complete! Elapsed: ' + ((e.timeStamp - task.input[0].start)/1000) + 's');
           }
           callback(output);
+          hamsters.wheel.tasks[taskid] = null; //Clean up our task, not needed any longer
           if(hamsters.cache && memoize !== false) {
             var inputArray = task.input[0].input;
             if(output.length > 0 && !results.dataType) {
@@ -786,7 +777,6 @@ hamsters.wheel.wakeUp = function() {
     for (var n = 0, len = input.length; n < len; n++) {
       arr.push(input[n]);
     }
-    input = null;
     return arr;
   };
 
@@ -809,7 +799,6 @@ hamsters.wheel.wakeUp = function() {
       output.set(input[n], offset);
       offset += input[n].length;
     }
-    input = null;
     return output;
   };
 
@@ -822,43 +811,34 @@ hamsters.wheel.wakeUp = function() {
    * @return arr
    */
   hamsters.wheel.processDataType = function(dataType, buffer) {
-    if(!dataType) {
-      return buffer;
+    if (dataType === 'uint32') {
+      return new Uint32Array(buffer);
     }
-    var arr;
-    switch(dataType.toLowerCase()) {
-      case 'uint32':
-        arr = new Uint32Array(buffer);
-      break;
-      case 'uint16':
-        arr = new Uint16Array(buffer);
-      break;
-      case 'uint8':
-        arr = new Uint8Array(buffer);
-      break;
-      case 'uint8clamped':
-        arr = new Uint8ClampedArray(buffer);
-      break;
-      case 'int32':
-        arr = new Int32Array(buffer);
-      break;
-      case 'int16':
-        arr = new Int16Array(buffer);
-      break;
-      case 'int8':
-        arr = new Int8Array(buffer);
-      break;
-      case 'float32':
-        arr = new Float32Array(buffer);
-      break; 
-      case 'float64':
-        arr = new Float64Array(buffer);
-      break;
-      default:
-        arr = buffer;
-      break;
+    if (dataType === 'uint16') {
+      return new Uint16Array(buffer);
     }
-    return arr;
+    if (dataType === 'uint8') {
+      return new Uint8Array(buffer);
+    }
+    if (dataType === 'uint8clamped') {
+      return new Uint8ClampedArray(buffer);
+    }
+    if (dataType === 'int32') {
+      return new Int32Array(buffer);
+    }
+    if (dataType === 'int16') {
+      return new Int16Array(buffer);
+    }
+    if (dataType === 'int8') {
+      return new Int8Array(buffer);
+    }
+    if (dataType === 'float32') {
+      return new Float32Array(buffer);
+    }
+    if (dataType === 'float64') {
+      return new Float64Array(buffer);
+    }
+    return buffer;
   };
 
   hamsters.wheel.generateHash = function(string) {
@@ -944,12 +924,12 @@ hamsters.wheel.wakeUp = function() {
           task.output[threadid] = output.data;
           if(task.count === task.threads) { //Task complete get output and return
             var rtn = hamsters.wheel.getOutput(task.output, aggregate, output.dataType);
-            hamsters.wheel.tasks[taskid] = null; //Clean up our task, not needed any longer
             if(callback) {
               if(debug) {
                 console.info('Execution Complete! Elapsed: ' + ((new Date().getTime() - task.input[0].start)/1000) + 's');
               }
               callback(rtn);
+              hamsters.wheel.tasks[taskid] = null; //Clean up our task, not needed any longer
               if(hamsters.cache && memoize !== false) {
                 if(output.data.length > 0 && !output.dataType) {
                   setTimeout(hamsters.wheel.memoize(task.fn, task.input, output.data, 'na'), 4);
