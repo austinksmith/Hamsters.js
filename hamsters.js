@@ -6,13 +6,13 @@
 /*
 * Title: WebHamsters
 * Description: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
-* Author: Austin K. Smith 
+* Author: Austin K. Smith
 * Contact: austin@asmithdev.com
 * Copyright: 2015 Austin K. Smith - austin@asmithdev.com
 * License: Artistic License 2.0
 */
 var hamsters = {
-  version: '2.6',
+  version: '2.7',
   debug: false,
   cache: false,
   maxThreads: Math.ceil((navigator.hardwareConcurrency || 1) * 1.25),
@@ -32,7 +32,7 @@ var hamsters = {
 /**
  * @description: Initializes and sets up library functionality
  * @method wakeUp
- * @return 
+ * @return
  */
 hamsters.wheel.wakeUp = function() {
   "use strict";
@@ -51,10 +51,10 @@ hamsters.wheel.wakeUp = function() {
    * Description
    * @description: Detect browser support for web workers
    * @method isLegacy
-   * @return 
+   * @return
    */
   hamsters.wheel.setup.isLegacy = function(callback) {
-    if(!window.Worker || navigator.userAgent.indexOf('Kindle/3.0') !== -1 || navigator.userAgent.indexOf('Mobile/8F190') !== -1  || navigator.userAgent.indexOf('IEMobile') !== -1  || hamsters.tools.isIE(10)) { 
+    if(!window.Worker || navigator.userAgent.indexOf('Kindle/3.0') !== -1 || navigator.userAgent.indexOf('Mobile/8F190') !== -1  || navigator.userAgent.indexOf('IEMobile') !== -1  || hamsters.tools.isIE(10)) {
       hamsters.wheel.legacy = true;
     } else if(navigator.userAgent.toLowerCase().indexOf('firefox') !== -1) {
       window.firefox = window.firefox || true;
@@ -136,7 +136,7 @@ hamsters.wheel.wakeUp = function() {
       var i = 0;
       while(i < total) {
         rtn.data[rtn.data.length] = Math.round(Math.random() * (100 - 1) + 1);
-        i++;
+        i+=1;
       }
     }, function(output) {
       if(callback) {
@@ -155,7 +155,7 @@ hamsters.wheel.wakeUp = function() {
    */
   hamsters.wheel.checkCache = function(hash, dataType) {
     var item;
-    for (var i = 0, len = sessionStorage.length; i < len; i++) {
+    for (var i = 0, len = sessionStorage.length; i < len; i+=1) {
       item = JSON.parse(sessionStorage[i]);
       if(item && item['#'] === hash && item.dT === dataType) {
         var rtn = item.oP;
@@ -163,7 +163,7 @@ hamsters.wheel.wakeUp = function() {
           rtn = hamsters.wheel.processDataType(dataType, item.oP);
         }
         return rtn;
-      }  
+      }
     }
   };
 
@@ -221,7 +221,7 @@ hamsters.wheel.wakeUp = function() {
    * @return 
    */
   hamsters.wheel.setup.populateElements = function(count, callback) {
-    for (var i = 0, len = count; i < len; i++) {
+    for (var i = 0, len = count; i < len; i+=1) {
       hamsters.wheel.setup.getOrCreateElement(i);
     }
     if(callback) {
@@ -267,7 +267,7 @@ hamsters.wheel.wakeUp = function() {
        * @return 
        */
       var respond = function(rtn, msg) {
-        if(params.dataType) {
+        if(params.dataType && params.dataType !== "na") {
           var output = processDataType(params.dataType, rtn.data);
           rtn.data = output.buffer;
           rtn.dataType = params.dataType;
@@ -335,7 +335,7 @@ hamsters.wheel.wakeUp = function() {
         if(typeof params === 'string') {
           params = JSON.parse(e.data);
         }
-        if(params.dataType && params.array && typeof params.array === 'object') {
+        if(params.dataType && params.dataType !== "na" && typeof params.array === 'object') {
           params.array = processDataType(params.dataType, params.array);
         }
         if(params.fn) {
@@ -362,19 +362,23 @@ hamsters.wheel.wakeUp = function() {
    * @param {string} property - property to sort by
    * @return FunctionExpression
    */
-  hamsters.wheel.sort = function(property) {
-    if(hamsters.debug === 'verbose') {
-      console.info("Sorting array using index: " + property);
+  hamsters.wheel.sort = function(arr, order) {
+    if(order === 'desc') {
+      return Array.prototype.sort.call(arr, function(a, b) {
+        return b - a; 
+     });
+    } 
+    if(order === 'asc') {
+      return Array.prototype.sort.call(arr, function(a, b) {
+        return a - b; 
+     });
     }
-    var order = 1;
-    if(property[0] === "-") {
-      order = -1;
-      property = property.substr(1);
+    if(order === 'ascAlpha') {
+      return arr.sort();
     }
-    return function (a,b) {
-      var result = (a[property] < b[property]) ? -1 : (a[property] > b[property]) ? 1 : 0;
-      return result * order;
-    };
+    if(order === 'descAlpha') {
+      return arr.reverse();
+    }
   };
 
   /**
@@ -389,13 +393,13 @@ hamsters.wheel.wakeUp = function() {
    * @param {string} dataType
    * @return 
    */
-  hamsters.run = function(params, fn, callback, workers, aggregate, dataType, memoize) {
+  hamsters.run = function(params, fn, callback, workers, aggregate, dataType, memoize, order) {
     if(!params || !fn) {
       return 'Error processing for loop, missing params or function';
     }
     var taskid = hamsters.wheel.tasks.length;
     workers = workers || hamsters.maxThreads;
-    hamsters.wheel.newTask(taskid, workers, params, dataType, fn, callback);
+    hamsters.wheel.newTask(taskid, workers, order, dataType, fn, callback);
     var task = hamsters.wheel.tasks[taskid];
     callback = (callback || null);
     var hamsterfood = {'array':[]};
@@ -437,11 +441,11 @@ hamsters.wheel.wakeUp = function() {
       } else {
         hamsters.wheel.newWheel(workArray, hamsterfood, aggregate, callback, taskid, i, null, null, memoize);
       }
-      i++;
+      i+=1;
     }
   };
 
-  hamsters.wheel.newTask = function(taskid, workers, params, dataType, fn, callback) {
+  hamsters.wheel.newTask = function(taskid, workers, order, dataType, fn, callback) {
     hamsters.wheel.tasks.push({
       'id': taskid,
       'workers': [],
@@ -451,7 +455,8 @@ hamsters.wheel.wakeUp = function() {
       'dataType': dataType || null,
       'fn': fn || null,
       'output': [], 
-      'callback': callback,
+      'order': order || null,
+      'callback': callback
     });
   };
 
@@ -729,7 +734,11 @@ hamsters.wheel.wakeUp = function() {
           if(hamsters.debug) {
             console.info('Execution Complete! Elapsed: ' + ((e.timeStamp - task.input[0].start)/1000) + 's');
           }
-          callback(output);
+          if(task.order) {
+            callback(hamsters.wheel.sort(output, task.order));
+          } else {
+            callback(output);
+          }
           hamsters.wheel.tasks[taskid] = null; //Clean up our task, not needed any longer
           if(hamsters.cache && memoize !== false) {
             var inputArray = task.input[0].input;
@@ -791,11 +800,11 @@ hamsters.wheel.wakeUp = function() {
     var output;
     var length = 0;
     var offset = 0;
-    for (var i = 0, len = input.length; i < len; i++) {
+    for (var i = 0, len = input.length; i < len; i+=1) {
       length += input[i].length;
     }
     output = hamsters.wheel.processDataType(dataType, length);
-    for (var n = 0, len2 = input.length; n < len2; n++) {
+    for (var n = 0, len2 = input.length; n < len2; n+=1) {
       output.set(input[n], offset);
       offset += input[n].length;
     }

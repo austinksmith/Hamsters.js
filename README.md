@@ -25,7 +25,7 @@ The basic structure of a WebHamster function is as follows
       //Operations you wish to perform inside each thread
   }, function(output) {
      //Resulting output callback, do as you wish with your output
-  }, 1 //Integer # of threads to invoke , true //Boolean aggregate individual thread outputs);
+  }, threads, aggregate, dataType, memoize, sort);
 
 ```
 
@@ -124,7 +124,44 @@ function() {
 
 ```
 
-Where dataType is: 'Int8' || 'Int16' || 'Int32' || 'Uint8' || 'Uint8Clamped' || 'Uint16' || 'Uint32' || 'Float32' || 'Float64'
+Where dataType is one of the below options.
+
+* 'Int8'
+* 'Int16'
+* 'Int32'
+* 'Uint8' 
+* 'Uint8Clamped' 
+* 'Uint16' 
+* 'Uint32'
+* 'Float32' 
+* 'Float64'
+
+
+# Sorting
+ 
+ Version 2.7 introduces optional automagical data sorting, you can write a function that automatically sorts like so
+
+```
+function() {
+  var params = {'array':[0,1,2,3,4,5,6,7,8,9]};
+  hamsters.run(params, function() {
+      var arr = params.array;
+      arr.forEach(function(item) {
+        rtn.data.push((item * 120)/10);
+      });
+  }, function(output) {
+     return output;
+  }, threads, aggregate, cache, dataType, sortDirection);
+}
+
+```
+Where sortDirection is one of the below options.
+
+* Ascending Numerical: 'asc'
+* Descending Numerical: 'desc'
+* Ascending Alphabetical: 'ascAlpha'
+* Descending Alphabetical: 'descAlpha'
+
 
 
 # Result Caching (Memoization)
@@ -141,7 +178,6 @@ hamsters.cache = true;
 You can disable caching for individual functions like so 
 
 ```
-//All threads and let's aggregate our individual thread results into one final output, no memoization
 function() {
   var params = {'array':[0,1,2,3,4,5,6,7,8,9]};
   hamsters.run(params, function() {
@@ -151,7 +187,7 @@ function() {
       });
   }, function(output) {
      return output;
-  }, 4, true, dataType, false);
+  }, threads, aggregate, dataType, false);
 }
 ```
 
@@ -179,4 +215,30 @@ IE11 as of v1.7 is fully supported however during testing IE11 will throw out of
 
 # Browser Support
 
-Currently as of v1.4 all browsers are supported by the library, modern browsers such as Chrome, Safari, and Firefox have full web worker support and will give the best performance, Older browsers such as IE10 and below are supported by using a legacy processor fallback, these computations will be run on the main thread however they still follow the library process of breaking a given task into individual pieces and executing each piece at a time.
+Currently as of v1.4 all browsers excluding IE versions below 9 are supported by the library, modern browsers such as Chrome, Safari, Opera, IE11, and Firefox have full web worker support and will give the best performance, Older browsers such as IE10 and below are supported by using a legacy processor fallback, these computations will be run on the main thread however they still follow the library process of breaking a given task into individual pieces and executing each piece at a time.
+
+# Tested Devices
+
+* Monochrome Kindle 3
+* Iphone 4s
+* LG G3
+* Samsung Galaxy S4
+* Samsung Galaxy S5
+* Iphone 6
+* Iphone 5s
+* Samsung Galaxy Note 4
+* Nokia Lumina Windows Phone 8
+
+# Tested Browsers
+
+* Chrome Desktop (41.0.2272, 39.0.2171, 42.0.2311, 43.0.2316, 43.0.2348, 43.0.2349, 44.0.2369)
+* Chrome Mobile (33.0.0, 34.0.1847, 37.0.0, 41.0.2272, 42.0.2311)
+* Firefox (35, 36, 37, 38)
+* Opera (28.0.1750)
+* Safari Desktop (8.0.6)
+* Safari Mobile (7.0)
+* IE9
+* IE10
+* IE10 Mobile
+* IE11
+* Stock Android Browser 4.4
