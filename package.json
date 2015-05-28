@@ -1,0 +1,31 @@
+{
+  "name": "webhamsters",
+  "version": "2.7.0",
+  "description": "Enables function level multithreading in Javascript by exploiting concurrent web workers",
+  "main": "hamsters.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/austinksmith/WebHamsters.git"
+  },
+  "keywords": [
+    "multithreading",
+    "concurrency",
+    "performance",
+    "parallelism",
+    "compute",
+    "workers",
+    "threads",
+    "threading",
+    "mpi",
+    "web workers"
+  ],
+  "author": "Austin K. Smith <austin@asmithdev.com> (http://asmithdev.com)",
+  "license": "Artistic License 2.0",
+  "bugs": {
+    "url": "https://github.com/austinksmith/WebHamsters/issues"
+  },
+  "homepage": "http://www.hamsters.io"
+}
