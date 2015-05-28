@@ -16,6 +16,28 @@ Detailed Documentation coming soon check http://www.hamsters.io/guides for detai
 ![alt tag](http://www.hamsters.io/guides/workflow.png)
 
 # Getting Started
+
+First download a copy of the library by using the releases page on the repo, add the script to your html header like so.
+
+```
+<!-- HTML4 and (x)HTML -->
+<script type="text/javascript" src="hamsters.js">
+
+<!-- HTML5 -->
+<script src="hamsters.js"></script>
+```
+
+Alternatively you can use bower to obtain a copy of the library by running.
+
+```
+bower install WebHamsters
+```
+
+Once you've downloaded and added the script tags to your project you should have a variable named hamsters available in your console, this variable is the core of the library. Do not create any globally scoped variables with the same name or you will risk causing compatibility issues. Now that you've succesfully added the library to your project, let's get started below.
+
+
+# How it works
+
 The basic structure of a WebHamster function is as follows
 
 ```
