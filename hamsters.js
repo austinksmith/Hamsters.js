@@ -12,7 +12,7 @@
 * License: Artistic License 2.0
 */
 var hamsters = {
-  version: '2.7',
+  version: '2.8',
   debug: false,
   cache: false,
   maxThreads: Math.ceil((navigator.hardwareConcurrency || 1) * 1.25),
@@ -54,10 +54,14 @@ hamsters.wheel.wakeUp = function() {
    * @return
    */
   hamsters.wheel.setup.isLegacy = function(callback) {
-    if(!window.Worker || navigator.userAgent.indexOf('Kindle/3.0') !== -1 || navigator.userAgent.indexOf('Mobile/8F190') !== -1  || navigator.userAgent.indexOf('IEMobile') !== -1  || hamsters.tools.isIE(10)) {
+    try { //Try catch needed for asm.js fallback
+      if(!window.Worker || navigator.userAgent.indexOf('Kindle/3.0') !== -1 || navigator.userAgent.indexOf('Mobile/8F190') !== -1  || navigator.userAgent.indexOf('IEMobile') !== -1  || hamsters.tools.isIE(10)) {
+        hamsters.wheel.legacy = true;
+      } else if(navigator.userAgent.toLowerCase().indexOf('firefox') !== -1) {
+        window.firefox = window.firefox || true;
+      }
+    } catch(e) {
       hamsters.wheel.legacy = true;
-    } else if(navigator.userAgent.toLowerCase().indexOf('firefox') !== -1) {
-      window.firefox = window.firefox || true;
     }
     if(callback) {
       callback(hamsters.wheel.legacy);
@@ -989,9 +993,9 @@ hamsters.wheel.wakeUp = function() {
         hamsters.wheel.feedHamster(hamster, hamsterfood, inputArray);
         task.count++; //Increment count, thread is running
       };
+      hamsters.wheel.setup.populateElements(hamsters.maxThreads);
     }
   });
-  hamsters.wheel.setup.populateElements(hamsters.maxThreads);
 };
 //Wake 'em up
 hamsters.wheel.wakeUp();
