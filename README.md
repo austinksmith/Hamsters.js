@@ -221,9 +221,11 @@ You can invoke debug mode by setting hamsters.debug to true or 'verbose'. Verbos
 
 # Performance Considerations
 
-Not every task can be easily paralellized and depending on the size of the task putting it onto its own thread may introduce its own performance drawbacks as any benefit may be outweighed by the overhead of the runtime itself. I highly recommend especially for a larger scale application that you spend some time learning about Amdahls Law http://en.wikipedia.org/wiki/Amdahl%27s_law . Also be sure to check out this jspef example demonstrating the overhead that additional threads have, performance currently varies wildly between browsers. http://jsperf.com/javascript-multi-threading/3
+Not every task can be easily paralellized and depending on the size of the task putting it onto its own thread may introduce its own performance drawbacks as any benefit may be outweighed by the overhead of the runtime itself. I highly recommend especially for a larger scale application that you spend some time learning about Amdahls Law http://en.wikipedia.org/wiki/Amdahl%27s_law
 
-Alternatively if your problem size scales with the amount of threads you use, you can see some serious performance gains. This is known as Gustafson's Law you can read more about this at http://en.wikipedia.org/wiki/Gustafson%27s_law. Also be sure to check out this jsperf example demonstrating the performance boost additional threads can have. http://jsperf.com/javascript-multi-threading/31
+Alternatively if your problem size scales with the amount of threads you use, you can see some serious performance gains. This is known as Gustafson's Law you can read more about this at http://en.wikipedia.org/wiki/Gustafson%27s_law. Also be sure to check out this performance example demonstrating the performance boost additional threads can have. 
+
+http://www.hamsters.io/performance
 
 The library attempts to detect the number of available cores on a client machine and formulates a maximum concurrent thread count based on that value, if the library is unable to detect a valid core count it will fallback to a maxThread count of 2. The library will automatically pool and manage execution across all available threads automatically scaling based on demand, and will destroy threads when they do not have pending work to complete, otherwise explicit threads are reused. 
 
@@ -232,8 +234,6 @@ Threads are not the same as cores, assuming your machine has 4 logical cores you
 # Limitations
 
 Currently due to a bug in how javascript handles data aggregation if you wish to have your individual thread outputs aggregated into a final result the maximum number of threads any single function can invoke is 20, there is no limitation on thread count if you are not asking for the library to aggregate your individual thread outputs back together.
-
-IE11 as of v1.7 is fully supported however during testing IE11 will throw out of memory errors after spawning a large number of threads over and over, the library now attempts to free this memory however it appears not to resolve the issue therefore IE11 is not recommended for really heavy applications such as online games.
 
 # Browser Support
 
