@@ -12,7 +12,7 @@
 * License: Artistic License 2.0
 */
 var hamsters = {
-  version: '2.9',
+  version: '3.0',
   debug: false,
   cache: false,
   maxThreads: Math.ceil((navigator.hardwareConcurrency || 1) * 1.25),
@@ -25,7 +25,6 @@ var hamsters = {
     }, 
     tasks: [],
     errors: [],
-    setup: {},
     uri: null
   }
 };
@@ -55,12 +54,12 @@ self.wakeUp = function() {
    * @return
    */
   self.isLegacy = function(callback) {
-    try { //Try catch needed for asm.js fallback
+    try { //Try catch needed for asm.js/node
       if(!window.Worker || navigator.userAgent.indexOf('Kindle/3.0') !== -1 || navigator.userAgent.indexOf('Mobile/8F190') !== -1  || navigator.userAgent.indexOf('IEMobile') !== -1  || self.isIE(10)) {
         hamsters.wheel.legacy = true;
       }
     } catch(e) {
-      hamsters.wheel.legacy = true;
+
     }
     callback(hamsters.wheel.legacy);
   };
@@ -70,7 +69,7 @@ self.wakeUp = function() {
    * @method checkErrors
    * @return ObjectExpression
    */
-  hamsters.checkErrors = function() {
+  hamsters.tools.checkErrors = function() {
     var errors = hamsters.wheel.errors || [];
     return {
       'msg': 'There are currently ' + errors.length + ' errors captured in the wheel',
@@ -88,16 +87,17 @@ self.wakeUp = function() {
    * @return ArrayExpression
    */
   hamsters.tools.splitArray = function(array, n) {
-    if(array.length && !array.slice) {
-      array = hamsters.wheel.normalizeArray(array);
-    }
     var tasks = [];
     var i = 0;
     if(array) {
       var len = array.length;
       var size = Math.ceil(len/n);
       while (i < len) {
-        tasks.push(array.slice(i, i += size));
+        if(array.slice) {
+          tasks.push(array.slice(i, i += size));
+        } else {
+          tasks.push(array.subarray(i, i += size));
+        }
       }
       return tasks;
     }
@@ -128,7 +128,7 @@ self.wakeUp = function() {
       var i = 0;
       while(i < total) {
         rtn.data[rtn.data.length] = Math.round(Math.random() * (100 - 1) + 1);
-        i+=1;
+        i += 1;
       }
     }, function(output) {
         callback(output);
@@ -147,11 +147,11 @@ self.wakeUp = function() {
     var item;
     var i = 0;
     var len = sessionStorage.length;
-    for (i; i < len; i+=1) {
+    for (i; i < len; i += 1) {
       item = JSON.parse(sessionStorage[i]);
       if(item && item['#'] === hash && item.dT === dataType) {
         var rtn = item.oP;
-        if(dataType && !hamsters.wheel.legacy) {
+        if(dataType !== "na" && !hamsters.wheel.legacy) {
           rtn = hamsters.wheel.processDataType(dataType, item.oP);
         }
         return rtn;
@@ -204,35 +204,18 @@ self.wakeUp = function() {
   };
 
   /**
-   * @description: Setups dom objects for web worker use with library boilerplate
+   * @description: Setups library objects for web worker use with library boilerplate
    * @constructor
    * @function populateElements
    * @method populateElements
    * @return 
    */
   self.populateElements = function() {
-    hamsters.wheel.setup.getOrCreateElement(0);
-  };
-  
-  /**
-   * @description: Setups dom objects for web worker use with library boilerplate
-   * @constructor
-   * @method getOrCreateElement
-   * @param {integer} id - thread # to populate 
-   * @return script
-   */
-  hamsters.wheel.setup.getOrCreateElement = function(id) {
-    var script = (document.getElementById('hamster'+id) || null);
-    if(!script) {
-      var work = hamsters.wheel.giveHamsterWork();
-      script = document.createElement('script');
-      script.type = ('javascript/worker');
-      script.id = ('hamster'+id);
-      script.text = '(' + String(work) + '());';
-      document.getElementsByTagName('head')[0].appendChild(script);
-      return script;
+   if(!hamsters.wheel.uri) {
+      var blob = self.createBlob('(' + String(self.giveHamsterWork()) + '());');
+      hamsters.wheel.uri = window.URL.createObjectURL(blob);
+      hamsters.wheel.terminateHamster(blob);
     }
-    return script;
   };
   
   /**
@@ -241,7 +224,7 @@ self.wakeUp = function() {
    * @method giveHamsterWork
    * @return work
    */
-  hamsters.wheel.giveHamsterWork = function() {
+  self.giveHamsterWork = function() {
     var work = function() {
       var params, output;
       /**
@@ -406,13 +389,11 @@ self.wakeUp = function() {
     }
     var key;
     for(key in params) {
-      if(params.hasOwnProperty(key)) {
-        if(key !== 'array') {
-          hamsterfood[key] = params[key];
-        }
+      if(params.hasOwnProperty(key) && key !== 'array') {
+        hamsterfood[key] = params[key];
       }
     }
-    hamsterfood.dataType = dataType || null;
+    hamsterfood.dataType = dataType;
     var workArray = params.array || null;
     if(params.array && task.threads !== 1) {
       workArray = hamsters.tools.splitArray(params.array, task.threads); //Divide our array into equal array sizes
@@ -424,7 +405,7 @@ self.wakeUp = function() {
       } else {
         hamsters.wheel.newWheel(workArray, hamsterfood, aggregate, callback, taskid, i, null, memoize);
       }
-      i+=1;
+      i += 1;
     }
   };
 
@@ -511,16 +492,7 @@ self.wakeUp = function() {
    * @return ObjectExpression
    */
   hamsters.wheel.createHamster = function() {
-    if(!hamsters.wheel.uri) {
-      var hamster = hamsters.wheel.setup.getOrCreateElement(0);
-      var blob = hamsters.wheel.createBlob(hamster.textContent);
-      hamsters.wheel.uri = window.URL.createObjectURL(blob);
-      setTimeout(function() {
-        hamsters.wheel.terminateHamster(blob);
-      }, 4);
-    }
-    var worker = new Worker(hamsters.wheel.uri);
-    return worker;
+    return new Worker(hamsters.wheel.uri);
   };
 
   /**
@@ -530,7 +502,7 @@ self.wakeUp = function() {
    * @param {string} textContent - Web worker boiler plate
    * @return blob
    */
-  hamsters.wheel.createBlob = function(textContent) {
+  self.createBlob = function(textContent) {
     if(Blob) {
       return new Blob([textContent], {type: 'application/javascript'});
     }
@@ -552,10 +524,6 @@ self.wakeUp = function() {
    * @return output
    */
   hamsters.tools.aggregate = function(input, dataType) {
-    if(!input) {
-      console.error("Missing array");
-      return;
-    }
     if(input.length > 20) {
       return input;
     }
@@ -611,13 +579,9 @@ self.wakeUp = function() {
     }
     if(dataBlob.close) {
       dataBlob.close();
-      return;
-    }
-    if(dataBlob.msClose) {
+    } else if(dataBlob.msClose) {
       dataBlob.msClose();
-      return;
-    }
-    if(dataBlob.slice) {
+    } else if(dataBlob.slice) {
       dataBlob = dataBlob.slice(0,0);
     }
   };
@@ -667,7 +631,7 @@ self.wakeUp = function() {
       }
       task.workers.splice(task.workers.indexOf(workerid), 1); //Remove thread from task running pool
       var results = e.data.results;
-      if(results.dataType && typeof results.data === 'object') {
+      if(results.dataType !== "na" && typeof results.data === 'object') {
         results.data = hamsters.wheel.processDataType(results.dataType, results.data);
       }
       task.output[workerid] = results.data;
@@ -730,7 +694,7 @@ self.wakeUp = function() {
     var arr = [];
     var n = 0;
     var len = input.length;
-    for (n; n < len; n++) {
+    for (n; n < len; n += 1) {
       arr.push(input[n]);
     }
     return arr;
@@ -744,19 +708,17 @@ self.wakeUp = function() {
    * @return output
    */
   hamsters.wheel.aggregateTypedArrays = function(input, dataType) {
-    var output;
     var i = 0;
     var len = input.length;
     var bufferLength = 0;
-    for (i; i < len; i+=1) {
+    for (i; i < len; i += 1) {
       bufferLength += input[i].length;
     }
-    output = hamsters.wheel.processDataType(dataType, bufferLength);
-    var n = 0;
+    var output = hamsters.wheel.processDataType(dataType, bufferLength);
     var offset = 0;
-    for (n; n < len; n+=1) {
-      output.set(input[n], offset);
-      offset += input[n].length;
+    for (i = 0; i < len; i += 1) {
+      output.set(input[i], offset);
+      offset += input[i].length;
     }
     return output;
   };
@@ -803,8 +765,8 @@ self.wakeUp = function() {
   hamsters.wheel.generateHash = function(string) {
     string = String(string);
     var hash = 0;
-    var i;
-    for (i = string.length - 1; i >= 0; i--) { //Shift 5 bits
+    var i = string.length - 1;
+    for (i; i >= 0; i--) { //Shift 5 bits
       hash += (((hash << 5) - hash) + string.charCodeAt(i)) & 0xFFFFFFFF;
     }
     return hash;
@@ -878,7 +840,7 @@ self.wakeUp = function() {
         }
         var debug = hamsters.debug;
         hamsters.wheel.legacyProcessor(hamsterfood, inputArray, function(output) {
-          task.count++; //Thread finished
+          task.count += 1; //Thread finished
           task.output[threadid] = output.data;
           if(task.count === task.threads) { //Task complete get output and return
             var rtn = hamsters.wheel.getOutput(task.output, aggregate, output.dataType);
@@ -934,7 +896,7 @@ self.wakeUp = function() {
         }
         hamsters.wheel.trainHamster(thread, aggregate, callback, taskid, thread, hamster, memoize);
         hamsters.wheel.feedHamster(hamster, hamsterfood, inputArray);
-        task.count++; //Increment count, thread is running
+        task.count += 1; //Increment count, thread is running
       };
       self.populateElements();
     }
