@@ -214,7 +214,6 @@ self.wakeUp = function() {
    if(!hamsters.wheel.uri) {
       var blob = self.createBlob('(' + String(self.giveHamsterWork()) + '());');
       hamsters.wheel.uri = window.URL.createObjectURL(blob);
-      hamsters.wheel.terminateHamster(blob);
     }
   };
   
