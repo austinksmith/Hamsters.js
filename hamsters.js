@@ -72,9 +72,9 @@ self.wakeUp = function() {
   hamsters.tools.checkErrors = function() {
     var errors = hamsters.wheel.errors || [];
     return {
-      'msg': 'There are currently ' + errors.length + ' errors captured in the wheel',
-      'total': errors.length,
-      'errors': errors
+      msg: 'There are currently ' + errors.length + ' errors captured in the wheel',
+      total: errors.length,
+      errors: errors
     };
   };
   
@@ -112,12 +112,12 @@ self.wakeUp = function() {
   hamsters.tools.randomArray = function(count, callback) {
     if(!count || !callback) {
       hamsters.wheel.errors.push({
-        'msg': 'Unable to generate random array, missing required params'
+        msg: 'Unable to generate random array, missing required params'
       });
       return;
     }
     var params = {
-      'count': count
+      count: count
     };
     hamsters.run(params, function() {
       var total = params.count;
@@ -128,7 +128,7 @@ self.wakeUp = function() {
       }
     }, function(output) {
         callback(output);
-    }, 1, false, 'Int32', false);
+    }, 1, false, null, false);
   };
 
    /**
@@ -140,13 +140,13 @@ self.wakeUp = function() {
    * @return 
    */
   hamsters.wheel.checkCache = function(hash, dataType) {
-    var item;
+    var item, rtn;
     var i = 0;
     var len = sessionStorage.length;
     for (i; i < len; i += 1) {
       item = JSON.parse(sessionStorage[i]);
-      if(item && item['#'] === hash && item.dT === dataType) {
-        var rtn = item.oP;
+      if(item && item.id === hash && item.dT === dataType) {
+        rtn = item.oP;
         if(dataType !== "na" && !hamsters.wheel.legacy) {
           rtn = hamsters.wheel.processDataType(dataType, item.oP);
         }
@@ -164,18 +164,30 @@ self.wakeUp = function() {
    * @param {string} dataType
    * @return 
    */
-  hamsters.wheel.memoize = function(fn, input, output, dataType) {
-    var hash = hamsters.wheel.hashResult({'func': fn, 'dT': dataType, 'input': input});
+  hamsters.wheel.memoize = function(fn, inputArray, output, dataType) {
+    var hash = hamsters.wheel.hashResult({
+      func: fn,
+      dT: dataType,
+      input: inputArray
+    });
     if(hamsters.wheel.checkCache(hash, dataType)) {
       return;
     }
     try {
-      sessionStorage.setItem(sessionStorage.length, JSON.stringify({'#': hash,  'dT': dataType, 'oP': output}));
+      sessionStorage.setItem(sessionStorage.length, JSON.stringify({
+        id: hash,
+        dT: dataType,
+        oP: output
+      }));
     } catch(eve) {
       if(eve.name === 'QuotaExceededError') {
         sessionStorage.clear();
         try {
-          sessionStorage.setItem(sessionStorage.length, JSON.stringify({'#': hash,  'dT': dataType, 'oP': output}));
+          sessionStorage.setItem(sessionStorage.length, JSON.stringify({
+            id: hash,
+            dT: dataType,
+            oP: output
+          }));
         } catch(e) { //Do nothing, can't cache this result..too large
           return;
         }
@@ -235,13 +247,13 @@ self.wakeUp = function() {
           rtn.data = output.buffer;
           rtn.dataType = params.dataType;
           self.postMessage({
-            'results': rtn || null,
-            'msg': msg || ''
+            results: rtn || null,
+            msg: msg || ''
           }, [output.buffer]);
         } else {
           self.postMessage({
-            'results': rtn || null,
-            'msg': msg || ''
+            results: rtn || null,
+            msg: msg || ''
           });
         }
       };
@@ -291,8 +303,8 @@ self.wakeUp = function() {
        */
       self.onmessage = function(e) {
         var rtn = {
-          'success': true, 
-          'data': []
+          success: true, 
+          data: []
         };
         params = e.data;
         if(typeof params === 'string') {
@@ -365,7 +377,11 @@ self.wakeUp = function() {
     }
     if(hamsters.cache && params.array && params.array.length !== 0) {
       memoize = memoize || true;
-      var hash = hamsters.wheel.hashResult({'func': fn, 'dT': dataType || "na", 'input': params.array});
+      var hash = hamsters.wheel.hashResult({
+        func: fn,
+        dT: dataType || "na",
+        input: params.array
+      });
       var result = hamsters.wheel.checkCache(hash, dataType);
       if(result) {
         setTimeout(function() {
@@ -398,18 +414,18 @@ self.wakeUp = function() {
     }
   };
 
-  hamsters.wheel.newTask = function(taskid, workers, order, dataType, fn, callback) {
+  hamsters.wheel.newTask = function(taskid, workers, order, dataType, fn, cb) {
     var task = {
-      'id': taskid,
-      'workers': [],
-      'count': 0,
-      'threads': workers, 
-      'input': [],
-      'dataType': dataType || null,
-      'fn': fn || null,
-      'output': [], 
-      'order': order || null,
-      'callback': callback
+      id: taskid,
+      workers: [],
+      count: 0,
+      threads: workers, 
+      input: [],
+      dataType: dataType || null,
+      fn: fn || null,
+      output: [], 
+      order: order || null,
+      callback: cb
     };
     hamsters.wheel.tasks.push(task);
     return task;
@@ -417,23 +433,23 @@ self.wakeUp = function() {
 
   hamsters.wheel.trackInput = function(task, inputArray, thread, taskid, hamsterfood) {
     task.input.push({ 
-      'input': inputArray,
-      'workerid': thread, 
-      'taskid': taskid, 
-      'params': hamsterfood, 
-      'start': new Date().getTime()
+      input: inputArray,
+      workerid: thread, 
+      taskid: taskid, 
+      params: hamsterfood, 
+      start: new Date().getTime()
     });
   };
 
-  hamsters.wheel.poolThread = function(queue, inputArray, hamsterfood, threadid, callback, task, aggregate, memoize) {
+  hamsters.wheel.poolThread = function(queue, inputArray, hamsterfood, threadid, cb, task, agg, memoize) {
     queue.pending.push({
-      'memoize': memoize,
-      'input': inputArray,
-      'params': hamsterfood,
-      'workerid': threadid, 
-      'callback': callback, 
-      'task': task,
-      'aggregate': aggregate
+      memoize: memoize,
+      input: inputArray,
+      params: hamsterfood,
+      workerid: threadid, 
+      callback: cb, 
+      task: task,
+      aggregate: agg
     });
   };
 
@@ -455,8 +471,8 @@ self.wakeUp = function() {
     setTimeout(function() {
       var params = food;
       var rtn = {
-        'success': true, 
-        'data': []
+        success: true, 
+        data: []
       };
       var respond = function(rtn) {
         callback(rtn); // Return legacy output
@@ -659,11 +675,11 @@ self.wakeUp = function() {
      */
     hamster.onerror = function(e) {
       hamster.terminate(); //Kill the thread
-      var msg = 'Error Hamster #' + id + ': Line ' + e.lineno + ' in ' + e.filename + ': ' + e.message;
+      var err = 'Error Hamster #' + id + ': Line ' + e.lineno + ' in ' + e.filename + ': ' + e.message;
       hamsters.wheel.errors = hamsters.wheel.errors.concat({
-        'msg': msg
+        msg: err
       });
-      console.error(msg);
+      console.error(err);
     };
   };
 
