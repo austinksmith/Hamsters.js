@@ -1,6 +1,6 @@
 {
   "name": "WebHamsters",
-  "version": "3.0",
+  "version": "3.1",
   "authors": [
     "Austin K Smith <austin@asmithdev.com>"
   ],
@@ -18,9 +18,10 @@
     "workers",
     "threads",
     "threading",
-    "web",
-    "workers",
-    "mpi"
+    "web workers",
+    "mpi",
+    "parallel",
+    "promises"
   ],
   "license": "Artistic License 2.0",
   "homepage": "http://hamsters.io",

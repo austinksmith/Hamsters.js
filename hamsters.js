@@ -12,10 +12,10 @@
 * License: Artistic License 2.0
 */
 var hamsters = {
-  version: '3.0',
+  version: '3.1',
   debug: false,
   cache: false,
-  maxThreads: Math.ceil((navigator.hardwareConcurrency || 1) * 1.25),
+  maxThreads: Math.ceil((navigator.hardwareConcurrency || 3) * 1.25),
   tools: {},
   wheel: {
     legacy: false,
@@ -87,21 +87,17 @@ self.wakeUp = function() {
    * @return ArrayExpression
    */
   hamsters.tools.splitArray = function(array, n) {
-    var tasks = [];
     var i = 0;
-    if(array) {
-      var len = array.length;
-      var size = Math.ceil(len/n);
-      while (i < len) {
-        if(array.slice) {
-          tasks.push(array.slice(i, i += size));
-        } else {
-          tasks.push(array.subarray(i, i += size));
-        }
+    var tasks = [];
+    var size = Math.ceil(array.length/n);
+    while (i < array.length) {
+      if(array.slice) {
+        tasks.push(array.slice(i, i += size));
+      } else {
+        tasks.push(array.subarray(i, i += size));
       }
-      return tasks;
     }
-    return [];
+    return tasks;
   };
 
   /**
@@ -234,7 +230,7 @@ self.wakeUp = function() {
        * @return 
        */
       var respond = function(rtn, msg) {
-        if(params.dataType !== "na") {
+        if(params.dataType) {
           output = processDataType(params.dataType, rtn.data);
           rtn.data = output.buffer;
           rtn.dataType = params.dataType;
@@ -302,7 +298,7 @@ self.wakeUp = function() {
         if(typeof params === 'string') {
           params = JSON.parse(e.data);
         }
-        if(params.dataType !== "na" && typeof params.array === 'object') {
+        if(params.dataType && typeof params.array === 'object') {
           params.array = processDataType(params.dataType, params.array);
         }
         var fn = eval('('+params.fn+')');
@@ -362,36 +358,30 @@ self.wakeUp = function() {
     if(!params || !fn) {
       return 'Error processing for loop, missing params or function';
     }
-    var taskid = hamsters.wheel.tasks.length;
-    workers = workers || hamsters.maxThreads;
-    hamsters.wheel.newTask(taskid, workers, order, dataType, fn, callback);
-    var task = hamsters.wheel.tasks[taskid];
-    callback = (callback || null);
-    var hamsterfood = {'array':[]};
-    hamsterfood.fn = fn.toString();
+    workers = workers || 1;
+    var task = hamsters.wheel.newTask(hamsters.wheel.tasks.length, workers, order, dataType, fn, callback);
     if(dataType) {
       dataType = dataType.toLowerCase();
-    } else {
-      dataType = "na";
     }
     if(hamsters.cache && params.array && params.array.length !== 0) {
       memoize = memoize || true;
-      var hash = hamsters.wheel.hashResult({'func': fn, 'dT': "na", 'input': params.array});
+      var hash = hamsters.wheel.hashResult({'func': fn, 'dT': dataType || "na", 'input': params.array});
       var result = hamsters.wheel.checkCache(hash, dataType);
-      if(result && callback) {
+      if(result) {
         setTimeout(function() {
           callback(result);
-          hamsters.wheel.tasks[taskid] = null; //Clean up our task, not needed any longer
+          hamsters.wheel.tasks[task.id] = null; //Clean up our task, not needed any longer
         }, 4);
         return;
       }
     }
-    var key;
+    var key, hamsterfood = {};
     for(key in params) {
       if(params.hasOwnProperty(key) && key !== 'array') {
         hamsterfood[key] = params[key];
       }
     }
+    hamsterfood.fn = fn.toString();
     hamsterfood.dataType = dataType;
     var workArray = params.array || null;
     if(params.array && task.threads !== 1) {
@@ -400,16 +390,16 @@ self.wakeUp = function() {
     var i = 0;
     while(i < task.threads) {
       if(workArray && task.threads !== 1) {
-        hamsters.wheel.newWheel(workArray[i], hamsterfood, aggregate, callback, taskid, i, null, memoize);
+        hamsters.wheel.newWheel(workArray[i], hamsterfood, aggregate, callback, task, i, null, memoize);
       } else {
-        hamsters.wheel.newWheel(workArray, hamsterfood, aggregate, callback, taskid, i, null, memoize);
+        hamsters.wheel.newWheel(workArray, hamsterfood, aggregate, callback, task, i, null, memoize);
       }
       i += 1;
     }
   };
 
   hamsters.wheel.newTask = function(taskid, workers, order, dataType, fn, callback) {
-    hamsters.wheel.tasks.push({
+    var task = {
       'id': taskid,
       'workers': [],
       'count': 0,
@@ -420,7 +410,9 @@ self.wakeUp = function() {
       'output': [], 
       'order': order || null,
       'callback': callback
-    });
+    };
+    hamsters.wheel.tasks.push(task);
+    return task;
   };
 
   hamsters.wheel.trackInput = function(task, inputArray, thread, taskid, hamsterfood) {
@@ -433,14 +425,14 @@ self.wakeUp = function() {
     });
   };
 
-  hamsters.wheel.poolThread = function(queue, inputArray, hamsterfood, threadid, callback, taskid, aggregate, memoize) {
+  hamsters.wheel.poolThread = function(queue, inputArray, hamsterfood, threadid, callback, task, aggregate, memoize) {
     queue.pending.push({
       'memoize': memoize,
       'input': inputArray,
       'params': hamsterfood,
       'workerid': threadid, 
       'callback': callback, 
-      'taskid': taskid, 
+      'task': task,
       'aggregate': aggregate
     });
   };
@@ -523,15 +515,24 @@ self.wakeUp = function() {
    * @return output
    */
   hamsters.tools.aggregate = function(input, dataType) {
-    if(input.length > 20) {
-      return input;
+    if(!dataType) {
+      return input.reduce(function(a, b) {
+        return a.concat(b);
+      });
     }
-    if(dataType) {
-      return hamsters.wheel.aggregateTypedArrays(input, dataType);
+    var i = 0;
+    var len = input.length;
+    var bufferLength = 0;
+    for (i; i < len; i += 1) {
+      bufferLength += input[i].length;
     }
-    return input.reduce(function(a, b) {
-      return a.concat(b);
-    });
+    var output = hamsters.wheel.processDataType(dataType, bufferLength);
+    var offset = 0;
+    for (i = 0; i < len; i += 1) {
+      output.set(input[i], offset);
+      offset += input[i].length;
+    }
+    return output;
   };
 
   /**
@@ -544,7 +545,7 @@ self.wakeUp = function() {
    * @return rtn
    */
   hamsters.wheel.getOutput = function(output, aggregate, dataType) {
-    if(aggregate) {
+    if(aggregate && output.length <= 20) {
       return hamsters.tools.aggregate(output, dataType);
     }
     return output;
@@ -561,7 +562,7 @@ self.wakeUp = function() {
   hamsters.wheel.processQueue = function(hamster) {
     var item = hamsters.wheel.queue.pending.shift(); //Get and remove first item from queue
     if(item) {
-      hamsters.wheel.newWheel(item.input, item.params, item.aggregate, item.callback, item.taskid, item.workerid, hamster, item.memoize); //Assign most recently finished thread to queue item
+      hamsters.wheel.newWheel(item.input, item.params, item.aggregate, item.callback, item.task, item.workerid, hamster, item.memoize); //Assign most recently finished thread to queue item
     }
   };
 
@@ -598,7 +599,7 @@ self.wakeUp = function() {
    * @param {blob} dataBlob
    * @return 
    */
-  hamsters.wheel.trainHamster = function(id, aggregate, callback, taskid, workerid, hamster, memoize) {
+  hamsters.wheel.trainHamster = function(id, aggregate, callback, task, workerid, hamster, memoize) {
 
     /**
      * @description: Runs when a hamster (thread) finishes it's work
@@ -608,45 +609,29 @@ self.wakeUp = function() {
      * @return 
      */
     hamster.onmessage = function(e) {
-      var queue = hamsters.wheel.queue;
-      if(queue.pending.length === 0) {
-        setTimeout(function() {
-          hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
-        }, 4);
+      if(hamsters.wheel.queue.pending.length === 0) {
+        hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
       }
-      queue.running.splice(queue.running.indexOf(id), 1); //Remove thread from running pool
-      var task = hamsters.wheel.tasks[taskid];
-      if(!task) {
-        hamsters.wheel.errors = hamsters.wheel.errors.concat({
-          'timeStamp': e.timeStamp, 
-          'msg': 'Error, unable to match thread to task, throwing exception', 
-          'taskid': taskid, 
-          'workerid': workerid, 
-          'aggregate': aggregate, 
-          'callback': callback
-        });
-        console.error('Fatal Exception, unable to match thread #'+workerid+' to task #'+ taskid + ', cannot continue. Check errors for more details');
-        return;
-      }
+      hamsters.wheel.queue.running.splice(hamsters.wheel.queue.running.indexOf(id), 1); //Remove thread from running pool
       task.workers.splice(task.workers.indexOf(workerid), 1); //Remove thread from task running pool
       var results = e.data.results;
-      if(results.dataType !== "na" && typeof results.data === 'object') {
+      if(results.dataType) {
         results.data = hamsters.wheel.processDataType(results.dataType, results.data);
       }
       task.output[workerid] = results.data;
       if(task.workers.length === 0 && task.count === task.threads) {
-        var output = hamsters.wheel.getOutput(task.output, aggregate, results.dataType);
         if(hamsters.debug) {
           console.info('Execution Complete! Elapsed: ' + ((e.timeStamp - task.input[0].start)/1000) + 's');
         }
         if(task.order) {
-          callback(hamsters.wheel.sort(output, task.order));
+          callback(hamsters.wheel.sort(hamsters.wheel.getOutput(task.output, aggregate, results.dataType), task.order));
         } else {
-          callback(output);
+          callback(hamsters.wheel.getOutput(task.output, aggregate, results.dataType));
         }
-        hamsters.wheel.tasks[taskid] = null; //Clean up our task, not needed any longer
-        if(hamsters.cache && memoize !== false) {
+        hamsters.wheel.tasks[task.id] = null; //Clean up our task, not needed any longer
+        if(hamsters.cache && memoize) {
           var inputArray = task.input[0].input;
+          var output = hamsters.wheel.getOutput(task.output, aggregate, results.dataType);
           if(output.length > 0 && !results.dataType) {
             setTimeout(function() {
               hamsters.wheel.memoize(task.fn, inputArray, output, 'na');
@@ -660,7 +645,7 @@ self.wakeUp = function() {
       } else if(hamsters.debug === 'verbose') {
         console.info('Hamster #' + id + ' finished ' + '@ ' + e.timeStamp);
       }
-      if(queue.pending.length !== 0) {
+      if(hamsters.wheel.queue.pending.length !== 0) {
         hamsters.wheel.processQueue(hamster);
       }
     };
@@ -697,29 +682,6 @@ self.wakeUp = function() {
       arr.push(input[n]);
     }
     return arr;
-  };
-
-  /**
-   * Description
-   * @method aggregateTypedArrays
-   * @param {array} input
-   * @param {string} dataType
-   * @return output
-   */
-  hamsters.wheel.aggregateTypedArrays = function(input, dataType) {
-    var i = 0;
-    var len = input.length;
-    var bufferLength = 0;
-    for (i; i < len; i += 1) {
-      bufferLength += input[i].length;
-    }
-    var output = hamsters.wheel.processDataType(dataType, bufferLength);
-    var offset = 0;
-    for (i = 0; i < len; i += 1) {
-      output.set(input[i], offset);
-      offset += input[i].length;
-    }
-    return output;
   };
 
   /**
@@ -797,13 +759,12 @@ self.wakeUp = function() {
   hamsters.wheel.feedHamster = function(hamster, food, inputArray) {
     if(inputArray && food.dataType) { //Transferable object transfer if using typed array
       food.array = hamsters.wheel.processDataType(food.dataType, inputArray);
-    } else if(inputArray) {
-      food.array = inputArray;
-    }
-    if(food.array && food.array.buffer) {
       var buffer = food.array.buffer;
       food.array = buffer;
       hamster.postMessage(food,  [buffer]);
+    } else if(inputArray) {
+      food.array = inputArray;
+      hamster.postMessage(food);
     } else {
       hamster.postMessage(food);
     }
@@ -825,18 +786,7 @@ self.wakeUp = function() {
    */
   self.isLegacy(function(legacy) {
     if(legacy) {
-      hamsters.wheel.newWheel = function(inputArray, hamsterfood, aggregate, callback, taskid, threadid, hamster, memoize) {
-        var task = hamsters.wheel.tasks[taskid];
-        if(!task) {
-          hamsters.wheel.errors.push({
-            'msg': 'Error, unable to match thread to task, throwing exception', 
-            'params': hamsterfood, 
-            'aggregate': aggregate, 
-            'callback': callback
-          });
-          console.error('Error, unable to match thread to task ' + taskid + ', throwing exception. Check errors for more details');
-          return;
-        }
+      hamsters.wheel.newWheel = function(inputArray, hamsterfood, aggregate, callback, task, threadid, hamster, memoize) {
         var debug = hamsters.debug;
         hamsters.wheel.legacyProcessor(hamsterfood, inputArray, function(output) {
           task.count += 1; //Thread finished
@@ -847,7 +797,7 @@ self.wakeUp = function() {
               console.info('Execution Complete! Elapsed: ' + ((new Date().getTime() - task.input[0].start)/1000) + 's');
             }
             callback(rtn);
-            hamsters.wheel.tasks[taskid] = null; //Clean up our task, not needed any longer
+            hamsters.wheel.tasks[task.id] = null; //Clean up our task, not needed any longer
             if(hamsters.cache && memoize !== false) {
               if(output.data.length > 0 && !output.dataType) {
                 setTimeout(function() {
@@ -864,36 +814,24 @@ self.wakeUp = function() {
         return;
       };
     } else {
-      hamsters.wheel.newWheel = function(inputArray, hamsterfood, aggregate, callback, taskid, threadid, hamster, memoize) {
-        var task = hamsters.wheel.tasks[taskid];
-        if(!task) {
-          hamsters.wheel.errors.push({
-            'msg': 'Error, unable to match thread to task, throwing exception', 
-            'params': hamsterfood, 
-            'aggregate': aggregate, 
-            'callback': callback
-          });
-          console.error('Error, unable to match thread to task ' + taskid + ', throwing exception. Check errors for more details');
-          return;
-        }
-        var queue = hamsters.wheel.queue;
-        if(hamsters.maxThreads && hamsters.maxThreads <= queue.running.length) {
-          hamsters.wheel.poolThread(queue, inputArray, hamsterfood, threadid, callback, taskid, aggregate, memoize);
+      hamsters.wheel.newWheel = function(inputArray, hamsterfood, aggregate, callback, task, threadid, hamster, memoize) {
+        if(hamsters.maxThreads && hamsters.maxThreads <= hamsters.wheel.queue.running.length) {
+          hamsters.wheel.poolThread(hamsters.wheel.queue, inputArray, hamsterfood, threadid, callback, task, aggregate, memoize);
           return;
         }
         var thread = (threadid || task.count); //Determine threadid depending on currently running threads
         var debug = hamsters.debug;
         if(debug || memoize) {
-          hamsters.wheel.trackInput(task, inputArray, thread, taskid, hamsterfood);
+          hamsters.wheel.trackInput(task, inputArray, thread, task.id, hamsterfood);
           if(debug === 'verbose') {
             console.info('Spawning Hamster #' + thread + ' @ ' + new Date().getTime());
           }
         }
-        hamsters.wheel.trackThread(task, queue, thread);
+        hamsters.wheel.trackThread(task, hamsters.wheel.queue, thread);
         if(!hamster) {
           hamster = hamsters.wheel.createHamster();
         }
-        hamsters.wheel.trainHamster(thread, aggregate, callback, taskid, thread, hamster, memoize);
+        hamsters.wheel.trainHamster(thread, aggregate, callback, task, thread, hamster, memoize);
         hamsters.wheel.feedHamster(hamster, hamsterfood, inputArray);
         task.count += 1; //Increment count, thread is running
       };
