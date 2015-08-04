@@ -173,7 +173,7 @@ function() {
       });
   }, function(output) {
      return output;
-  }, threads, aggregate, cache, dataType, sortDirection);
+  }, threads, aggregate, dataType, cache, sortDirection);
 }
 
 ```
@@ -184,11 +184,17 @@ Where sortDirection is one of the below options.
 * Ascending Alphabetical: 'ascAlpha'
 * Descending Alphabetical: 'descAlpha'
 
+# Persistance
 
+Version 3.3 introduces a new persistance mode that will spawn the maximum number of threads a client can use at startup and reuse them instead of spawning/destroying them dynamically, this option can dramatically reduce runtime latency at the cost of somewhat higher heap allocation and is enabled by default. If you do not require realtime performance from the library or you are developing for memory constrained systems you can disable this by setting
+
+```
+hamsters.persistance = false;
+```
 
 # Result Caching (Memoization)
 
-To obtain the best performance possible version 2.2 supports an optional result caching option, if you know you will be performing the same calculation numerous times enabling cache mode can result in a big performance boost as it will pull the result from cache instead of recalculating the output. This cache mode makes use of session storage and is limited to roughly 5MB of space depending on the browser used. The library will attempt to cache as many previous runs as possible and will only clear out past results in the event that session storage is full. Not all outputs can be cached as they may be too large so this is disabled by default. However version 2.3 introduces hashing of the input values instead of storing both the input and output, this change roughly doubles the space for memoization making this much more viable. 
+To obtain the best performance possible versions 2.2 and later support an optional result caching option, if you know you will be performing the same calculation numerous times enabling cache mode can result in a big performance boost as it will pull the result from cache instead of recalculating the output. This cache mode makes use of session storage and is limited to roughly 5MB of space depending on the browser used. The library will attempt to cache as many previous runs as possible and will only clear out past results in the event that session storage is full. Not all outputs can be cached as they may be too large so this is disabled by default. However version 2.3 introduces hashing of the input values instead of storing both the input and output, this change roughly doubles the space for memoization making this much more viable. 
  
 
 You may enable cache mode by setting
@@ -234,6 +240,8 @@ Threads are not the same as cores, assuming your machine has 4 logical cores you
 # Limitations
 
 Currently due to a bug in how javascript handles data aggregation if you wish to have your individual thread outputs aggregated into a final result the maximum number of threads any single function can invoke is 20, there is no limitation on thread count if you are not asking for the library to aggregate your individual thread outputs back together.
+
+Coincidentally FireFox enforces a per origin thread limit of 20, therefore on systems with greater than 20 logical cores maxThreads will be limited to 20 when using FireFox. Functions invoking greater than 20 threads will have threads pooled until execution is complete.
 
 # Browser Support
 
