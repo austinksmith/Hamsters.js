@@ -10,7 +10,7 @@ self.hamsters = {
   version: '3.3',
   debug: false,
   cache: false,
-  persistance: true,
+  persistence: true,
   maxThreads: Math.ceil((navigator.hardwareConcurrency || 3) * 1.25),
   tools: {},
   wheel: {
@@ -205,7 +205,7 @@ self.hamsters = {
   */
   var populateElements = function() {
     hamsters.wheel.uri = self.URL.createObjectURL(createBlob('(' + String(giveHamsterWork()) + '());'));
-    if(hamsters.persistance) {
+    if(hamsters.persistence) {
       var i = hamsters.maxThreads;
       for (i; i > 0; i--) {
         hamsters.wheel.hamsters.push(new Worker(hamsters.wheel.uri));
@@ -622,7 +622,7 @@ self.hamsters = {
           }
         }
       }
-      if(hamsters.wheel.queue.pending.length === 0 && !hamsters.persistance) {
+      if(hamsters.wheel.queue.pending.length === 0 && !hamsters.persistence) {
         hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
       }
       if(hamsters.wheel.queue.pending.length !== 0) {
@@ -811,7 +811,7 @@ self.hamsters = {
           hamsters.wheel.trackInput(inputArray, threadid, task, hamsterfood);
         }
         if(!hamster) {
-          if(hamsters.persistance) {
+          if(hamsters.persistence) {
             hamster = hamsters.wheel.hamsters[threadid];
           } else {
             hamster = new Worker(hamsters.wheel.uri);

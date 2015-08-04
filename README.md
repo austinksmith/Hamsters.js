@@ -1,7 +1,7 @@
 # WebHamsters
 **Author**: Austin K. Smith
 
-**Website**: http://www.hamsters.io
+**Website**: [Hamsters.io](http://www.hamsters.io)
 
 **Description**: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
 
@@ -9,7 +9,7 @@
 
 
 # Guides
-Detailed Documentation coming soon check http://www.hamsters.io/guides for details
+Detailed Documentation coming soon check [Guides](http://www.hamsters.io/guides) for details
 
 # Workflow Diagram
 
@@ -126,7 +126,7 @@ function() {
 
 To obtain the best performance possible version 2.0 supports an optional dataType param, if your problem supports being transformed into any of javascripts typed arrays you can see up to 10x the performance boost over previous releases. 
 
-If you do not know what typed arrays are please take a look at this guide https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays 
+If you do not know what typed arrays are please take a look at this guide [Typed Arrays](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays)
 
 You may write a function to make use of these like so
 
@@ -184,9 +184,9 @@ Where sortDirection is one of the below options.
 * Ascending Alphabetical: 'ascAlpha'
 * Descending Alphabetical: 'descAlpha'
 
-# Persistance
+# Persistence
 
-Version 3.3 introduces a new persistance mode that will spawn the maximum number of threads a client can use at startup and reuse them instead of spawning/destroying them dynamically, this option can dramatically reduce runtime latency at the cost of somewhat higher heap allocation and is enabled by default. If you do not require realtime performance from the library or you are developing for memory constrained systems you can disable this by setting
+Version 3.3 introduces a new persistence mode that will spawn the maximum number of threads a client can use at startup and reuse them instead of spawning/destroying them dynamically, this option can dramatically reduce runtime latency at the cost of somewhat higher heap allocation and is enabled by default. If you do not require realtime performance from the library or you are developing for memory constrained systems you can disable this by setting
 
 ```
 hamsters.persistance = false;
@@ -227,11 +227,11 @@ You can invoke debug mode by setting hamsters.debug to true or 'verbose'. Verbos
 
 # Performance Considerations
 
-Not every task can be easily paralellized and depending on the size of the task putting it onto its own thread may introduce its own performance drawbacks as any benefit may be outweighed by the overhead of the runtime itself. I highly recommend especially for a larger scale application that you spend some time learning about Amdahls Law http://en.wikipedia.org/wiki/Amdahl%27s_law
+Not every task can be easily paralellized and depending on the size of the task putting it onto its own thread may introduce its own performance drawbacks as any benefit may be outweighed by the overhead of the runtime itself. I highly recommend especially for a larger scale application that you spend some time learning about [Amdahls Law](http://en.wikipedia.org/wiki/Amdahl%27s_law)
 
-Alternatively if your problem size scales with the amount of threads you use, you can see some serious performance gains. This is known as Gustafson's Law you can read more about this at http://en.wikipedia.org/wiki/Gustafson%27s_law. Also be sure to check out this performance example demonstrating the performance boost additional threads can have. 
+Alternatively if your problem size scales with the amount of threads you use, you can see some serious performance gains. This is known as Gustafson's Law you can read more about this at [Gustafson's Law](http://en.wikipedia.org/wiki/Gustafson%27s_law). Also be sure to check out this performance example demonstrating the performance boost additional threads can have. 
 
-http://www.hamsters.io/performance
+[Perf Example](http://www.hamsters.io/performance)
 
 The library attempts to detect the number of available cores on a client machine and formulates a maximum concurrent thread count based on that value, if the library is unable to detect a valid core count it will fallback to a maxThread count of 4. The library will automatically pool and manage execution across all available threads automatically scaling based on demand, and will destroy threads when they do not have pending work to complete, otherwise explicit threads are reused. 
 
