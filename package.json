@@ -1,6 +1,6 @@
 {
   "name": "webhamsters",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "description": "Enables function level multithreading in Javascript by exploiting concurrent web workers",
   "main": "hamsters.js",
   "scripts": {
