@@ -1,4 +1,5 @@
-# WebHamsters
+# Hamsters.js
+
 **Author**: Austin K. Smith
 
 **Website**: [Hamsters.io](http://www.hamsters.io)
@@ -17,14 +18,14 @@ Detailed Documentation coming soon check [Guides](http://www.hamsters.io/guides)
 
 # Getting Started
 
-First download a copy of the library by using the releases page on the repo, add the script to your html header like so.
+First download a copy of the library by using the releases page on the repo, upload the entire src directory contents to your server and add the script to your html header like so. Make sure you upload the entire common folder to the same directory of the hamsters.js file, without these files the library will not function inside of Internet Explorer 10, Node.js, or web workers.
 
 ```
 <!-- HTML4 and (x)HTML -->
-<script type="text/javascript" src="hamsters.js">
+<script type="text/javascript" src="path/to/hamsters.js">
 
 <!-- HTML5 -->
-<script src="hamsters.js"></script>
+<script src="path/to/hamsters.js"></script>
 ```
 
 Alternatively you can use bower to obtain a copy of the library by running.
@@ -38,7 +39,7 @@ Once you've downloaded and added the script tags to your project you should have
 
 # How it works
 
-The basic structure of a WebHamster function is as follows
+The basic structure of a Hamsters.js function is as follows
 
 ```
 // Params you want accessed by your function, for automatic task splitting your data array must have the index of 'array'
@@ -235,7 +236,7 @@ Alternatively if your problem size scales with the amount of threads you use, yo
 
 The library attempts to detect the number of available cores on a client machine and formulates a maximum concurrent thread count based on that value, if the library is unable to detect a valid core count it will fallback to a maxThread count of 4. The library will automatically pool and manage execution across all available threads automatically scaling based on demand, and will destroy threads when they do not have pending work to complete, otherwise explicit threads are reused. 
 
-Threads are not the same as cores, assuming your machine has 4 logical cores you can ask the library to split a given task across exactly 4 threads, however there is no guarantee that a single thread will have access to it's own core for execution. The operating system manages thread allocation to individual cores, WebHamsters simply manages splitting sequential task across individual threads the library cannot control how the OS manages those threads once they are handed off. 
+Threads are not the same as cores, assuming your machine has 4 logical cores you can ask the library to split a given task across exactly 4 threads, however there is no guarantee that a single thread will have access to it's own core for execution. The operating system manages thread allocation to individual cores, Hamsters.js simply manages splitting sequential task across individual threads the library cannot control how the OS manages those threads once they are handed off. 
 
 # Limitations
 
