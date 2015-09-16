@@ -18,7 +18,7 @@ Detailed Documentation coming soon check [Guides](http://www.hamsters.io/guides)
 
 # Getting Started
 
-First download a copy of the library by using the releases page on the repo, upload the entire src directory contents to your server and add the script to your html header like so. Make sure you upload the entire common folder to the same directory of the hamsters.js file, without these files the library will not function inside of Internet Explorer 10, Node.js, or web workers.
+First download a copy of the library by using the releases page on the repo, upload the entire src directory contents to your server and add the script to your html header like so. Make sure you upload the entire common folder to the same directory of the hamsters.js file, without these files the library will not function inside of Node.js or web workers, and will also force Internet Explorer 10 to use legacy fallback mode thus hampering performance.
 
 ```
 <!-- HTML4 and (x)HTML -->
@@ -246,7 +246,7 @@ Coincidentally FireFox enforces a per origin thread limit of 20, therefore on sy
 
 # Browser Support
 
-Currently as of v1.4 all browsers excluding IE versions below 9 are supported by the library, modern browsers such as Chrome, Safari, Opera, IE11, and Firefox have full web worker support and will give the best performance, Older browsers such as IE10 and below are supported by using a legacy processor fallback, these computations will be run on the main thread however they still follow the library process of breaking a given task into individual pieces and executing each piece at a time.
+Currently as of v1.4 all browsers excluding IE versions below 9 are supported by the library, modern browsers such as Chrome, Safari, Opera, IE10, IE11, and Firefox have full web worker support and will give the best performance, Older browsers are supported by using a legacy processor fallback, these computations will be run on the main thread however they still follow the library process of breaking a given task into individual pieces and executing each piece at a time.
 
 # Tested Devices
 

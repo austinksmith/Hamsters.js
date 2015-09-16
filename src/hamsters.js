@@ -61,7 +61,13 @@ self.hamsters = {
     hamsters.wheel.shell = !hamsters.wheel.browser && !hamsters.wheel.node && !hamsters.wheel.worker;
     if(hamsters.wheel.browser) {
     	if(isIE(10)) {
-    		hamsters.wheel.ie10 = true;
+    		try {
+    			var worker = new Worker('common/node/worker.min.js');
+    			worker.terminate();
+    			hamsters.wheel.ie10 = true;
+    		} catch(e) {
+    			hamsters.wheel.legacy = true;
+    		}
     	}
       if(!self.Worker || navigator.userAgent.indexOf('Kindle/3.0') !== -1 || navigator.userAgent.indexOf('Mobile/8F190') !== -1  || navigator.userAgent.indexOf('IEMobile') !== -1) {
         hamsters.wheel.legacy = true;
