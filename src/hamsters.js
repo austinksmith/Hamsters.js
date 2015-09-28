@@ -7,19 +7,21 @@
 * License: Artistic License 2.0
 */
 self.hamsters = {
-  version: '3.5',
+  version: '3.6',
   debug: false,
   cache: false,
   persistence: true,
   maxThreads: Math.ceil((navigator.hardwareConcurrency || 3) * 1.25),
   tools: {},
   wheel: {
-    legacy: false,
-    node: false,
-    shell: false,
-    worker: false,
-    browser: false,
-    ie10: false,
+    env: {
+      legacy: false,
+      node: false,
+      shell: false,
+      worker: false,
+      browser: false,
+      ie10: false
+    },
     queue: {
       running: [],
       pending: []
@@ -51,33 +53,44 @@ self.hamsters = {
   /**
    * Description
    * @description: Detect support for web workers
-   * @method isLegacy
+   * @method setupEnv
    * @return
    */
-  var isLegacy = function(callback) {
-    hamsters.wheel.browser = typeof window === "object";
-    hamsters.wheel.worker  = typeof importScripts === "function";
-    hamsters.wheel.node = typeof process === "object" && typeof require ==="function" && !hamsters.wheel.browser && !hamsters.wheel.worker;
-    hamsters.wheel.shell = !hamsters.wheel.browser && !hamsters.wheel.node && !hamsters.wheel.worker;
-    if(hamsters.wheel.browser) {
+  var setupEnv = function(callback) {
+    hamsters.wheel.env.browser = typeof window === "object";
+    hamsters.wheel.env.worker  = typeof importScripts === "function";
+    hamsters.wheel.env.node = typeof process === "object" && typeof require === "function" && !hamsters.wheel.env.browser && !hamsters.wheel.env.worker;
+    hamsters.wheel.env.shell = !hamsters.wheel.env.browser && !hamsters.wheel.env.node && !hamsters.wheel.env.worker;
+    if(hamsters.wheel.env.browser) {
       if(isIE(10)) {
         try {
-          var worker = new Worker('common/node/worker.min.js');
-          worker.terminate();
-          hamsters.wheel.ie10 = true;
+          var hamster = new Worker('common/wheel.min.js');
+          hamster.terminate();
+          hamsters.wheel.env.ie10 = true;
         } catch(e) {
-          hamsters.wheel.legacy = true;
+          hamsters.wheel.env.legacy = true;
         }
       }
       if(!self.Worker || navigator.userAgent.indexOf('Kindle/3.0') !== -1 || navigator.userAgent.indexOf('Mobile/8F190') !== -1  || navigator.userAgent.indexOf('IEMobile') !== -1) {
-        hamsters.wheel.legacy = true;
+        hamsters.wheel.env.legacy = true;
       } else if(navigator.userAgent.toLowerCase().indexOf('firefox') !== -1) {
         if(hamsters.maxThreads > 20) {
           hamsters.maxThreads = 20;
         }
       }
     }
-    callback(hamsters.wheel.legacy);
+    if(hamsters.wheel.env.worker) {
+       try {
+        hamsters.wheel.uri = self.URL.createObjectURL(createBlob('(' + String(giveHamsterWork(true)) + '());'));
+        var SharedHamster = new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel');
+      } catch(e) {
+        hamsters.wheel.env.legacy = true;
+      }
+    }
+    if(hamsters.wheel.env.shell) {
+      hamsters.wheel.env.legacy = true;
+    }
+    callback(hamsters.wheel.env.legacy);
   };
 
   /**
@@ -163,7 +176,7 @@ self.hamsters = {
     for (i; i < len; i += 1) {
       item = JSON.parse(sessionStorage[i]);
       if(item && item.id === hash && item.dT === dataType) {
-        if(dataType !== "na" && !hamsters.wheel.legacy) {
+        if(dataType !== "na" && !hamsters.wheel.env.legacy) {
           return hamsters.wheel.processDataType(dataType, item.oP);
         } else {
           return item.oP;
@@ -220,16 +233,16 @@ self.hamsters = {
     * @return 
   */
   var populateElements = function() {
-    if(hamsters.wheel.browser) {
-      hamsters.wheel.uri = self.URL.createObjectURL(createBlob('(' + String(giveHamsterWork()) + '());'));
+    if(hamsters.wheel.env.browser) {
+      hamsters.wheel.uri = self.URL.createObjectURL(createBlob('(' + String(giveHamsterWork(false)) + '());'));
     }
     if(hamsters.persistence) {
       var i = hamsters.maxThreads;
       for (i; i > 0; i--) {
-        if(hamsters.wheel.node || hamsters.wheel.ie10) {
-          hamsters.wheel.hamsters.push(new Worker('common/node/wheel.min.js'));
-        } else if(hamsters.wheel.worker) {
-          hamsters.wheel.hamsters.push(new SharedWorker('common/worker/wheel.min.js', 'SharedHamsterWheel'));
+        if(hamsters.wheel.env.node || hamsters.wheel.env.ie10) {
+          hamsters.wheel.hamsters.push(new Worker('common/wheel.min.js'));
+        } else if(hamsters.wheel.env.worker) {
+          hamsters.wheel.hamsters.push(new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel'));
         } else {
           hamsters.wheel.hamsters.push(new Worker(hamsters.wheel.uri));
         }
@@ -243,37 +256,35 @@ self.hamsters = {
     * @method giveHamsterWork
     * @return work
   */
-  var giveHamsterWork = function() {
-    if(hamsters.wheel.worker) {
+  var giveHamsterWork = function(worker) {
+    if(worker) {
       /**
        * Description
        * @method onmessage
        * @param {object} e
        * @return 
        */
-      return function(e) {
-        self.rtn = {
-          success: true, 
-          data: []
-        };
-        self.params = e.data;
-        self.fn = new Function(self.params.fn);
-        if(self.fn) {
-          self.fn();
-        } else {
-          self.rtn.success = false;
-        }
-        // if(self.params.dataType) {
-        //  self.rtn.data = self.processDataType(self.params.dataType, self.rtn.data);
-        //  self.rtn.dataType = self.params.dataType;
-        //  self.port.postMessage({
-        //    results: self.rtn
-        //  }, [rtn.data.buffer]);
-        // } else {
-        self.port.postMessage({
-          results: self.rtn
-        });
-        // }
+      return function() {
+        self.addEventListener("connect", function(e) {
+            var port = e.ports[0];
+            port.start();
+            port.addEventListener("message", function(e) {
+                var rtn = {
+                    success: true,
+                    data: []
+                };
+                var params = e.data;
+                var fn = eval("(" + params.fn + ")");
+                if (fn) {
+                  fn();
+                } else {
+                  rtn.success = false;
+                }
+                port.postMessage({
+                  results: rtn
+                });
+            }, false);
+        }, false);
       };
     }
     return function() {
@@ -418,7 +429,7 @@ self.hamsters = {
       workArray = hamsters.tools.splitArray(params.array, task.threads); //Divide our array into equal array sizes
     }
     params.fn = String(fn);
-    if(!hamsters.wheel.legacy && !hamsters.wheel.worker) { //Truncate function string so we can use new Function call instead of eval
+    if(!hamsters.wheel.env.legacy && !hamsters.wheel.env.worker) { //Truncate function string so we can use new Function call instead of eval
       params.fn = params.fn.substring(params.fn.indexOf("{")+1, params.fn.length-1);
     }
     var food = {};
@@ -689,7 +700,7 @@ self.hamsters = {
       }
       if(hamsters.wheel.queue.pending.length !== 0) {
         hamsters.wheel.processQueue(hamster, hamsters.wheel.queue.pending.shift());
-      } else if(!hamsters.persistence && !hamsters.wheel.worker) {
+      } else if(!hamsters.persistence && !hamsters.wheel.env.worker) {
         hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
       }
     };
@@ -701,7 +712,7 @@ self.hamsters = {
       * @return 
     */
     var onerror = function(e) {
-      if(!hamsters.wheel.worker) {
+      if(!hamsters.wheel.env.worker) {
         hamster.terminate(); //Kill the thread
       }
       hamsters.wheel.errors.push({
@@ -710,7 +721,7 @@ self.hamsters = {
       console.error('Error Hamster #' + id + ': Line ' + e.lineno + ' in ' + e.filename + ': ' + e.message);
     };
 
-    if(hamsters.wheel.worker) {
+    if(hamsters.wheel.env.worker) {
       hamster.port.onmessage = onmessage;
       hamster.port.onerror = onerror;
     } else {
@@ -817,9 +828,9 @@ self.hamsters = {
     * @return 
   */
   hamsters.wheel.feedHamster = function(hamster, food, inputArray) {
-    if(hamsters.wheel.worker || hamsters.wheel.ie10) {
+    if(hamsters.wheel.env.worker || hamsters.wheel.env.ie10) {
       food.array = inputArray;
-      if(hamsters.wheel.ie10) {
+      if(hamsters.wheel.env.ie10) {
         food.ie = true;
         hamster.postMessage(food);
       } else {
@@ -857,7 +868,7 @@ self.hamsters = {
     * @param {blob} dataBlob
     * @return 
    */
-  isLegacy(function(legacy) {
+  setupEnv(function(legacy) {
     if(legacy) {
       hamsters.wheel.newWheel = function(inputArray, hamsterfood, aggregate, callback, task, threadid, hamster, memoize) {
         hamsters.wheel.trackThread(task, hamsters.wheel.queue.running, threadid);
@@ -897,10 +908,10 @@ self.hamsters = {
         if(!hamster) {
           if(hamsters.persistence) {
             hamster = hamsters.wheel.hamsters[hamsters.wheel.queue.running.length];
-          } else if(hamsters.wheel.node || hamsters.wheel.ie10) {
-            hamster = new Worker('common/node/wheel.min.js');
-          } else if(hamsters.wheel.worker) {
-            hamster = new SharedWorker('common/worker/wheel.min.js', 'SharedHamsterWheel');
+          } else if(hamsters.wheel.env.node || hamsters.wheel.env.ie10) {
+            hamster = new Worker('common/wheel.min.js');
+          } else if(hamsters.wheel.env.worker) {
+            hamster = new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel');
           } else {
             hamster = new Worker(hamsters.wheel.uri);
           }

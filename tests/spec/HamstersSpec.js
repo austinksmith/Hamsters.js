@@ -1,9 +1,10 @@
 describe("WebHamsters Core Functionality", function() {
 
-
-  it("Hamsters.wheel.legacy should be boolean", function() {
-    expect(hamsters.wheel.legacy).toMatch(/true|false/);
-  });
+  for(var key in hamsters.wheel.env) {
+    it("Hamsters.wheel.env."+key+" should be boolean", function() {
+      expect(hamsters.wheel.env[key]).toMatch(/true|false/);
+    });
+  }
 
   it("Hamsters.tools.aggregate should aggregate array of subarrays", function() {
     expect(hamsters.tools.aggregate([[1],[2]])).toEqual([1,2]);
