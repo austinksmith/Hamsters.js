@@ -20,7 +20,7 @@ Detailed Documentation coming soon check [Guides](http://www.hamsters.io/guides)
 
 First download a copy of the library by using the releases page on the repo, upload the entire src directory contents to your server and add the script to your html header like so. Make sure you upload the entire common folder to the same directory of the hamsters.js file, without these files the library will not function inside of Node.js or web workers, and will also force Internet Explorer 10 to use legacy fallback mode thus hampering performance.
 
-```
+```html
 <!-- HTML4 and (x)HTML -->
 <script type="text/javascript" src="path/to/hamsters.js">
 
@@ -41,7 +41,7 @@ Once you've downloaded and added the script tags to your project you should have
 
 The basic structure of a Hamsters.js function is as follows
 
-```
+```js
 // Params you want accessed by your function, for automatic task splitting your data array must have the index of 'array'
  var params = {'array':[]};  
   hamsters.run(params, function() {
@@ -58,7 +58,7 @@ Inside of your function you have an rtn object available to pass your output int
 
 Imagine we have a sequential function that loops through several items and performs operations on them, traditionally this would be written like below.
 
-```
+```js
 function() {
   var array = [0,1,2,3,4,5,6,7,8,9];
   var output = [];
@@ -72,7 +72,7 @@ function() {
 
 Now we can put this task onto its own thread like so
 
-```
+```js
 //1 thread and do not aggregate thread results (only one thread output)
 function() {
   var params = {'array':[0,1,2,3,4,5,6,7,8,9]};
@@ -90,7 +90,7 @@ function() {
 
 Alternatively we can split this task among 4 threads for paralell execution like so
 
-```
+```js
 //4 threads and let's aggregate our individual thread results into one final output
 function() {
   var params = {'array':[0,1,2,3,4,5,6,7,8,9]};
@@ -107,7 +107,7 @@ function() {
 ```
 We can even define a function to split across all available threads like so
 
-```
+```js
 //All threads and let's aggregate our individual thread results into one final output
 function() {
   var params = {'array':[0,1,2,3,4,5,6,7,8,9]};
@@ -129,23 +129,21 @@ The library provides a few useful tools for doing everyday javascript actions in
 
 For example you can easily parse a json string in a background thread like so
 
-```
+```js
 hamsters.tools.parseJson(string, function(json) {
  //do something with output
 });
-
 ```
 Additionally can easily stringify a json object in a background thread like so
 
-```
+```js
 hamsters.tools.stringifyJson(json, function(string) {
  //do something with output
 });
-
 ```
 However the most powerful abstraction is the for loop abstraction
 
-```
+```js
 var op = function(i) { //Perform this function on every element
   return i * 2;
 };
@@ -161,7 +159,6 @@ var options {
 hamsters.tools.loop(options, function(output) {
   console.log(output);
 });
-
 ```
 
 # Performance Tweaking
@@ -172,7 +169,7 @@ If you do not know what typed arrays are please take a look at this guide [Typed
 
 You may write a function to make use of these like so
 
-```
+```js
 //4 threads and use dataType and let's aggregate our individual thread results into one final output
 function() {
   var params = {'array':[0,1,2,3,4,5,6,7,8,9]};
@@ -205,7 +202,7 @@ Where dataType is one of the below options.
  
  Version 2.7 introduces optional automagical data sorting, you can write a function that automatically sorts like so
 
-```
+```js
 function() {
   var params = {'array':[0,1,2,3,4,5,6,7,8,9]};
   hamsters.run(params, function() {
@@ -230,7 +227,7 @@ Where sortDirection is one of the below options.
 
 Version 3.3 introduces a new persistence mode that will spawn the maximum number of threads a client can use at startup and reuse them instead of spawning/destroying them dynamically, this option can dramatically reduce runtime latency at the cost of somewhat higher heap allocation and is enabled by default. If you do not require realtime performance from the library or you are developing for memory constrained systems you can disable this by setting
 
-```
+```js
 hamsters.persistance = false;
 ```
 
@@ -241,13 +238,13 @@ To obtain the best performance possible versions 2.2 and later support an option
 
 You may enable cache mode by setting
 
-```
+```js
 hamsters.cache = true;
 ```
 
 You can disable caching for individual functions like so 
 
-```
+```js
 function() {
   var params = {'array':[0,1,2,3,4,5,6,7,8,9]};
   hamsters.run(params, function() {
