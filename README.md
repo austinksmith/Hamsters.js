@@ -123,6 +123,47 @@ function() {
 
 ```
 
+# Tools
+
+The library provides a few useful tools for doing everyday javascript actions in a background thread these should make threading implementations easier.
+
+For example you can easily parse a json string in a background thread like so
+
+```
+hamsters.tools.parseJson(string, function(json) {
+ //do something with output
+});
+
+```
+Additionally can easily stringify a json object in a background thread like so
+
+```
+hamsters.tools.stringifyJson(json, function(string) {
+ //do something with output
+});
+
+```
+However the most powerful abstraction is the for loop abstraction
+
+```
+var op = function(i) { //Perform this function on every element
+  return i * 2;
+};
+var options {
+  operator: op, //Operation to perform on every element
+  array: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20], //Input array 
+  startIndex: 0, //Optional Starting index for loop default of 0
+  limit: null, //Optional Loop limit, eg. 4 to only compute elements 0-3 default of input array length
+  dataType: 'Int32', //Optional dataType param default null
+  incrementBy: 1, //Optional Increment amount per loop default of 1
+  threads: 1 //Optional number of threads to execute across for parallel computing default of 1
+};
+hamsters.tools.loop(options, function(output) {
+  console.log(output);
+});
+
+```
+
 # Performance Tweaking
 
 To obtain the best performance possible version 2.0 supports an optional dataType param, if your problem supports being transformed into any of javascripts typed arrays you can see up to 10x the performance boost over previous releases. 
@@ -248,28 +289,38 @@ Coincidentally FireFox enforces a per origin thread limit of 20, therefore on sy
 
 Currently as of v1.4 all browsers excluding IE versions below 9 are supported by the library, modern browsers such as Chrome, Safari, Opera, IE10, IE11, and Firefox have full web worker support and will give the best performance, Older browsers are supported by using a legacy processor fallback, these computations will be run on the main thread however they still follow the library process of breaking a given task into individual pieces and executing each piece at a time.
 
-# Tested Devices
+# Confirmed Working (Anything not listed should still function, limited test devices on hand. Submit an issue if you encounter problems.)
+
+# Tested Devices 
 
 * Monochrome Kindle 3
 * Iphone 4s
-* LG G3
+* LG G3 (4C/4T)
 * Samsung Galaxy S4
 * Samsung Galaxy S5
 * Iphone 6
 * Iphone 5s
 * Samsung Galaxy Note 4
 * Nokia Lumina Windows Phone 8
+* Xbox One (8C/8T)
+* Asus Zenfone 2 (Intel Atom Z3580 4C/4T)
+* Ipad Retina
+* Samsung Galaxy Tab (8C/8T)
+* 2014 Macbook Pro Retina (i7-4750HQ 4C/8T)
+* Lenovo y580 (i7-3610QM 4C/8T)
 
-# Tested Browsers
+# Tested Browsers (Confirmed Working)
 
-* Chrome Desktop (41.0.2272, 39.0.2171, 42.0.2311, 43.0.2316, 43.0.2348, 43.0.2349, 44.0.2369)
-* Chrome Mobile (33.0.0, 34.0.1847, 37.0.0, 41.0.2272, 42.0.2311)
-* Firefox (35, 36, 37, 38)
-* Opera (28.0.1750)
-* Safari Desktop (8.0.6)
-* Safari Mobile (7.0)
-* IE9
-* IE10
-* IE10 Mobile
-* IE11
-* Stock Android Browser 4.4
+* Chrome Desktop (41.0.2272, 39.0.2171, 42.0.2311, 43.0.2316, 43.0.2348, 43.0.2349, 44.0.2369)+
+* Chrome Mobile (33.0.0, 34.0.1847, 37.0.0, 41.0.2272, 42.0.2311)+
+* Chromium (Linux)
+* Firefox (35, 36, 37, 38)+
+* Opera (28.0.1750)+
+* Safari Desktop (8.0.6)+
+* Safari Mobile (7.0)+
+* Internet Explorer 9, 10, 10 (Mobile), 11
+* Xbox One Browser
+* Microsoft Edge
+* Stock Android Browser 4.0+
+* Dolphin Android Browser
+* Opera Mobile

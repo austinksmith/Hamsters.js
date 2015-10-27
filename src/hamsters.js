@@ -7,7 +7,7 @@
 * License: Artistic License 2.0
 */
 self.hamsters = {
-  version: '3.6',
+  version: '3.7',
   debug: false,
   cache: false,
   persistence: true,
@@ -128,6 +128,78 @@ self.hamsters = {
       }
     }
     return tasks;
+  };
+
+  /**
+   * @description: Abstracts for loop usage
+   * @constructor
+   * @method for
+   * @param {object} input - input params
+   * @param {function} callback - callback when output ready
+   * @return 
+   */
+  hamsters.tools.loop = function(input, callback) {
+    if(!input.array) {
+      console.error('Missing data array');
+      return;
+    }
+    var threads = input.threads || 1;
+    var params = {
+      run: String(input.operator),
+      init: input.startIndex || 0,
+      array: input.array,
+      incrementBy: input.incrementBy || 1,
+      dataType: input.dataType || null
+    };
+    if(threads === 1) {
+      params.limit = input.limit || input.array.length;
+    } else {
+      params.limit = 'compute';
+    }
+    hamsters.run(params, function() {
+      self.operator = eval('('+params.run+')');
+      if(params.limit === 'compute') {
+        params.limit = params.array.length;
+      }
+      var i = 0;
+      for (i = params.init; i < params.limit; i += params.incrementBy) {
+        rtn.data.push(self.operator(params.array[i]));
+      }
+    }, function(output) {
+      callback(output);
+    }, threads, true, input.dataType);
+  };
+
+  /**
+   * @description: Parses a json string in a background thread
+   * @constructor
+   * @method parseJson
+   * @param {string} string - json string object
+   * @param {function} callback - callback when output ready
+   * @return 
+   */
+  hamsters.tools.parseJson = function(string, callback) {
+    hamsters.run({input: string}, function() {
+      rtn.data.push(JSON.parse(params.input));
+    }, function(output) {
+      callback(output[0]);
+    }, 1, true);
+  };
+
+  /**
+   * @description: Stringifies a json object in a background thread
+   * @constructor
+   * @method parseJson
+   * @param {object} json - json object
+   * @param {function} callback - callback when output ready
+   * @return 
+   */
+  hamsters.tools.stringifyJson = function(json, callback) {
+    hamsters.run({input: json}, function() {
+      rtn.data.push(JSON.stringify(params.input));
+    }, function(output) {
+      callback(output[0]);
+    }, 1, true);
   };
 
   /**
