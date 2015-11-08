@@ -146,14 +146,17 @@ self.hamsters = {
     var threads = input.threads || 1;
     if(!hamsters.wheel.env.legacy) {
       input.operator = String(input.operator);
-      input.operator = input.operator.substring(input.operator.indexOf("{")+1, input.operator.length-1);
+      if(!hamsters.wheel.env.worker) {
+        input.operator = input.operator.substring(input.operator.indexOf("{")+1, input.operator.length-1);
+      }
     }
     var params = {
       run: input.operator,
       init: input.startIndex || 0,
       array: input.array,
       incrementBy: input.incrementBy || 1,
-      dataType: input.dataType || null
+      dataType: input.dataType || null,
+      worker: hamsters.wheel.env.worker
     };
     if(threads === 1) {
       params.limit = input.limit || input.array.length;
@@ -162,7 +165,11 @@ self.hamsters = {
     }
     hamsters.run(params, function() {
       if(typeof self.params.run === 'string') {
-        self.operator = new Function(self.params.run);
+        if(!self.params.worker) {
+          self.operator = new Function(self.params.run);
+        } else {
+          self.operator = eval("(" + self.params.run + ")");
+        }
       } else {
         self.operator = self.params.run;
       }
@@ -337,44 +344,84 @@ self.hamsters = {
     * @return work
   */
   var giveHamsterWork = function(worker) {
+    /**
+     * Description
+     * @method processDataType
+     * @param {string} dataType
+     * @param {array} buffer
+     * @return arr
+     */
+    /**
+     * Description
+     * @method onmessage
+     * @param {object} e
+     * @return 
+     */
     if(worker) {
-      /**
-       * Description
-       * @method onmessage
-       * @param {object} e
-       * @return 
-       */
       return function() {
+        self.processDataType = function(dataType, buffer) {
+          if (dataType === 'uint32') {
+            return new Uint32Array(buffer);
+          }
+          if (dataType === 'uint16') {
+            return new Uint16Array(buffer);
+          }
+          if (dataType === 'uint8') {
+            return new Uint8Array(buffer);
+          }
+          if (dataType === 'uint8clamped') {
+            return new Uint8ClampedArray(buffer);
+          }
+          if (dataType === 'int32') {
+            return new Int32Array(buffer);
+          }
+          if (dataType === 'int16') {
+            return new Int16Array(buffer);
+          }
+          if (dataType === 'int8') {
+            return new Int8Array(buffer);
+          }
+          if (dataType === 'float32') {
+            return new Float32Array(buffer);
+          }
+          if (dataType === 'float64') {
+            return new Float64Array(buffer);
+          }
+          return buffer;
+        };
         self.addEventListener("connect", function(e) {
             var port = e.ports[0];
             port.start();
             port.addEventListener("message", function(e) {
-                var rtn = {
+                self.rtn = {
                     success: true,
                     data: []
                 };
-                var params = e.data;
-                var fn = eval("(" + params.fn + ")");
+                self.params = e.data;
+                self.fn = eval("(" + params.fn + ")");
                 if (fn) {
-                  fn();
+                  self.fn();
                 } else {
-                  rtn.success = false;
+                  self.rtn.success = false;
+                }
+                if(self.params.dataType) {
+                  self.rtn.data = self.processDataType(self.params.dataType, self.rtn.data);
+                  self.rtn.dataType = self.params.dataType;
                 }
                 port.postMessage({
-                  results: rtn
+                  results: self.rtn
                 });
             }, false);
         }, false);
       };
     }
+    /**
+     * Description
+     * @method onmessage
+     * @param {object} e
+     * @return 
+     */
     return function() {
-      /**
-       * Description
-       * @method processDataType
-       * @param {string} dataType
-       * @param {array} buffer
-       * @return arr
-       */
       self.processDataType = function(dataType, buffer) {
         if (dataType === 'uint32') {
           return new Uint32Array(buffer);
@@ -405,13 +452,6 @@ self.hamsters = {
         }
         return buffer;
       };
-
-      /**
-       * Description
-       * @method onmessage
-       * @param {object} e
-       * @return 
-       */
       self.onmessage = function(e) {
         self.rtn = {
           success: true, 
