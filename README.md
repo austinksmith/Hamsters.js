@@ -141,11 +141,11 @@ hamsters.tools.stringifyJson(json, function(string) {
  //do something with output
 });
 ```
-However the most powerful abstraction is the for loop abstraction
+However the most powerful abstraction is the for loop abstraction, makes use of [Arguments](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments)
 
 ```js
 var op = function(i) { //Perform this function on every element
-  return i * 2;
+  return arguments[0] * 2;
 };
 var options {
   operator: op, //Operation to perform on every element
@@ -321,3 +321,4 @@ Currently as of v1.4 all browsers excluding IE versions below 9 are supported by
 * Stock Android Browser 4.0+
 * Dolphin Android Browser
 * Opera Mobile
+* Vivaldi Beta

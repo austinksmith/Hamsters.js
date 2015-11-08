@@ -7,7 +7,7 @@
 * License: Artistic License 2.0
 */
 self.hamsters = {
-  version: '3.7',
+  version: '3.8',
   debug: false,
   cache: false,
   persistence: true,
@@ -144,8 +144,12 @@ self.hamsters = {
       return;
     }
     var threads = input.threads || 1;
+    if(!hamsters.wheel.env.legacy) {
+      input.operator = String(input.operator);
+      input.operator = input.operator.substring(input.operator.indexOf("{")+1, input.operator.length-1);
+    }
     var params = {
-      run: String(input.operator),
+      run: input.operator,
       init: input.startIndex || 0,
       array: input.array,
       incrementBy: input.incrementBy || 1,
@@ -157,13 +161,17 @@ self.hamsters = {
       params.limit = 'compute';
     }
     hamsters.run(params, function() {
-      self.operator = eval('('+params.run+')');
-      if(params.limit === 'compute') {
-        params.limit = params.array.length;
+      if(typeof self.params.run === 'string') {
+        self.operator = new Function(self.params.run);
+      } else {
+        self.operator = self.params.run;
+      }
+      if(self.params.limit === 'compute') {
+        self.params.limit = self.params.array.length;
       }
       var i = 0;
-      for (i = params.init; i < params.limit; i += params.incrementBy) {
-        rtn.data.push(self.operator(params.array[i]));
+      for (i = self.params.init; i < self.params.limit; i += self.params.incrementBy) {
+        rtn.data.push(self.operator(self.params.array[i]));
       }
     }, function(output) {
       callback(output);
@@ -500,9 +508,13 @@ self.hamsters = {
     if(params.array && task.threads !== 1) {
       workArray = hamsters.tools.splitArray(params.array, task.threads); //Divide our array into equal array sizes
     }
-    params.fn = String(fn);
-    if(!hamsters.wheel.env.legacy && !hamsters.wheel.env.worker) { //Truncate function string so we can use new Function call instead of eval
-      params.fn = params.fn.substring(params.fn.indexOf("{")+1, params.fn.length-1);
+    if(!hamsters.wheel.env.legacy) {
+      params.fn = String(fn);
+      if(!hamsters.wheel.env.worker) { //Truncate function string so we can use new Function call instead of eval
+        params.fn = params.fn.substring(params.fn.indexOf("{")+1, params.fn.length-1);
+      }
+    } else {
+      params.fn = fn;
     }
     var food = {};
     var key;
@@ -612,19 +624,23 @@ self.hamsters = {
   */
   hamsters.wheel.legacyProcessor = function(params, inputArray, callback) {
     setTimeout(function() {
-      var rtn = {
+      self.rtn = {
         success: true, 
         data: []
       };
-      params.array = inputArray;
-      var fn = eval('('+params.fn+')');
-      if(fn) {
-        fn();
-        callback(rtn);
+      self.params = params;
+      self.params.array = inputArray;
+      if(self.params.fn) {
+        self.params.fn();
+        if(self.params.dataType) {
+          self.rtn.data = hamsters.wheel.processDataType(self.params.dataType, self.rtn.data);
+          self.rtn.dataType = self.params.dataType;
+        }
+        callback(self.rtn);
       } else {
-        rtn.success = false;
-        rtn.error = 'Missing function';
-        callback(rtn);
+        self.rtn.success = false;
+        self.rtn.error = 'Missing function';
+        callback(self.rtn);
       }
     }, 4); //4ms delay (HTML5 spec minimum), simulate threading
   };
@@ -828,34 +844,45 @@ self.hamsters = {
     * @return arr
   */
   hamsters.wheel.processDataType = function(dataType, buffer) {
-    if (dataType === 'uint32') {
-      return new Uint32Array(buffer);
+    var process = function(buffer) {
+      if (dataType === 'uint32') {
+        return new Uint32Array(buffer);
+      }
+      if (dataType === 'uint16') {
+        return new Uint16Array(buffer);
+      }
+      if (dataType === 'uint8') {
+        return new Uint8Array(buffer);
+      }
+      if (dataType === 'uint8clamped') {
+        return new Uint8ClampedArray(buffer);
+      }
+      if (dataType === 'int32') {
+        return new Int32Array(buffer);
+      }
+      if (dataType === 'int16') {
+        return new Int16Array(buffer);
+      }
+      if (dataType === 'int8') {
+        return new Int8Array(buffer);
+      }
+      if (dataType === 'float32') {
+        return new Float32Array(buffer);
+      }
+      if (dataType === 'float64') {
+        return new Float64Array(buffer);
+      }
+      return buffer;
+    };
+    if(hamsters.wheel.env.legacy) {
+      try {
+        return process(buffer);
+      } catch(e) {
+        return buffer;
+      }
+    } else {
+      return process(buffer);
     }
-    if (dataType === 'uint16') {
-      return new Uint16Array(buffer);
-    }
-    if (dataType === 'uint8') {
-      return new Uint8Array(buffer);
-    }
-    if (dataType === 'uint8clamped') {
-      return new Uint8ClampedArray(buffer);
-    }
-    if (dataType === 'int32') {
-      return new Int32Array(buffer);
-    }
-    if (dataType === 'int16') {
-      return new Int16Array(buffer);
-    }
-    if (dataType === 'int8') {
-      return new Int8Array(buffer);
-    }
-    if (dataType === 'float32') {
-      return new Float32Array(buffer);
-    }
-    if (dataType === 'float64') {
-      return new Float64Array(buffer);
-    }
-    return buffer;
   };
 
 

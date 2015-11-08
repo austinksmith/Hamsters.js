@@ -61,9 +61,25 @@ describe("WebHamsters Core Functionality", function() {
       });
     }
 
+    it("Should stringify json to string", function(done) {
+      var json = {test: 1};
+      hamsters.tools.stringifyJson(json, function(string) {
+        expect(typeof string).toEqual('string');
+        done();
+      });
+    });
+
+    it("Should parse string to json", function(done) {
+      var string = '{"test": 1}';
+      hamsters.tools.parseJson(string, function(json) {
+        expect(typeof json).toEqual('object');
+        done();
+      });
+    });
+
     it("Hamsters.tools.loop should abstract for loop usage", function(done) {
       var op = function(i) {
-        return i * 2;
+        return arguments[0] * 2;
       };
       hamsters.tools.loop({
         operator: op,
@@ -71,7 +87,7 @@ describe("WebHamsters Core Functionality", function() {
         startIndex: 0,
         dataType: 'Int32',
         incrementBy: 1,
-        threads: 5
+        threads: 2
       }, function(output) {
         expect(output).toEqual(new Int32Array([2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40]));
         done();
