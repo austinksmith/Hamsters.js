@@ -191,7 +191,7 @@ self.hamsters = {
         self.params.limit = self.params.array.length;
       }
       var i = 0;
-      for (i = self.params.init; i < self.params.limit; i += 1) {
+      for (i = self.params.init; i < self.params.limit; i += self.params.incrementBy) {
         rtn.data.push(self.operator(self.params.array[i]));
       }
     }, function(output) {
