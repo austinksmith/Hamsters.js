@@ -7,12 +7,14 @@
 * License: Artistic License 2.0
 */
 self.hamsters = {
-  version: '3.8',
+  version: '3.9',
   debug: false,
   cache: false,
   persistence: true,
-  maxThreads: Math.ceil((navigator.hardwareConcurrency || 3) * 1.25),
-  tools: {},
+  maxThreads: (navigator.hardwareConcurrency || 4),
+  tools: {
+
+  },
   wheel: {
     env: {
       legacy: false,
@@ -20,12 +22,20 @@ self.hamsters = {
       shell: false,
       worker: false,
       browser: false,
-      ie10: false
+      ie10: false,
+      transferrable: true
     },
     queue: {
       running: [],
       pending: []
-    }, 
+    },
+    cache: {
+      db: self.indexedDB || self.mozIndexedDB || self.webkitIndexedDB || self.msIndexedDB,
+      transaction: self.IDBTransaction || self.webkitIDBTransaction || self.msIDBTransaction,
+      range: self.IDBKeyRange || self.webkitIDBKeyRange || self.msIDBKeyRange,
+      store: null,
+      dbversion: 1
+    },
     hamsters: [], 
     tasks: [],
     errors: [],
@@ -61,7 +71,7 @@ self.hamsters = {
     hamsters.wheel.env.worker  = typeof importScripts === "function";
     hamsters.wheel.env.node = typeof process === "object" && typeof require === "function" && !hamsters.wheel.env.browser && !hamsters.wheel.env.worker;
     hamsters.wheel.env.shell = !hamsters.wheel.env.browser && !hamsters.wheel.env.node && !hamsters.wheel.env.worker;
-    if(hamsters.wheel.env.browser) {
+    if(hamsters.wheel.env.browser && !hamsters.wheel.env.worker) {
       if(isIE(10)) {
         try {
           var hamster = new Worker('common/wheel.min.js');
@@ -89,6 +99,10 @@ self.hamsters = {
     }
     if(hamsters.wheel.env.shell) {
       hamsters.wheel.env.legacy = true;
+    }
+    //Check for transferrable object support
+    if(!Uint8Array) {
+      hamsters.wheel.env.transferrable = false;
     }
     callback(hamsters.wheel.env.legacy);
   };
@@ -177,7 +191,7 @@ self.hamsters = {
         self.params.limit = self.params.array.length;
       }
       var i = 0;
-      for (i = self.params.init; i < self.params.limit; i += self.params.incrementBy) {
+      for (i = self.params.init; i < self.params.limit; i += 1) {
         rtn.data.push(self.operator(self.params.array[i]));
       }
     }, function(output) {
@@ -256,20 +270,13 @@ self.hamsters = {
    * @param {string} dataType
    * @return 
   */
-  hamsters.wheel.checkCache = function(hash, dataType) {
-    var item;
-    var i = 0;
-    var len = sessionStorage.length;
-    for (i; i < len; i += 1) {
-      item = JSON.parse(sessionStorage[i]);
-      if(item && item.id === hash && item.dT === dataType) {
-        if(dataType !== "na" && !hamsters.wheel.env.legacy) {
-          return hamsters.wheel.processDataType(dataType, item.oP);
-        } else {
-          return item.oP;
-        }
-      }
+  hamsters.wheel.checkCache = function(fn, inputArray) {
+    if(!hamsters.wheel.cache.store) {
+      return;
     }
+    hamsters.wheel.cache.store.transaction('memoize').objectStore('memoize').get(String(fn)).onsuccess = function(event) {
+      console.log(event);
+    };
   };
 
   /**
@@ -282,44 +289,47 @@ self.hamsters = {
    * @return 
   */
   hamsters.wheel.memoize = function(fn, inputArray, output, dataType) {
-    var hash = hamsters.wheel.hashResult({
-      func: fn,
-      dT: dataType,
-      input: inputArray
-    });
-    if(hamsters.wheel.checkCache(hash, dataType)) {
-      return;
-    }
-    try {
-      sessionStorage.setItem(sessionStorage.length, JSON.stringify({
-        id: hash,
-        dT: dataType,
-        oP: output
-      }));
-    } catch(eve) {
-      if(eve.name === 'QuotaExceededError') {
-        sessionStorage.clear();
-        try {
-          sessionStorage.setItem(sessionStorage.length, JSON.stringify({
-            id: hash,
-            dT: dataType,
-            oP: output
-          }));
-        } catch(e) { //Do nothing, can't cache this result..too large
-          return;
+    var request = hamsters.wheel.cache.db.open('hamstersjs', hamsters.wheel.cache.dbversion);
+    request.onsuccess = function (event) {
+      hamsters.wheel.cache.store = request.result;
+    };
+    request.onupgradeneeded = function(event) {
+      hamsters.wheel.cache.store = event.target.result;
+      var objectStore = hamsters.wheel.cache.store.createObjectStore("memoize", {
+        autoIncrement: true,
+        keyPath: "fn"
+      });
+      objectStore.createIndex("inputArray", "inputArray", {
+        unique: false
+      });
+      objectStore.createIndex("output", "output", {
+        unique: true
+      });
+      objectStore.transaction.oncomplete = function(event) {
+        var result = {
+          'fn': fn,
+          'inputArray': inputArray, 
+          'output': output
+        };
+        var tempStore = hamsters.wheel.cache.store.transaction("memoize", "readwrite").objectStore("memoize");
+        for (var i in result) {
+          if(result.hasOwnProperty(i)) {
+            tempStore.add(String(result[i]));
+          }
         }
-      }
-    }
+        hamsters.wheel.cache.dbversion += 1;
+      };
+    };
   };
 
   /**
     * @description: Setups library objects for web worker use with library boilerplate
     * @constructor
-    * @function populateElements
-    * @method populateElements
+    * @function spawnHamsters
+    * @method spawnHamsters
     * @return 
   */
-  var populateElements = function() {
+  var spawnHamsters = function() {
     if(hamsters.wheel.env.browser) {
       hamsters.wheel.uri = self.URL.createObjectURL(createBlob('(' + String(giveHamsterWork(false)) + '());'));
     }
@@ -401,8 +411,6 @@ self.hamsters = {
                 self.fn = eval("(" + params.fn + ")");
                 if (fn) {
                   self.fn();
-                } else {
-                  self.rtn.success = false;
                 }
                 if(self.params.dataType) {
                   self.rtn.data = self.processDataType(self.params.dataType, self.rtn.data);
@@ -461,8 +469,6 @@ self.hamsters = {
         self.fn = new Function(self.params.fn);
         if(self.fn) {
           self.fn();
-        } else {
-          self.rtn.success = false;
         }
         if(self.params.dataType) {
           self.rtn.data = self.processDataType(self.params.dataType, self.rtn.data);
@@ -530,12 +536,7 @@ self.hamsters = {
     }
     if(hamsters.cache && params.array && params.array.length !== 0) {
       memoize = memoize || true;
-      var hash = hamsters.wheel.hashResult({
-        func: fn,
-        dT: dataType,
-        input: params.array
-      }, 0);
-      var result = hamsters.wheel.checkCache(hash, dataType);
+      var result = hamsters.wheel.checkCache(fn, params.array, dataType);
       if(result) {
         setTimeout(function() {
           callback(result);
@@ -715,7 +716,7 @@ self.hamsters = {
     * @return output
   */
   hamsters.tools.aggregate = function(input, dataType) {
-    if(!dataType) {
+    if(!dataType || !hamsters.wheel.env.transferrable) {
       return input.reduce(function(a, b) {
         return a.concat(b);
       });
@@ -875,6 +876,37 @@ self.hamsters = {
     return arr;
   };
 
+  hamsters.wheel.processData = function(dataType, buffer) {
+    if (dataType === 'uint32') {
+      return new Uint32Array(buffer);
+    }
+    if (dataType === 'uint16') {
+      return new Uint16Array(buffer);
+    }
+    if (dataType === 'uint8') {
+      return new Uint8Array(buffer);
+    }
+    if (dataType === 'uint8clamped') {
+      return new Uint8ClampedArray(buffer);
+    }
+    if (dataType === 'int32') {
+      return new Int32Array(buffer);
+    }
+    if (dataType === 'int16') {
+      return new Int16Array(buffer);
+    }
+    if (dataType === 'int8') {
+      return new Int8Array(buffer);
+    }
+    if (dataType === 'float32') {
+      return new Float32Array(buffer);
+    }
+    if (dataType === 'float64') {
+      return new Float64Array(buffer);
+    }
+    return buffer;
+  };
+
   /**
     * @description: Converts array buffer or normal array into a typed array
     * @constructor
@@ -884,77 +916,10 @@ self.hamsters = {
     * @return arr
   */
   hamsters.wheel.processDataType = function(dataType, buffer) {
-    var process = function(buffer) {
-      if (dataType === 'uint32') {
-        return new Uint32Array(buffer);
-      }
-      if (dataType === 'uint16') {
-        return new Uint16Array(buffer);
-      }
-      if (dataType === 'uint8') {
-        return new Uint8Array(buffer);
-      }
-      if (dataType === 'uint8clamped') {
-        return new Uint8ClampedArray(buffer);
-      }
-      if (dataType === 'int32') {
-        return new Int32Array(buffer);
-      }
-      if (dataType === 'int16') {
-        return new Int16Array(buffer);
-      }
-      if (dataType === 'int8') {
-        return new Int8Array(buffer);
-      }
-      if (dataType === 'float32') {
-        return new Float32Array(buffer);
-      }
-      if (dataType === 'float64') {
-        return new Float64Array(buffer);
-      }
-      return buffer;
-    };
-    if(hamsters.wheel.env.legacy) {
-      try {
-        return process(buffer);
-      } catch(e) {
-        return buffer;
-      }
-    } else {
-      return process(buffer);
+    if(hamsters.wheel.env.transferrable) {
+      return hamsters.wheel.processData(dataType, buffer);
     }
-  };
-
-
-  hamsters.wheel.generateHash = function(string) {
-    string = String(string);
-    var hash = 0;
-    var i = string.length - 1;
-    for (i; i >= 0; i--) { //Shift 5 bits
-      hash += (((hash << 5) - hash) + string.charCodeAt(i)) & 0xFFFFFFFF;
-    }
-    return hash;
-  };
-
-  /**
-    * @description: Generates hash for task output for memoization
-    * @constructor
-    * @method hashResult
-    * @param {object} obj - Incoming task object
-    * @return 
-  */
-  hamsters.wheel.hashResult = function(obj) {
-    var result = 0;
-    for(var key in obj) {
-        if(obj.hasOwnProperty(key)) {
-          if(typeof obj[key] === 'object' && obj[key].length && !obj[key].slice) {
-            result += hamsters.wheel.generateHash(key + String(hamsters.wheel.normalizeArray(obj[key])));
-          } else {
-            result += hamsters.wheel.generateHash(key + obj[key]);
-          }
-        }
-    }
-    return result;
+    return buffer; //Return normal array if transferrable objects not supported
   };
 
   /**
@@ -1063,7 +1028,7 @@ self.hamsters = {
           console.info('Spawning Hamster #' + threadid + ' @ ' + new Date().getTime());
         }
       };
-      populateElements();
+      spawnHamsters();
     }
   });
 })();

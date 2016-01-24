@@ -89,7 +89,11 @@ describe("WebHamsters Core Functionality", function() {
         incrementBy: 1,
         threads: 2
       }, function(output) {
-        expect(output).toEqual(new Int32Array([2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40]));
+        if(hamsters.wheel.env.transferrable) {
+          expect(output).toEqual(new Int32Array([2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40]));
+        } else {
+          expect(output).toEqual([2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40]);
+        }
         done();
       });
     });
