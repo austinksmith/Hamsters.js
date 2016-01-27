@@ -30,11 +30,9 @@ self.hamsters = {
       pending: []
     },
     cache: {
-      db: self.indexedDB || self.mozIndexedDB || self.webkitIndexedDB || self.msIndexedDB,
-      transaction: self.IDBTransaction || self.webkitIDBTransaction || self.msIDBTransaction,
-      range: self.IDBKeyRange || self.webkitIDBKeyRange || self.msIDBKeyRange,
-      store: null,
-      dbversion: 1
+      indexedDB: self.indexedDB || self.mozIndexedDB || self.webkitIndexedDB || self.msIndexedDB,
+      dbVersion: 4,
+      memoizeDB: null
     },
     hamsters: [], 
     tasks: [],
@@ -270,12 +268,54 @@ self.hamsters = {
    * @param {string} dataType
    * @return 
   */
-  hamsters.wheel.checkCache = function(fn, inputArray) {
-    if(!hamsters.wheel.cache.store) {
+  hamsters.wheel.checkCache = function(fn, inputArray, dataType, callback) {
+    var request = hamsters.wheel.cache.indexedDB.open("memoize");
+    request.onsuccess = function(event) {
+      var trans = hamsters.wheel.cache.memoizeDB.transaction("memoize", 'readonly');
+      var request = trans.objectStore("memoize").openCursor();
+      request.onsuccess = function(event) {
+        var cursor = request.result;
+        // If cursor is null then we've completed the enumeration
+        if (cursor) {
+          if(cursor.value.fn === String(fn) && cursor.value.inputArray === inputArray && cursor.value.dataType === dataType) {
+            callback(cursor.value.output);
+          } else {
+            cursor.continue();
+          }
+        } else {
+          callback();
+        }
+      };
+    };
+  };
+
+  hamsters.wheel.openIndexedDB = function(callback) {
+    var request = hamsters.wheel.cache.indexedDB.open('hamstersjs', hamsters.wheel.cache.dbVersion);
+    request.onupgradeneeded = function(e) {
+      var db = request.result;
+      if(!db.objectStoreNames.contains('memoize')) {
+        var store = db.createObjectStore('memoize', {
+          keyPath: 'id',
+          autoIncrement: true
+        }); 
+      }
+    };
+    request.onerror = function(event) {
       return;
-    }
-    hamsters.wheel.cache.store.transaction('memoize').objectStore('memoize').get(String(fn)).onsuccess = function(event) {
-      console.log(event);
+    };
+    request.onsuccess = function (event) {
+      hamsters.wheel.cache.memoizeDB = request.result;
+      if(hamsters.wheel.cache.memoizeDB.setVersion) { //For Older browsers may or may not work
+        if(hamsters.wheel.cache.memoizeDB.version != hamsters.wheel.cache.dbVersion) {
+          var upgrade = hamsters.wheel.cache.memoizeDB.setVersion(hamsters.wheel.cache.dbVersion);
+          upgrade.onsuccess = function(event) {
+            var store = hamsters.wheel.cache.memoizeDB.createObjectStore('memoize', {
+              keyPath: 'fn',
+              autoIncrement: true
+            });
+          };
+        }
+      }
     };
   };
 
@@ -289,36 +329,20 @@ self.hamsters = {
    * @return 
   */
   hamsters.wheel.memoize = function(fn, inputArray, output, dataType) {
-    var request = hamsters.wheel.cache.db.open('hamstersjs', hamsters.wheel.cache.dbversion);
-    request.onsuccess = function (event) {
-      hamsters.wheel.cache.store = request.result;
+    var trans = hamsters.wheel.cache.memoizeDB.transaction('memoize', 'readwrite');
+    var store = trans.objectStore('memoize');
+    var data = {
+      fn: String(fn),
+      inputArray: inputArray,
+      output: output,
+      dataType: dataType
     };
-    request.onupgradeneeded = function(event) {
-      hamsters.wheel.cache.store = event.target.result;
-      var objectStore = hamsters.wheel.cache.store.createObjectStore("memoize", {
-        autoIncrement: true,
-        keyPath: "fn"
-      });
-      objectStore.createIndex("inputArray", "inputArray", {
-        unique: false
-      });
-      objectStore.createIndex("output", "output", {
-        unique: true
-      });
-      objectStore.transaction.oncomplete = function(event) {
-        var result = {
-          'fn': fn,
-          'inputArray': inputArray, 
-          'output': output
-        };
-        var tempStore = hamsters.wheel.cache.store.transaction("memoize", "readwrite").objectStore("memoize");
-        for (var i in result) {
-          if(result.hasOwnProperty(i)) {
-            tempStore.add(String(result[i]));
-          }
-        }
-        hamsters.wheel.cache.dbversion += 1;
-      };
+    var request = store.put(data);
+    request.oncomplete = function(e) {
+      alert('success!');
+    };
+    request.onerror = function(e) {
+      console.log("Error Adding: ", e);
     };
   };
 
@@ -412,7 +436,7 @@ self.hamsters = {
                 if (fn) {
                   self.fn();
                 }
-                if(self.params.dataType) {
+                if(self.params.dataType && self.params.dataType != "na") {
                   self.rtn.data = self.processDataType(self.params.dataType, self.rtn.data);
                   self.rtn.dataType = self.params.dataType;
                 }
@@ -470,7 +494,7 @@ self.hamsters = {
         if(self.fn) {
           self.fn();
         }
-        if(self.params.dataType) {
+        if(self.params.dataType && self.params.dataType != "na") {
           self.rtn.data = self.processDataType(self.params.dataType, self.rtn.data);
           self.rtn.dataType = self.params.dataType;
           self.postMessage({
@@ -533,18 +557,30 @@ self.hamsters = {
     var task = hamsters.wheel.newTask(hamsters.wheel.tasks.length, workers, order, dataType, fn, callback);
     if(dataType) {
       dataType = dataType.toLowerCase();
+    } else {
+      dataType = "na";
     }
-    if(hamsters.cache && params.array && params.array.length !== 0) {
-      memoize = memoize || true;
-      var result = hamsters.wheel.checkCache(fn, params.array, dataType);
-      if(result) {
-        setTimeout(function() {
-          callback(result);
-          hamsters.wheel.tasks[task.id] = null; //Clean up our task, not needed any longer
-        }, 4);
-        return;
+    if(hamsters.cache) {
+      if(hamsters.wheel.cache.memoizeDB && hamsters.wheel.cache.memoizeDB.objectStoreNames.contains('memoize')) {
+        memoize = memoize || true;
+        hamsters.wheel.checkCache(fn, params.array, dataType, function(result) {
+          if(result) {
+            callback(result);
+            hamsters.wheel.tasks[task.id] = null; //Clean up our task, not needed any longer
+            return;
+          } else {
+            hamsters.wheel.work(task, params, fn, callback, aggregate, dataType, memoize, order);
+          }
+        });
+      } else {
+        hamsters.wheel.work(task, params, fn, callback, aggregate, dataType, memoize, order);
       }
+    } else {
+      hamsters.wheel.work(task, params, fn, callback, aggregate, dataType, memoize, order);
     }
+  };
+
+  hamsters.wheel.work = function(task, params, fn, callback, aggregate, dataType, memoize, order) {
     var workArray = params.array || null;
     if(params.array && task.threads !== 1) {
       workArray = hamsters.tools.splitArray(params.array, task.threads); //Divide our array into equal array sizes
@@ -823,7 +859,7 @@ self.hamsters = {
           if(output && !output.slice) {
             hamsters.wheel.memoize(task.fn, task.input[0].input, hamsters.wheel.normalizeArray(output), results.dataType);
           } else {
-            hamsters.wheel.memoize(task.fn, task.input[0].input, hamsters.wheel.getOutput(task.output, aggregate, results.dataType), results.dataType || "na");
+            hamsters.wheel.memoize(task.fn, task.input[0].input, hamsters.wheel.getOutput(task.output, aggregate, results.dataType), results.dataType);
           }
         }
       }
@@ -1028,6 +1064,9 @@ self.hamsters = {
           console.info('Spawning Hamster #' + threadid + ' @ ' + new Date().getTime());
         }
       };
+      if(hamsters.wheel.cache) {
+        hamsters.wheel.openIndexedDB();
+      }
       spawnHamsters();
     }
   });
