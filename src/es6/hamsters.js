@@ -7,7 +7,7 @@
 * License: Artistic License 2.0
 */
 
-self.hamsters = {
+let hamsters = {
   version: '3.9',
   debug: false,
   cache: false,
@@ -31,7 +31,7 @@ self.hamsters = {
       pending: []
     },
     cache: {
-      indexedDB: self.indexedDB || self.mozIndexedDB || self.webkitIndexedDB || self.msIndexedDB,
+      indexedDB: null,
       dbVersion: 4,
       memoizeDB: null
     },
@@ -68,8 +68,12 @@ self.hamsters = {
   const setupEnv = function(callback) {
     hamsters.wheel.env.browser = typeof window === "object";
     hamsters.wheel.env.worker  = typeof importScripts === "function";
-    hamsters.wheel.env.node = typeof process === "object" && typeof require === "function" && !hamsters.wheel.env.browser && !hamsters.wheel.env.worker;
-    hamsters.wheel.env.shell = !hamsters.wheel.env.browser && !hamsters.wheel.env.node && !hamsters.wheel.env.worker;
+    hamsters.wheel.env.node = typeof process === "object" && typeof require === "function" && !hamsters.wheel.env.browser && !hamsters.wheel.env.worker && !hamsters.wheel.env.reactNative;
+    hamsters.wheel.env.reactNative = !hamsters.wheel.env.node && typeof global === 'object';
+    hamsters.wheel.env.shell = !hamsters.wheel.env.browser && !hamsters.wheel.env.node && !hamsters.wheel.env.worker && !hamsters.wheel.env.reactNative;
+    if(hamsters.wheel.env.reactNative || hamsters.wheel.env.node) {
+      global.self = global;
+    }
     if(hamsters.wheel.env.browser && !hamsters.wheel.env.worker) {
       if(isIE(10)) {
         try {
@@ -102,6 +106,9 @@ self.hamsters = {
     //Check for transferrable object support
     if(!Uint8Array) {
       hamsters.wheel.env.transferrable = false;
+    }
+    if(hamsters.cache) {
+      hamsters.wheel.cache.indexedDB = (self.indexedDB || self.mozIndexedDB || self.webkitIndexedDB || self.msIndexedDB);
     }
     callback(hamsters.wheel.env.legacy);
   };
@@ -906,7 +913,7 @@ self.hamsters = {
   hamsters.wheel.normalizeArray = function(input) {
     let arr = [];
     let n = 0;
-    const len = input.length;
+    let len = input.length;
     for (n; n < len; n += 1) {
       arr.push(input[n]);
     }
@@ -1065,7 +1072,7 @@ self.hamsters = {
           console.info('Spawning Hamster #' + threadid + ' @ ' + new Date().getTime());
         }
       };
-      if(hamsters.wheel.cache) {
+      if(hamsters.cache) {
         hamsters.wheel.openIndexedDB();
       }
       spawnHamsters();
