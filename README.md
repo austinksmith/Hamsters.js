@@ -2,7 +2,7 @@
 
 **Author**: Austin K. Smith
 
-**Website**: [Hamsters.io](http://www.hamsters.io)
+**Website**: [Hamsters.io](https://www.hamsters.io)
 
 **Description**: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
 
@@ -10,15 +10,17 @@
 
 
 # Guides
-Detailed Documentation coming soon check [Guides](http://www.hamsters.io/guides) for details
+Detailed Documentation coming soon check [Guides](https://www.hamsters.io/guides) for updates
 
-# Workflow Diagram
+*** New website coming soon that will include better documentation, don't hesitate to contact with questions. ***
 
-![alt tag](http://www.hamsters.io/guides/workflow.png)
+# Dataflow Example
+
+![alt tag](http://www.hamsters.io/guides/workflow-newest.png)
 
 # Getting Started
 
-First download a copy of the library by using the releases page on the repo, upload the entire src directory contents to your server and add the script to your html header like so. Make sure you upload the entire common folder to the same directory of the hamsters.js file, without these files the library will not function inside of Node.js or web workers, and will also force Internet Explorer 10 to use legacy fallback mode thus hampering performance.
+First download a copy of the library by using the releases page or clone the repo locally, upload the applicable files from the src directory to your server and add the script to your project as described blow. Make sure you upload the entire common folder to the same directory of the hamsters.js file. Without these files the library will not function inside of web workers, and will also force Internet Explorer 10 to use the legacy fallback mode thus hampering performance.
 
 ```html
 <!-- HTML4 and (x)HTML -->
@@ -28,13 +30,19 @@ First download a copy of the library by using the releases page on the repo, upl
 <script src="path/to/hamsters.js"></script>
 ```
 
+```js
+/* React Native */
+import hamsters from 'path/to/hamsters';
+```
+
+
 Alternatively you can use bower to obtain a copy of the library by running.
 
 ```
 bower install WebHamsters
 ```
 
-Once you've downloaded and added the script tags to your project you should have a variable named hamsters available in your console, this variable is the core of the library. Do not create any globally scoped variables with the same name or you will risk causing compatibility issues. Now that you've succesfully added the library to your project, let's get started below.
+Once you've downloaded and added the library to your project you should have a variable named hamsters available, this variable is the core of the library. Do not create any globally scoped variables with the same name or you will risk causing compatibility issues. Now that you've succesfully added the library to your project, let's get started below.
 
 
 # How it works
@@ -282,13 +290,21 @@ Currently due to a bug in how javascript handles data aggregation if you wish to
 
 Coincidentally FireFox enforces a per origin thread limit of 20, therefore on systems with greater than 20 logical cores maxThreads will be limited to 20 when using FireFox. Functions invoking greater than 20 threads will have threads pooled until execution is complete.
 
+# Environment Support
+
+* All major browsers IE9+
+* Inside of existing web workers (threads inside threads)
+* Javascript shell environments
+* React Native (Tested under android only, should also function with IOS but is untested)
+* Node.js (Unofficially supported, pending further testing, should function as of v3.9 ** use dev branch **)
+
 # Browser Support
 
 Currently as of v1.4 all browsers excluding IE versions below 9 are supported by the library, modern browsers such as Chrome, Safari, Opera, IE10, IE11, and Firefox have full web worker support and will give the best performance, Older browsers are supported by using a legacy processor fallback, these computations will be run on the main thread however they still follow the library process of breaking a given task into individual pieces and executing each piece at a time.
 
-# Confirmed Working (Anything not listed should still function, limited test devices on hand. Submit an issue if you encounter problems.)
+# Confirmed Working 
 
-# Tested Devices 
+(Anything not listed should still function, limited test devices on hand. Submit an issue if you encounter problems.)
 
 * Monochrome Kindle 3
 * Iphone 4s
@@ -305,8 +321,6 @@ Currently as of v1.4 all browsers excluding IE versions below 9 are supported by
 * Samsung Galaxy Tab (8C/8T)
 * 2014 Macbook Pro Retina (i7-4750HQ 4C/8T)
 * Lenovo y580 (i7-3610QM 4C/8T)
-
-# Tested Browsers (Confirmed Working)
 
 * Chrome Desktop (41.0.2272, 39.0.2171, 42.0.2311, 43.0.2316, 43.0.2348, 43.0.2349, 44.0.2369)+
 * Chrome Mobile (33.0.0, 34.0.1847, 37.0.0, 41.0.2272, 42.0.2311)+
