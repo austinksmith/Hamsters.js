@@ -77,7 +77,7 @@ var hamsters = {
     if(hamsters.wheel.env.browser && !hamsters.wheel.env.worker) {
       if(isIE(10)) {
         try {
-          let hamster = new Worker('common/wheel.min.js');
+          var hamster = new Worker('common/wheel.min.js');
           hamster.terminate();
           hamsters.wheel.env.ie10 = true;
         } catch(e) {
@@ -95,7 +95,7 @@ var hamsters = {
     if(hamsters.wheel.env.worker) {
        try {
         hamsters.wheel.uri = self.URL.createObjectURL(createBlob('(' + String(giveHamsterWork(true)) + '());'));
-        let SharedHamster = new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel');
+        var SharedHamster = new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel');
       } catch(e) {
         hamsters.wheel.env.legacy = true;
       }
