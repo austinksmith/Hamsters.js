@@ -8,40 +8,33 @@
 */
 
 let hamsters = {
-  version: '3.9',
-  debug: false,
-  cache: false,
-  persistence: true,
-  maxThreads: (navigator.hardwareConcurrency || 4),
-  tools: {
+    version: '3.9',
+    debug: false,
+    cache: false,
+    persistence: true,
+    maxThreads: (navigator.hardwareConcurrency || 4),
+    tools: {},
+    wheel: {
+      env: {
+        legacy: false,
+        node: false,
+        shell: false,
+        worker: false,
+        browser: false,
+        ie10: false,
+        transferrable: true
+      },
+      queue: {
+        running: [],
+        pending: []
+      },
+      hamsters: [], 
+      tasks: [],
+      errors: [],
+      uri: null
+    }
+  };
 
-  },
-  wheel: {
-    env: {
-      legacy: false,
-      node: false,
-      shell: false,
-      worker: false,
-      browser: false,
-      ie10: false,
-      transferrable: true
-    },
-    queue: {
-      running: [],
-      pending: []
-    },
-    cache: {
-      indexedDB: null,
-      dbVersion: 4,
-      memoizeDB: null
-    },
-    hamsters: [], 
-    tasks: [],
-    errors: [],
-    uri: null
-  }
-};
-  
 /**
  * @description: Initializes and sets up library functionality
  * @return
@@ -55,7 +48,7 @@ let hamsters = {
    * @param {integer} version
    * @return CallExpression
    */
-  const isIE = function(version) {
+  let isIE = function(version) {
     return (new RegExp('msie' + (!isNaN(version) ? ('\\s'+version) : ''), 'i').test(navigator.userAgent));
   };
 
@@ -65,13 +58,15 @@ let hamsters = {
    * @method setupEnv
    * @return
    */
-  const setupEnv = function(callback) {
+  let setupEnv = function(callback) {
     hamsters.wheel.env.browser = typeof window === "object";
     hamsters.wheel.env.worker  = typeof importScripts === "function";
     hamsters.wheel.env.node = typeof process === "object" && typeof require === "function" && !hamsters.wheel.env.browser && !hamsters.wheel.env.worker && !hamsters.wheel.env.reactNative;
     hamsters.wheel.env.reactNative = !hamsters.wheel.env.node && typeof global === 'object';
     hamsters.wheel.env.shell = !hamsters.wheel.env.browser && !hamsters.wheel.env.node && !hamsters.wheel.env.worker && !hamsters.wheel.env.reactNative;
-    hamsters.self = (window || self || global);
+    if(hamsters.wheel.env.reactNative || hamsters.wheel.env.node) {
+      global.self = global;
+    }
     if(hamsters.wheel.env.browser && !hamsters.wheel.env.worker) {
       if(isIE(10)) {
         try {
@@ -82,7 +77,7 @@ let hamsters = {
           hamsters.wheel.env.legacy = true;
         }
       }
-      if(!hamsters.self.Worker || navigator.userAgent.indexOf('Kindle/3.0') !== -1 || navigator.userAgent.indexOf('Mobile/8F190') !== -1  || navigator.userAgent.indexOf('IEMobile') !== -1) {
+      if(!self.Worker || navigator.userAgent.indexOf('Kindle/3.0') !== -1 || navigator.userAgent.indexOf('Mobile/8F190') !== -1  || navigator.userAgent.indexOf('IEMobile') !== -1) {
         hamsters.wheel.env.legacy = true;
       } else if(navigator.userAgent.toLowerCase().indexOf('firefox') !== -1) {
         if(hamsters.maxThreads > 20) {
@@ -92,7 +87,7 @@ let hamsters = {
     }
     if(hamsters.wheel.env.worker) {
        try {
-        hamsters.wheel.uri = hamsters.self.URL.createObjectURL(createBlob('(' + String(giveHamsterWork(true)) + '());'));
+        hamsters.wheel.uri = self.URL.createObjectURL(createBlob('(' + String(giveHamsterWork(true)) + '());'));
         let SharedHamster = new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel');
       } catch(e) {
         hamsters.wheel.env.legacy = true;
@@ -106,7 +101,7 @@ let hamsters = {
       hamsters.wheel.env.transferrable = false;
     }
     if(hamsters.cache) {
-      hamsters.wheel.cache.indexedDB = (hamsters.self.indexedDB || hamsters.self.mozIndexedDB || hamsters.self.webkitIndexedDB || hamsters.self.msIndexedDB);
+      hamsters.wheel.cache.indexedDB = (self.indexedDB || self.mozIndexedDB || self.webkitIndexedDB || self.msIndexedDB);
     }
     callback(hamsters.wheel.env.legacy);
   };
@@ -182,21 +177,21 @@ let hamsters = {
       params.limit = 'compute';
     }
     hamsters.run(params, function() {
-      if(typeof hamsters.self.params.run === 'string') {
-        if(!hamsters.self.params.worker) {
-          hamsters.self.operator = new Function(hamsters.self.params.run);
+      if(typeof self.params.run === 'string') {
+        if(!self.params.worker) {
+          self.operator = new Function(self.params.run);
         } else {
-          hamsters.self.operator = eval("(" + hamsters.self.params.run + ")");
+          self.operator = eval("(" + self.params.run + ")");
         }
       } else {
-        hamsters.self.operator = hamsters.self.params.run;
+        self.operator = self.params.run;
       }
-      if(hamsters.self.params.limit === 'compute') {
-        hamsters.self.params.limit = hamsters.self.params.array.length;
+      if(self.params.limit === 'compute') {
+        self.params.limit = self.params.array.length;
       }
       let i = 0;
-      for (i = hamsters.self.params.init; i < hamsters.self.params.limit; i += hamsters.self.params.incrementBy) {
-        rtn.data.push(hamsters.self.operator(hamsters.self.params.array[i]));
+      for (i = self.params.init; i < self.params.limit; i += self.params.incrementBy) {
+        rtn.data.push(self.operator(self.params.array[i]));
       }
     }, function(output) {
       callback(output);
@@ -274,82 +269,35 @@ let hamsters = {
    * @param {string} dataType
    * @return 
   */
-  hamsters.wheel.checkCache = function(fn, inputArray, dataType, callback) {
-    let request = hamsters.wheel.cache.indexedDB.open("memoize");
-    request.onsuccess = function(event) {
-      let trans = hamsters.wheel.cache.memoizeDB.transaction("memoize", 'readonly');
-      let request = trans.objectStore("memoize").openCursor();
-      request.onsuccess = function(event) {
-        let cursor = request.result;
-        // If cursor is null then we've completed the enumeration
-        if (cursor) {
-          if(cursor.value.fn === String(fn) && cursor.value.inputArray === inputArray && cursor.value.dataType === dataType) {
-            callback(cursor.value.output);
-          } else {
-            cursor.continue();
-          }
-        } else {
-          callback();
-        }
-      };
-    };
+  hamsters.wheel.checkCache = function(fn, input, dataType) {
+    let item;
+    for (let i = 0, len = sessionStorage.length; i < len; i++) {
+      item = eval('('+sessionStorage[i]+')');
+      let equals = hamsters.runtime.compareArrays(item.input, input);
+      if(item && item.func === fn && equals  && !item.dataType && !dataType) {
+        return item.output;
+      } else if(item && item.func === fn && equals && item.dataType === dataType) {
+        return hamsters.runtime.processDataType(item.dataType, item.output);
+      }
+    }
   };
 
-  hamsters.wheel.openIndexedDB = function(callback) {
-    let request = hamsters.wheel.cache.indexedDB.open('hamstersjs', hamsters.wheel.cache.dbVersion);
-    request.onupgradeneeded = function(e) {
-      let db = request.result;
-      if(!db.objectStoreNames.contains('memoize')) {
-        let store = db.createObjectStore('memoize', {
-          keyPath: 'id',
-          autoIncrement: true
-        }); 
-      }
-    };
-    request.onerror = function(event) {
-      return;
-    };
-    request.onsuccess = function (event) {
-      hamsters.wheel.cache.memoizeDB = request.result;
-      if(hamsters.wheel.cache.memoizeDB.setVersion) { //For Older browsers may or may not work
-        if(hamsters.wheel.cache.memoizeDB.version != hamsters.wheel.cache.dbVersion) {
-          let upgrade = hamsters.wheel.cache.memoizeDB.setVersion(hamsters.wheel.cache.dbVersion);
-          upgrade.onsuccess = function(event) {
-            let store = hamsters.wheel.cache.memoizeDB.createObjectStore('memoize', {
-              keyPath: 'fn',
-              autoIncrement: true
-            });
-          };
-        }
-      }
-    };
-  };
-
-  /**
-   * Description
-   * @method memoize
-   * @param {string} fn
-   * @param {array} input
-   * @param {array} output
-   * @param {string} dataType
-   * @return 
-  */
   hamsters.wheel.memoize = function(fn, inputArray, output, dataType) {
-    let trans = hamsters.wheel.cache.memoizeDB.transaction('memoize', 'readwrite');
-    let store = trans.objectStore('memoize');
-    let data = {
-      fn: String(fn),
-      inputArray: inputArray,
-      output: output,
-      dataType: dataType
-    };
-    let request = store.put(data);
-    request.oncomplete = function(e) {
-      alert('success!');
-    };
-    request.onerror = function(e) {
-      console.log("Error Adding: ", e);
-    };
+    if(hamsters.wheel.checkCache(fn, input, dataType)) {
+      return;
+    }
+    try {
+      sessionStorage.setItem(sessionStorage.length, JSON.stringify({'func': fn, 'input': inputArray, 'output': output, 'dataType': dataType}));
+    } catch(eve) {
+      if(eve.name === 'QuotaExceededError') {
+        sessionStorage.clear();
+        try {
+          sessionStorage.setItem(sessionStorage.length, JSON.stringify({'func': fn, 'input': inputArray, 'output': output, 'dataType': dataType}));
+        } catch(e) { //Do nothing, can't cache this result..too large
+          return;
+        }
+      }
+    }
   };
 
   /**
@@ -359,9 +307,9 @@ let hamsters = {
     * @method spawnHamsters
     * @return 
   */
-  const spawnHamsters = function() {
+  let spawnHamsters = function() {
     if(hamsters.wheel.env.browser) {
-      hamsters.wheel.uri = hamsters.self.URL.createObjectURL(createBlob('(' + String(giveHamsterWork(false)) + '());'));
+      hamsters.wheel.uri = self.URL.createObjectURL(createBlob('(' + String(giveHamsterWork(false)) + '());'));
     }
     if(hamsters.persistence) {
       let i = hamsters.maxThreads;
@@ -383,7 +331,7 @@ let hamsters = {
     * @method giveHamsterWork
     * @return work
   */
-  const giveHamsterWork = function(worker) {
+  let giveHamsterWork = function(worker) {
     /**
      * Description
      * @method processDataType
@@ -399,55 +347,42 @@ let hamsters = {
      */
     if(worker) {
       return function() {
-        hamsters.self.processDataType = function(dataType, buffer) {
-          if (dataType === 'uint32') {
-            return new Uint32Array(buffer);
+        self.processDataType = function(dataType, buffer) {
+          let types = {
+            'uint32': Uint32Array,
+            'uint16': Uint16Array,
+            'uint8': Uint8Array,
+            'uint8clamped': Uint8ClampedArray,
+            'int32': Int32Array,
+            'int16': Int16Array,
+            'int8': Int8Array,
+            'float32': Float32Array,
+            'float64': Float64Array
+          };
+          if(!types[dataType]) {
+            return dataType;
           }
-          if (dataType === 'uint16') {
-            return new Uint16Array(buffer);
-          }
-          if (dataType === 'uint8') {
-            return new Uint8Array(buffer);
-          }
-          if (dataType === 'uint8clamped') {
-            return new Uint8ClampedArray(buffer);
-          }
-          if (dataType === 'int32') {
-            return new Int32Array(buffer);
-          }
-          if (dataType === 'int16') {
-            return new Int16Array(buffer);
-          }
-          if (dataType === 'int8') {
-            return new Int8Array(buffer);
-          }
-          if (dataType === 'float32') {
-            return new Float32Array(buffer);
-          }
-          if (dataType === 'float64') {
-            return new Float64Array(buffer);
-          }
-          return buffer;
+          return new types[dataType](buffer);
         };
-        hamsters.self.addEventListener("connect", function(e) {
+        self.addEventListener("connect", function(e) {
             let port = e.ports[0];
             port.start();
             port.addEventListener("message", function(e) {
-                hamsters.self.rtn = {
+                self.rtn = {
                     success: true,
                     data: []
                 };
-                hamsters.self.params = e.data;
-                hamsters.self.fn = eval("(" + params.fn + ")");
+                self.params = e.data;
+                self.fn = eval("(" + params.fn + ")");
                 if (fn) {
-                  hamsters.self.fn();
+                  self.fn();
                 }
-                if(hamsters.self.params.dataType && hamsters.self.params.dataType != "na") {
-                  hamsters.self.rtn.data = hamsters.self.processDataType(hamsters.self.params.dataType, hamsters.self.rtn.data);
-                  hamsters.self.rtn.dataType = hamsters.self.params.dataType;
+                if(self.params.dataType && self.params.dataType != "na") {
+                  self.rtn.data = self.processDataType(self.params.dataType, self.rtn.data);
+                  self.rtn.dataType = self.params.dataType;
                 }
                 port.postMessage({
-                  results: hamsters.self.rtn
+                  results: self.rtn
                 });
             }, false);
         }, false);
@@ -460,55 +395,42 @@ let hamsters = {
      * @return 
      */
     return function() {
-      hamsters.self.processDataType = function(dataType, buffer) {
-        if (dataType === 'uint32') {
-          return new Uint32Array(buffer);
+      self.processDataType = function(dataType, buffer) {
+        let types = {
+          'uint32': Uint32Array,
+          'uint16': Uint16Array,
+          'uint8': Uint8Array,
+          'uint8clamped': Uint8ClampedArray,
+          'int32': Int32Array,
+          'int16': Int16Array,
+          'int8': Int8Array,
+          'float32': Float32Array,
+          'float64': Float64Array
+        };
+        if(!types[dataType]) {
+          return dataType;
         }
-        if (dataType === 'uint16') {
-          return new Uint16Array(buffer);
-        }
-        if (dataType === 'uint8') {
-          return new Uint8Array(buffer);
-        }
-        if (dataType === 'uint8clamped') {
-          return new Uint8ClampedArray(buffer);
-        }
-        if (dataType === 'int32') {
-          return new Int32Array(buffer);
-        }
-        if (dataType === 'int16') {
-          return new Int16Array(buffer);
-        }
-        if (dataType === 'int8') {
-          return new Int8Array(buffer);
-        }
-        if (dataType === 'float32') {
-          return new Float32Array(buffer);
-        }
-        if (dataType === 'float64') {
-          return new Float64Array(buffer);
-        }
-        return buffer;
+        return new types[dataType](buffer);
       };
-      hamsters.self.onmessage = function(e) {
-        hamsters.self.rtn = {
+      self.onmessage = function(e) {
+        self.rtn = {
           success: true, 
           data: []
         };
-        hamsters.self.params = e.data;
-        hamsters.self.fn = new Function(hamsters.self.params.fn);
-        if(hamsters.self.fn) {
-          hamsters.self.fn();
+        self.params = e.data;
+        self.fn = new Function(self.params.fn);
+        if(self.fn) {
+          self.fn();
         }
-        if(hamsters.self.params.dataType && hamsters.self.params.dataType != "na") {
-          hamsters.self.rtn.data = hamsters.self.processDataType(hamsters.self.params.dataType, hamsters.self.rtn.data);
-          hamsters.self.rtn.dataType = hamsters.self.params.dataType;
-          hamsters.self.postMessage({
-            results: hamsters.self.rtn
+        if(self.params.dataType && self.params.dataType != "na") {
+          self.rtn.data = self.processDataType(self.params.dataType, self.rtn.data);
+          self.rtn.dataType = self.params.dataType;
+          self.postMessage({
+            results: self.rtn
           }, [rtn.data.buffer]);
         } else {
-          hamsters.self.postMessage({
-            results: hamsters.self.rtn
+          self.postMessage({
+            results: self.rtn
           });
         }
       };
@@ -566,20 +488,14 @@ let hamsters = {
     } else {
       dataType = "na";
     }
-    if(hamsters.cache) {
-      if(hamsters.wheel.cache.memoizeDB && hamsters.wheel.cache.memoizeDB.objectStoreNames.contains('memoize')) {
-        memoize = memoize || true;
-        hamsters.wheel.checkCache(fn, params.array, dataType, function(result) {
-          if(result) {
-            callback(result);
-            hamsters.wheel.tasks[task.id] = null; //Clean up our task, not needed any longer
-            return;
-          } else {
-            hamsters.wheel.work(task, params, fn, callback, aggregate, dataType, memoize, order);
-          }
-        });
-      } else {
-        hamsters.wheel.work(task, params, fn, callback, aggregate, dataType, memoize, order);
+    if(hamsters.cache && memoize) {
+      let result = hamsters.wheel.checkCache(hamsterfood.fn, task.input, dataType);
+      if(result && callback) {
+        setTimeout(function() {
+          hamsters.wheel.tasks[taskid] = null; //Clean up our task, not needed any longer
+          callback(result);
+        }, 4);
+        return;
       }
     } else {
       hamsters.wheel.work(task, params, fn, callback, aggregate, dataType, memoize, order);
@@ -707,23 +623,23 @@ let hamsters = {
   */
   hamsters.wheel.legacyProcessor = function(params, inputArray, callback) {
     setTimeout(function() {
-      hamsters.self.rtn = {
+      self.rtn = {
         success: true, 
         data: []
       };
-      hamsters.self.params = params;
-      hamsters.self.params.array = inputArray;
-      if(hamsters.self.params.fn) {
-        hamsters.self.params.fn();
-        if(hamsters.self.params.dataType) {
-          hamsters.self.rtn.data = hamsters.wheel.processDataType(hamsters.self.params.dataType, hamsters.self.rtn.data);
-          hamsters.self.rtn.dataType = hamsters.self.params.dataType;
+      self.params = params;
+      self.params.array = inputArray;
+      if(self.params.fn) {
+        self.params.fn();
+        if(self.params.dataType) {
+          self.rtn.data = hamsters.wheel.processDataType(self.params.dataType, self.rtn.data);
+          self.rtn.dataType = self.params.dataType;
         }
-        callback(hamsters.self.rtn);
+        callback(self.rtn);
       } else {
-        hamsters.self.rtn.success = false;
-        hamsters.self.rtn.error = 'Missing function';
-        callback(hamsters.self.rtn);
+        self.rtn.success = false;
+        self.rtn.error = 'Missing function';
+        callback(self.rtn);
       }
     }, 4); //4ms delay (HTML5 spec minimum), simulate threading
   };
@@ -735,9 +651,9 @@ let hamsters = {
     * @param {string} textContent - Web worker boiler plate
     * @return blob
   */
-  const createBlob = function(textContent) {
-    if(!hamsters.self.Blob) {
-      hamsters.self.BlobBuilder = hamsters.self.BlobBuilder || hamsters.self.WebKitBlobBuilder || hamsters.self.MozBlobBuilder || hamsters.self.MSBlobBuilder;
+  let createBlob = function(textContent) {
+    if(!self.Blob) {
+      self.BlobBuilder = self.BlobBuilder || self.WebKitBlobBuilder || self.MozBlobBuilder || self.MSBlobBuilder;
       let blob = new BlobBuilder();
       blob.append([textContent], {
         type: 'application/javascript'
@@ -843,7 +759,7 @@ let hamsters = {
       * @param {object} e - Web Worker event object
       * @return 
     */
-    const onmessage = function(e, results) {
+    let onmessage = function(e, results) {
       hamsters.wheel.clean(task, id);
       results = e.data.results;
       task.output[id] = results.data;
@@ -861,12 +777,7 @@ let hamsters = {
         }
         hamsters.wheel.tasks[task.id] = null; //Clean up our task, not needed any longer
         if(hamsters.cache && memoize) {
-          let output = hamsters.wheel.getOutput(task.output, aggregate, results.dataType);
-          if(output && !output.slice) {
-            hamsters.wheel.memoize(task.fn, task.input[0].input, hamsters.wheel.normalizeArray(output), results.dataType);
-          } else {
-            hamsters.wheel.memoize(task.fn, task.input[0].input, hamsters.wheel.getOutput(task.output, aggregate, results.dataType), results.dataType);
-          }
+          prepareToMemoize(task, aggregate, results);
         }
       }
       if(hamsters.wheel.queue.pending.length !== 0) {
@@ -875,6 +786,16 @@ let hamsters = {
         hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
       }
     };
+
+    let prepareToMemoize = function(task, aggregate, results) {
+      let output = hamsters.wheel.getOutput(task.output, aggregate, results.dataType);
+      if(output && !output.slice) {
+        hamsters.wheel.memoize(task.fn, task.input[0].input, hamsters.wheel.normalizeArray(output), results.dataType);
+      } else {
+        hamsters.wheel.memoize(task.fn, task.input[0].input, hamsters.wheel.getOutput(task.output, aggregate, results.dataType), results.dataType);
+      }
+    };
+
     /**
       * @description: Setup error handling
       * @constructor
@@ -882,7 +803,7 @@ let hamsters = {
       * @param {object} e - Web Worker event object
       * @return 
     */
-    const onerror = function(e) {
+    let onerror = function(e) {
       if(!hamsters.wheel.env.worker) {
         hamster.terminate(); //Kill the thread
       }
@@ -919,34 +840,21 @@ let hamsters = {
   };
 
   hamsters.wheel.processData = function(dataType, buffer) {
-    if (dataType === 'uint32') {
-      return new Uint32Array(buffer);
+    let types = {
+      'uint32': Uint32Array,
+      'uint16': Uint16Array,
+      'uint8': Uint8Array,
+      'uint8clamped': Uint8ClampedArray,
+      'int32': Int32Array,
+      'int16': Int16Array,
+      'int8': Int8Array,
+      'float32': Float32Array,
+      'float64': Float64Array
+    };
+    if(!types[dataType]) {
+      return dataType;
     }
-    if (dataType === 'uint16') {
-      return new Uint16Array(buffer);
-    }
-    if (dataType === 'uint8') {
-      return new Uint8Array(buffer);
-    }
-    if (dataType === 'uint8clamped') {
-      return new Uint8ClampedArray(buffer);
-    }
-    if (dataType === 'int32') {
-      return new Int32Array(buffer);
-    }
-    if (dataType === 'int16') {
-      return new Int16Array(buffer);
-    }
-    if (dataType === 'int8') {
-      return new Int8Array(buffer);
-    }
-    if (dataType === 'float32') {
-      return new Float32Array(buffer);
-    }
-    if (dataType === 'float64') {
-      return new Float64Array(buffer);
-    }
-    return buffer;
+    return new types[dataType](buffer);
   };
 
   /**
@@ -1070,9 +978,6 @@ let hamsters = {
           console.info('Spawning Hamster #' + threadid + ' @ ' + new Date().getTime());
         }
       };
-      if(hamsters.cache) {
-        hamsters.wheel.openIndexedDB();
-      }
       spawnHamsters();
     }
   });

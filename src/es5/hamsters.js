@@ -348,34 +348,21 @@ var hamsters = {
     if(worker) {
       return function() {
         self.processDataType = function(dataType, buffer) {
-          if (dataType === 'uint32') {
-            return new Uint32Array(buffer);
+          var types = {
+            'uint32': Uint32Array,
+            'uint16': Uint16Array,
+            'uint8': Uint8Array,
+            'uint8clamped': Uint8ClampedArray,
+            'int32': Int32Array,
+            'int16': Int16Array,
+            'int8': Int8Array,
+            'float32': Float32Array,
+            'float64': Float64Array
+          };
+          if(!types[dataType]) {
+            return dataType;
           }
-          if (dataType === 'uint16') {
-            return new Uint16Array(buffer);
-          }
-          if (dataType === 'uint8') {
-            return new Uint8Array(buffer);
-          }
-          if (dataType === 'uint8clamped') {
-            return new Uint8ClampedArray(buffer);
-          }
-          if (dataType === 'int32') {
-            return new Int32Array(buffer);
-          }
-          if (dataType === 'int16') {
-            return new Int16Array(buffer);
-          }
-          if (dataType === 'int8') {
-            return new Int8Array(buffer);
-          }
-          if (dataType === 'float32') {
-            return new Float32Array(buffer);
-          }
-          if (dataType === 'float64') {
-            return new Float64Array(buffer);
-          }
-          return buffer;
+          return new types[dataType](buffer);
         };
         self.addEventListener("connect", function(e) {
             var port = e.ports[0];
@@ -991,9 +978,6 @@ var hamsters = {
           console.info('Spawning Hamster #' + threadid + ' @ ' + new Date().getTime());
         }
       };
-      if(hamsters.cache) {
-        hamsters.wheel.openIndexedDB();
-      }
       spawnHamsters();
     }
   });
