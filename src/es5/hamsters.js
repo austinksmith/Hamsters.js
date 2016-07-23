@@ -8,40 +8,33 @@
 */
 
 var hamsters = {
-  version: '3.9',
-  debug: false,
-  cache: false,
-  persistence: true,
-  maxThreads: (navigator.hardwareConcurrency || 4),
-  tools: {
+    version: '3.9',
+    debug: false,
+    cache: false,
+    persistence: true,
+    maxThreads: (navigator.hardwareConcurrency || 4),
+    tools: {},
+    wheel: {
+      env: {
+        legacy: false,
+        node: false,
+        shell: false,
+        worker: false,
+        browser: false,
+        ie10: false,
+        transferrable: true
+      },
+      queue: {
+        running: [],
+        pending: []
+      },
+      hamsters: [], 
+      tasks: [],
+      errors: [],
+      uri: null
+    }
+  };
 
-  },
-  wheel: {
-    env: {
-      legacy: false,
-      node: false,
-      shell: false,
-      worker: false,
-      browser: false,
-      ie10: false,
-      transferrable: true
-    },
-    queue: {
-      running: [],
-      pending: []
-    },
-    cache: {
-      indexedDB: null,
-      dbVersion: 4,
-      memoizeDB: null
-    },
-    hamsters: [], 
-    tasks: [],
-    errors: [],
-    uri: null
-  }
-};
-  
 /**
  * @description: Initializes and sets up library functionality
  * @return
@@ -276,82 +269,35 @@ var hamsters = {
    * @param {string} dataType
    * @return 
   */
-  hamsters.wheel.checkCache = function(fn, inputArray, dataType, callback) {
-    var request = hamsters.wheel.cache.indexedDB.open("memoize");
-    request.onsuccess = function(event) {
-      var trans = hamsters.wheel.cache.memoizeDB.transaction("memoize", 'readonly');
-      var request = trans.objectStore("memoize").openCursor();
-      request.onsuccess = function(event) {
-        var cursor = request.result;
-        // If cursor is null then we've completed the enumeration
-        if (cursor) {
-          if(cursor.value.fn === String(fn) && cursor.value.inputArray === inputArray && cursor.value.dataType === dataType) {
-            callback(cursor.value.output);
-          } else {
-            cursor.continue();
-          }
-        } else {
-          callback();
-        }
-      };
-    };
+  hamsters.wheel.checkCache = function(fn, input, dataType) {
+    var item;
+    for (var i = 0, len = sessionStorage.length; i < len; i++) {
+      item = eval('('+sessionStorage[i]+')');
+      var equals = hamsters.runtime.compareArrays(item.input, input);
+      if(item && item.func === fn && equals  && !item.dataType && !dataType) {
+        return item.output;
+      } else if(item && item.func === fn && equals && item.dataType === dataType) {
+        return hamsters.runtime.processDataType(item.dataType, item.output);
+      }
+    }
   };
 
-  hamsters.wheel.openIndexedDB = function(callback) {
-    var request = hamsters.wheel.cache.indexedDB.open('hamstersjs', hamsters.wheel.cache.dbVersion);
-    request.onupgradeneeded = function(e) {
-      var db = request.result;
-      if(!db.objectStoreNames.contains('memoize')) {
-        var store = db.createObjectStore('memoize', {
-          keyPath: 'id',
-          autoIncrement: true
-        }); 
-      }
-    };
-    request.onerror = function(event) {
-      return;
-    };
-    request.onsuccess = function (event) {
-      hamsters.wheel.cache.memoizeDB = request.result;
-      if(hamsters.wheel.cache.memoizeDB.setVersion) { //For Older browsers may or may not work
-        if(hamsters.wheel.cache.memoizeDB.version != hamsters.wheel.cache.dbVersion) {
-          var upgrade = hamsters.wheel.cache.memoizeDB.setVersion(hamsters.wheel.cache.dbVersion);
-          upgrade.onsuccess = function(event) {
-            var store = hamsters.wheel.cache.memoizeDB.createObjectStore('memoize', {
-              keyPath: 'fn',
-              autoIncrement: true
-            });
-          };
-        }
-      }
-    };
-  };
-
-  /**
-   * Description
-   * @method memoize
-   * @param {string} fn
-   * @param {array} input
-   * @param {array} output
-   * @param {string} dataType
-   * @return 
-  */
   hamsters.wheel.memoize = function(fn, inputArray, output, dataType) {
-    var trans = hamsters.wheel.cache.memoizeDB.transaction('memoize', 'readwrite');
-    var store = trans.objectStore('memoize');
-    var data = {
-      fn: String(fn),
-      inputArray: inputArray,
-      output: output,
-      dataType: dataType
-    };
-    var request = store.put(data);
-    request.oncomplete = function(e) {
-      alert('success!');
-    };
-    request.onerror = function(e) {
-      console.log("Error Adding: ", e);
-    };
+    if(hamsters.wheel.checkCache(fn, input, dataType)) {
+      return;
+    }
+    try {
+      sessionStorage.setItem(sessionStorage.length, JSON.stringify({'func': fn, 'input': inputArray, 'output': output, 'dataType': dataType}));
+    } catch(eve) {
+      if(eve.name === 'QuotaExceededError') {
+        sessionStorage.clear();
+        try {
+          sessionStorage.setItem(sessionStorage.length, JSON.stringify({'func': fn, 'input': inputArray, 'output': output, 'dataType': dataType}));
+        } catch(e) { //Do nothing, can't cache this result..too large
+          return;
+        }
+      }
+    }
   };
 
   /**
@@ -463,34 +409,21 @@ var hamsters = {
      */
     return function() {
       self.processDataType = function(dataType, buffer) {
-        if (dataType === 'uint32') {
-          return new Uint32Array(buffer);
+        var types = {
+          'uint32': Uint32Array,
+          'uint16': Uint16Array,
+          'uint8': Uint8Array,
+          'uint8clamped': Uint8ClampedArray,
+          'int32': Int32Array,
+          'int16': Int16Array,
+          'int8': Int8Array,
+          'float32': Float32Array,
+          'float64': Float64Array
+        };
+        if(!types[dataType]) {
+          return dataType;
         }
-        if (dataType === 'uint16') {
-          return new Uint16Array(buffer);
-        }
-        if (dataType === 'uint8') {
-          return new Uint8Array(buffer);
-        }
-        if (dataType === 'uint8clamped') {
-          return new Uint8ClampedArray(buffer);
-        }
-        if (dataType === 'int32') {
-          return new Int32Array(buffer);
-        }
-        if (dataType === 'int16') {
-          return new Int16Array(buffer);
-        }
-        if (dataType === 'int8') {
-          return new Int8Array(buffer);
-        }
-        if (dataType === 'float32') {
-          return new Float32Array(buffer);
-        }
-        if (dataType === 'float64') {
-          return new Float64Array(buffer);
-        }
-        return buffer;
+        return new types[dataType](buffer);
       };
       self.onmessage = function(e) {
         self.rtn = {
@@ -568,20 +501,14 @@ var hamsters = {
     } else {
       dataType = "na";
     }
-    if(hamsters.cache) {
-      if(hamsters.wheel.cache.memoizeDB && hamsters.wheel.cache.memoizeDB.objectStoreNames.contains('memoize')) {
-        memoize = memoize || true;
-        hamsters.wheel.checkCache(fn, params.array, dataType, function(result) {
-          if(result) {
-            callback(result);
-            hamsters.wheel.tasks[task.id] = null; //Clean up our task, not needed any longer
-            return;
-          } else {
-            hamsters.wheel.work(task, params, fn, callback, aggregate, dataType, memoize, order);
-          }
-        });
-      } else {
-        hamsters.wheel.work(task, params, fn, callback, aggregate, dataType, memoize, order);
+    if(hamsters.cache && memoize) {
+      var result = hamsters.wheel.checkCache(hamsterfood.fn, task.input, dataType);
+      if(result && callback) {
+        setTimeout(function() {
+          hamsters.wheel.tasks[taskid] = null; //Clean up our task, not needed any longer
+          callback(result);
+        }, 4);
+        return;
       }
     } else {
       hamsters.wheel.work(task, params, fn, callback, aggregate, dataType, memoize, order);
@@ -863,12 +790,7 @@ var hamsters = {
         }
         hamsters.wheel.tasks[task.id] = null; //Clean up our task, not needed any longer
         if(hamsters.cache && memoize) {
-          var output = hamsters.wheel.getOutput(task.output, aggregate, results.dataType);
-          if(output && !output.slice) {
-            hamsters.wheel.memoize(task.fn, task.input[0].input, hamsters.wheel.normalizeArray(output), results.dataType);
-          } else {
-            hamsters.wheel.memoize(task.fn, task.input[0].input, hamsters.wheel.getOutput(task.output, aggregate, results.dataType), results.dataType);
-          }
+          prepareToMemoize(task, aggregate, results);
         }
       }
       if(hamsters.wheel.queue.pending.length !== 0) {
@@ -877,6 +799,16 @@ var hamsters = {
         hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
       }
     };
+
+    var prepareToMemoize = function(task, aggregate, results) {
+      var output = hamsters.wheel.getOutput(task.output, aggregate, results.dataType);
+      if(output && !output.slice) {
+        hamsters.wheel.memoize(task.fn, task.input[0].input, hamsters.wheel.normalizeArray(output), results.dataType);
+      } else {
+        hamsters.wheel.memoize(task.fn, task.input[0].input, hamsters.wheel.getOutput(task.output, aggregate, results.dataType), results.dataType);
+      }
+    };
+
     /**
       * @description: Setup error handling
       * @constructor
@@ -921,34 +853,21 @@ var hamsters = {
   };
 
   hamsters.wheel.processData = function(dataType, buffer) {
-    if (dataType === 'uint32') {
-      return new Uint32Array(buffer);
+    var types = {
+      'uint32': Uint32Array,
+      'uint16': Uint16Array,
+      'uint8': Uint8Array,
+      'uint8clamped': Uint8ClampedArray,
+      'int32': Int32Array,
+      'int16': Int16Array,
+      'int8': Int8Array,
+      'float32': Float32Array,
+      'float64': Float64Array
+    };
+    if(!types[dataType]) {
+      return dataType;
     }
-    if (dataType === 'uint16') {
-      return new Uint16Array(buffer);
-    }
-    if (dataType === 'uint8') {
-      return new Uint8Array(buffer);
-    }
-    if (dataType === 'uint8clamped') {
-      return new Uint8ClampedArray(buffer);
-    }
-    if (dataType === 'int32') {
-      return new Int32Array(buffer);
-    }
-    if (dataType === 'int16') {
-      return new Int16Array(buffer);
-    }
-    if (dataType === 'int8') {
-      return new Int8Array(buffer);
-    }
-    if (dataType === 'float32') {
-      return new Float32Array(buffer);
-    }
-    if (dataType === 'float64') {
-      return new Float64Array(buffer);
-    }
-    return buffer;
+    return new types[dataType](buffer);
   };
 
   /**
