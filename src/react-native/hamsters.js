@@ -100,9 +100,6 @@ let hamsters = {
     if(!Uint8Array) {
       hamsters.wheel.env.transferrable = false;
     }
-    if(hamsters.cache) {
-      hamsters.wheel.cache.indexedDB = (self.indexedDB || self.mozIndexedDB || self.webkitIndexedDB || self.msIndexedDB);
-    }
     callback(hamsters.wheel.env.legacy);
   };
 
@@ -259,45 +256,6 @@ let hamsters = {
     }, function(output) {
         callback(output);
     }, 1, false, null, false);
-  };
-
-  /**
-   * Description
-   * @method checkCache
-   * @param {string} fn
-   * @param {array} input
-   * @param {string} dataType
-   * @return 
-  */
-  hamsters.wheel.checkCache = function(fn, input, dataType) {
-    let item;
-    for (let i = 0, len = sessionStorage.length; i < len; i++) {
-      item = eval('('+sessionStorage[i]+')');
-      let equals = hamsters.runtime.compareArrays(item.input, input);
-      if(item && item.func === fn && equals  && !item.dataType && !dataType) {
-        return item.output;
-      } else if(item && item.func === fn && equals && item.dataType === dataType) {
-        return hamsters.runtime.processDataType(item.dataType, item.output);
-      }
-    }
-  };
-
-  hamsters.wheel.memoize = function(fn, inputArray, output, dataType) {
-    if(hamsters.wheel.checkCache(fn, input, dataType)) {
-      return;
-    }
-    try {
-      sessionStorage.setItem(sessionStorage.length, JSON.stringify({'func': fn, 'input': inputArray, 'output': output, 'dataType': dataType}));
-    } catch(eve) {
-      if(eve.name === 'QuotaExceededError') {
-        sessionStorage.clear();
-        try {
-          sessionStorage.setItem(sessionStorage.length, JSON.stringify({'func': fn, 'input': inputArray, 'output': output, 'dataType': dataType}));
-        } catch(e) { //Do nothing, can't cache this result..too large
-          return;
-        }
-      }
-    }
   };
 
   /**
@@ -488,18 +446,7 @@ let hamsters = {
     } else {
       dataType = "na";
     }
-    if(hamsters.cache && memoize) {
-      let result = hamsters.wheel.checkCache(hamsterfood.fn, task.input, dataType);
-      if(result && callback) {
-        setTimeout(function() {
-          hamsters.wheel.tasks[taskid] = null; //Clean up our task, not needed any longer
-          callback(result);
-        }, 4);
-        return;
-      }
-    } else {
-      hamsters.wheel.work(task, params, fn, callback, aggregate, dataType, memoize, order);
-    }
+    hamsters.wheel.work(task, params, fn, callback, aggregate, dataType, memoize, order);
   };
 
   hamsters.wheel.work = function(task, params, fn, callback, aggregate, dataType, memoize, order) {
@@ -776,23 +723,11 @@ let hamsters = {
           console.info('Execution Complete! Elapsed: ' + ((e.timeStamp - task.input[0].start)/1000) + 's');
         }
         hamsters.wheel.tasks[task.id] = null; //Clean up our task, not needed any longer
-        if(hamsters.cache && memoize) {
-          prepareToMemoize(task, aggregate, results);
-        }
       }
       if(hamsters.wheel.queue.pending.length !== 0) {
         hamsters.wheel.processQueue(hamster, hamsters.wheel.queue.pending.shift());
       } else if(!hamsters.persistence && !hamsters.wheel.env.worker) {
         hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
-      }
-    };
-
-    let prepareToMemoize = function(task, aggregate, results) {
-      let output = hamsters.wheel.getOutput(task.output, aggregate, results.dataType);
-      if(output && !output.slice) {
-        hamsters.wheel.memoize(task.fn, task.input[0].input, hamsters.wheel.normalizeArray(output), results.dataType);
-      } else {
-        hamsters.wheel.memoize(task.fn, task.input[0].input, hamsters.wheel.getOutput(task.output, aggregate, results.dataType), results.dataType);
       }
     };
 
@@ -938,13 +873,6 @@ let hamsters = {
             }
             callback(hamsters.wheel.getOutput(task.output, aggregate, output.dataType));
             hamsters.wheel.tasks[task.id] = null; //Clean up our task, not needed any longer
-            if(hamsters.cache && memoize !== false) {
-              if(output.data.length > 0 && !output.dataType) {
-                hamsters.wheel.memoize(task.fn, task.input, output.data, 'na');
-              } else if(output.data.length > 0 && output.dataType) {
-                hamsters.wheel.memoize(task.fn, task.input, hamsters.wheel.normalizeArray(output.data), output.dataType);
-              }
-            }
           }
         });
         task.count += 1; //Thread finished

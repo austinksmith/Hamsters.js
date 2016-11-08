@@ -100,9 +100,6 @@ var hamsters = {
     if(!Uint8Array) {
       hamsters.wheel.env.transferrable = false;
     }
-    if(hamsters.cache) {
-      hamsters.wheel.cache.indexedDB = (self.indexedDB || self.mozIndexedDB || self.webkitIndexedDB || self.msIndexedDB);
-    }
     callback(hamsters.wheel.env.legacy);
   };
 
@@ -262,6 +259,25 @@ var hamsters = {
   };
 
   /**
+ * Description
+ * @method compareArrays
+ * @param {array} array1
+ * @param {array} array2
+ * @return CallExpression
+ */
+  hamsters.wheel.compareArrays = function (array1, array2) {
+      if(!array1 && !array2) {
+        return true;
+      }
+      if (array1.length !== array2.length) {
+          return false;
+      }
+      return array1.every(function (el, i) {
+          return (el === array2[i]);
+      });
+  };
+
+  /**
    * Description
    * @method checkCache
    * @param {string} fn
@@ -273,17 +289,17 @@ var hamsters = {
     var item;
     for (var i = 0, len = sessionStorage.length; i < len; i++) {
       item = eval('('+sessionStorage[i]+')');
-      var equals = hamsters.runtime.compareArrays(item.input, input);
+      var equals = hamsters.wheel.compareArrays(item.input, input);
       if(item && item.func === fn && equals  && !item.dataType && !dataType) {
         return item.output;
       } else if(item && item.func === fn && equals && item.dataType === dataType) {
-        return hamsters.runtime.processDataType(item.dataType, item.output);
+        return hamsters.wheel.processDataType(item.dataType, item.output);
       }
     }
   };
 
   hamsters.wheel.memoize = function(fn, inputArray, output, dataType) {
-    if(hamsters.wheel.checkCache(fn, input, dataType)) {
+    if(hamsters.wheel.checkCache(fn, inputArray, dataType)) {
       return;
     }
     try {
@@ -489,7 +505,7 @@ var hamsters = {
       dataType = "na";
     }
     if(hamsters.cache && memoize) {
-      var result = hamsters.wheel.checkCache(hamsterfood.fn, task.input, dataType);
+      var result = hamsters.wheel.checkCache(fn, task.input, dataType);
       if(result && callback) {
         setTimeout(function() {
           hamsters.wheel.tasks[taskid] = null; //Clean up our task, not needed any longer
