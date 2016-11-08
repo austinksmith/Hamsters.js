@@ -31,10 +31,10 @@ describe("WebHamsters Core Functionality", function() {
     });
     var dataTypes = ['Int8','Int16','Int32','Float32','Float64','Uint16','Uint32','Uint8'];
     for (var i = dataTypes.length - 1; i >= 0; i--) {
-      it("Computes 7th Fibonacci Number ("+dataTypes[i]+")", function(done) {
+      it("Computes 8th Fibonacci Number ("+dataTypes[i]+")", function(done) {
         hamsters.run({num: 7}, function() {
           var fib = function(n) {
-            if (n < 2){
+            if (n < 2) {
               return 1;
             } else {
               return fib(n-2) + fib(n-1);
@@ -45,7 +45,7 @@ describe("WebHamsters Core Functionality", function() {
           result = res[0];
           expect(result).toEqual(13);
           done();
-        }, 1, true, dataTypes[i]);
+        }, 1, true, dataTypes[i], true);
       });
     }
 

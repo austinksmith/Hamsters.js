@@ -1,14 +1,14 @@
 {
-  "name": "webhamsters",
-  "version": "3.8.0",
-  "description": "Enables function level multithreading in Javascript by exploiting concurrent web workers",
+  "name": "Hamsters.js",
+  "version": "3.9.0",
+  "description": "100% Vanilla Javascript Multithreading & Parallel Execution Library",
   "main": "hamsters.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/austinksmith/WebHamsters.git"
+    "url": "https://github.com/austinksmith/Hamsters.js.git"
   },
   "keywords": [
     "multithreading",
@@ -25,7 +25,7 @@
   "author": "Austin K. Smith <austin@asmithdev.com> (http://asmithdev.com)",
   "license": "Artistic License 2.0",
   "bugs": {
-    "url": "https://github.com/austinksmith/WebHamsters/issues"
+    "url": "https://github.com/austinksmith/Hamsters.js/issues"
   },
   "homepage": "http://www.hamsters.io"
 }

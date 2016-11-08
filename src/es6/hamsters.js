@@ -100,9 +100,6 @@ let hamsters = {
     if(!Uint8Array) {
       hamsters.wheel.env.transferrable = false;
     }
-    if(hamsters.cache) {
-      hamsters.wheel.cache.indexedDB = (self.indexedDB || self.mozIndexedDB || self.webkitIndexedDB || self.msIndexedDB);
-    }
     callback(hamsters.wheel.env.legacy);
   };
 
@@ -261,6 +258,25 @@ let hamsters = {
     }, 1, false, null, false);
   };
 
+    /**
+ * Description
+ * @method compareArrays
+ * @param {array} array1
+ * @param {array} array2
+ * @return CallExpression
+ */
+  hamsters.wheel.compareArrays = function (array1, array2) {
+      if(!array1 && !array2) {
+        return true;
+      }
+      if (array1.length !== array2.length) {
+          return false;
+      }
+      return array1.every(function (el, i) {
+          return (el === array2[i]);
+      });
+  };
+
   /**
    * Description
    * @method checkCache
@@ -273,11 +289,11 @@ let hamsters = {
     let item;
     for (let i = 0, len = sessionStorage.length; i < len; i++) {
       item = eval('('+sessionStorage[i]+')');
-      let equals = hamsters.runtime.compareArrays(item.input, input);
+      let equals = hamsters.wheel.compareArrays(item.input, input);
       if(item && item.func === fn && equals  && !item.dataType && !dataType) {
         return item.output;
       } else if(item && item.func === fn && equals && item.dataType === dataType) {
-        return hamsters.runtime.processDataType(item.dataType, item.output);
+        return hamsters.wheel.processDataType(item.dataType, item.output);
       }
     }
   };
@@ -489,7 +505,7 @@ let hamsters = {
       dataType = "na";
     }
     if(hamsters.cache && memoize) {
-      let result = hamsters.wheel.checkCache(hamsterfood.fn, task.input, dataType);
+      let result = hamsters.wheel.checkCache(fn, task.input, dataType);
       if(result && callback) {
         setTimeout(function() {
           hamsters.wheel.tasks[taskid] = null; //Clean up our task, not needed any longer
