@@ -501,8 +501,6 @@ let hamsters = {
     let task = hamsters.wheel.newTask(hamsters.wheel.tasks.length, workers, order, dataType, fn, callback);
     if(dataType) {
       dataType = dataType.toLowerCase();
-    } else {
-      dataType = "na";
     }
     if(hamsters.cache && memoize) {
       let result = hamsters.wheel.checkCache(fn, task.input, dataType);
