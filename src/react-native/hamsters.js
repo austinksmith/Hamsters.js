@@ -318,7 +318,7 @@ let hamsters = {
             'float64': Float64Array
           };
           if(!types[dataType]) {
-            return dataType;
+            return buffer;
           }
           return new types[dataType](buffer);
         };
@@ -366,7 +366,7 @@ let hamsters = {
           'float64': Float64Array
         };
         if(!types[dataType]) {
-          return dataType;
+          return buffer;
         }
         return new types[dataType](buffer);
       };
@@ -576,18 +576,12 @@ let hamsters = {
       };
       self.params = params;
       self.params.array = inputArray;
-      if(self.params.fn) {
-        self.params.fn();
-        if(self.params.dataType) {
-          self.rtn.data = hamsters.wheel.processDataType(self.params.dataType, self.rtn.data);
-          self.rtn.dataType = self.params.dataType;
-        }
-        callback(self.rtn);
-      } else {
-        self.rtn.success = false;
-        self.rtn.error = 'Missing function';
-        callback(self.rtn);
+      self.params.fn();
+      if(self.params.dataType && self.params.dataType != "na") {
+        self.rtn.data = hamsters.wheel.processDataType(self.params.dataType, self.rtn.data);
+        self.rtn.dataType = self.params.dataType;
       }
+      callback(self.rtn);
     }, 4); //4ms delay (HTML5 spec minimum), simulate threading
   };
 
@@ -787,7 +781,7 @@ let hamsters = {
       'float64': Float64Array
     };
     if(!types[dataType]) {
-      return dataType;
+      return buffer;
     }
     return new types[dataType](buffer);
   };
@@ -828,7 +822,7 @@ let hamsters = {
     } else {
       let key, buffers = [];
       if(inputArray) {
-        if(food.dataType) { //Transferable object transfer if using typed array
+        if(food.dataType && food.dataType != "na") { //Transferable object transfer if using typed array
           food.array = hamsters.wheel.processDataType(food.dataType, inputArray);
         } else {
           food.array = inputArray;

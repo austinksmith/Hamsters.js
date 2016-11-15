@@ -29,7 +29,7 @@ describe("WebHamsters Core Functionality", function() {
     beforeEach(function(done) {
       done();
     });
-    var dataTypes = ['Int8','Int16','Int32','Float32','Float64','Uint16','Uint32','Uint8'];
+    var dataTypes = ['Int8','Int16','Int32','Float32','Float64','Uint16','Uint32','Uint8', null];
     for (var i = dataTypes.length - 1; i >= 0; i--) {
       it("Computes 8th Fibonacci Number ("+dataTypes[i]+")", function(done) {
         hamsters.run({num: 7}, function() {
