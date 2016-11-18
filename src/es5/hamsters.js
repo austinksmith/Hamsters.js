@@ -8,7 +8,7 @@
 */
 
 var hamsters = {
-    version: '3.9',
+    version: '3.9.1',
     debug: false,
     cache: false,
     persistence: true,
