@@ -155,7 +155,7 @@ However the most powerful abstraction is the for loop abstraction, makes use of 
 var op = function(i) { //Perform this function on every element
   return arguments[0] * 2;
 };
-var options {
+var options = {
   operator: op, //Operation to perform on every element
   array: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20], //Input array 
   startIndex: 0, //Optional Starting index for loop default of 0
