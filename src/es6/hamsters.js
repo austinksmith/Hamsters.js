@@ -8,11 +8,11 @@
 */
 
 let hamsters = {
-    version: '3.9.1',
+    version: '3.9.3',
     debug: false,
     cache: false,
     persistence: true,
-    maxThreads: (navigator.hardwareConcurrency || 4),
+    maxThreads: 4,
     tools: {},
     wheel: {
       env: {
@@ -64,20 +64,28 @@ let hamsters = {
     hamsters.wheel.env.node = typeof process === "object" && typeof require === "function" && !hamsters.wheel.env.browser && !hamsters.wheel.env.worker && !hamsters.wheel.env.reactNative;
     hamsters.wheel.env.reactNative = !hamsters.wheel.env.node && typeof global === 'object';
     hamsters.wheel.env.shell = !hamsters.wheel.env.browser && !hamsters.wheel.env.node && !hamsters.wheel.env.worker && !hamsters.wheel.env.reactNative;
-    if(hamsters.wheel.env.reactNative || hamsters.wheel.env.node) {
+    if(hamsters.wheel.env.reactNative) {
       global.self = global;
     }
-    if(hamsters.wheel.env.browser && !hamsters.wheel.env.worker) {
+    if(hamsters.wheel.env.node) {
+      try {
+        let hamster = new Worker('src/common/wheel.min.js');
+        hamster.terminate();
+      } catch(e) {
+        hamsters.wheel.env.legacy = true;
+      }
+    }
+    if(hamsters.wheel.env.browser) {
       if(isIE(10)) {
         try {
-          let hamster = new Worker('common/wheel.min.js');
+          let hamster = new Worker('src/common/wheel.min.js');
           hamster.terminate();
           hamsters.wheel.env.ie10 = true;
         } catch(e) {
           hamsters.wheel.env.legacy = true;
         }
       }
-      if(!self.Worker || navigator.userAgent.indexOf('Kindle/3.0') !== -1 || navigator.userAgent.indexOf('Mobile/8F190') !== -1  || navigator.userAgent.indexOf('IEMobile') !== -1) {
+      if(!Worker || navigator.userAgent.indexOf('Kindle/3.0') !== -1 || navigator.userAgent.indexOf('Mobile/8F190') !== -1  || navigator.userAgent.indexOf('IEMobile') !== -1) {
         hamsters.wheel.env.legacy = true;
       } else if(navigator.userAgent.toLowerCase().indexOf('firefox') !== -1) {
         if(hamsters.maxThreads > 20) {
@@ -99,6 +107,9 @@ let hamsters = {
     //Check for transferrable object support
     if(!Uint8Array) {
       hamsters.wheel.env.transferrable = false;
+    }
+    if(typeof navigator === 'object') {
+      hamsters.maxThreads = navigator.hardwareConcurrency;
     }
     callback(hamsters.wheel.env.legacy);
   };
@@ -331,7 +342,7 @@ let hamsters = {
       let i = hamsters.maxThreads;
       for (i; i > 0; i--) {
         if(hamsters.wheel.env.node || hamsters.wheel.env.ie10) {
-          hamsters.wheel.hamsters.push(new Worker('common/wheel.min.js'));
+          hamsters.wheel.hamsters.push(new Worker('src/common/wheel.min.js'));
         } else if(hamsters.wheel.env.worker) {
           hamsters.wheel.hamsters.push(new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel'));
         } else {
@@ -973,7 +984,7 @@ let hamsters = {
           if(hamsters.persistence) {
             hamster = hamsters.wheel.hamsters[hamsters.wheel.queue.running.length];
           } else if(hamsters.wheel.env.node || hamsters.wheel.env.ie10) {
-            hamster = new Worker('common/wheel.min.js');
+            hamster = new Worker('src/common/wheel.min.js');
           } else if(hamsters.wheel.env.worker) {
             hamster = new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel');
           } else {
@@ -992,3 +1003,9 @@ let hamsters = {
     }
   });
 })();
+
+if(typeof module !== 'undefined') {
+  module.exports = function hamstersjs() {
+    return hamsters;
+  };
+}
