@@ -1,8 +1,8 @@
 {
   "name": "hamsters.js",
-  "version": "3.9.2",
+  "version": "3.9.5",
   "description": "100% Vanilla Javascript Multithreading & Parallel Execution Library",
-  "main": "src/es6/hamsters.js",
+  "main": "src/es5/hamsters.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
