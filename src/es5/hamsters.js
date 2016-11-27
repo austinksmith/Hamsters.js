@@ -12,7 +12,7 @@ var hamsters = {
     debug: false,
     cache: false,
     persistence: true,
-    maxThreads: (navigator.hardwareConcurrency || 4),
+    maxThreads: 4,
     tools: {},
     wheel: {
       env: {
