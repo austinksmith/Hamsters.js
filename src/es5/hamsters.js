@@ -8,7 +8,7 @@
 */
 
 var hamsters = {
-    version: '3.9.5',
+    version: '3.9.6',
     debug: false,
     cache: false,
     persistence: true,
@@ -1005,7 +1005,5 @@ var hamsters = {
 })();
 
 if(typeof module !== 'undefined') {
-  module.exports = function hamstersjs() {
-    return hamsters;
-  };
+  module.exports = hamsters;
 }
