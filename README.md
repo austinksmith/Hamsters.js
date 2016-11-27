@@ -12,7 +12,7 @@
 # Guides
 Detailed Documentation coming soon check [Guides](https://www.hamsters.io/guides) for updates
 
-*** New website coming soon that will include better documentation, don't hesitate to contact with questions. ***
+**New website coming soon that will include better documentation, don't hesitate to contact with questions.**
 
 # Dataflow Example
 
@@ -22,6 +22,7 @@ Detailed Documentation coming soon check [Guides](https://www.hamsters.io/guides
 
 First download a copy of the library by using the releases page or clone the repo locally, upload the applicable files from the src directory to your server and add the script to your project as described blow. Make sure you upload the entire common folder to the same directory of the hamsters.js file. Without these files the library will not function inside of web workers, and will also force Internet Explorer 10 to use the legacy fallback mode thus hampering performance.
 
+**HTML**
 ```html
 <!-- HTML4 and (x)HTML -->
 <script type="text/javascript" src="path/to/hamsters.js">
@@ -29,17 +30,17 @@ First download a copy of the library by using the releases page or clone the rep
 <!-- HTML5 -->
 <script src="path/to/hamsters.js"></script>
 ```
-
+**React Native**
 ```js
-/* React Native */
 import hamsters from 'path/to/hamsters';
 ```
-
-
-Alternatively you can use bower to obtain a copy of the library by running.
-
-```
+**Bower**
+```js
 bower install WebHamsters
+```
+**NPM**
+```js
+npm install hamsters.js
 ```
 
 Once you've downloaded and added the library to your project you should have a variable named hamsters available, this variable is the core of the library. Do not create any globally scoped variables with the same name or you will risk causing compatibility issues. Now that you've succesfully added the library to your project, let's get started below.
