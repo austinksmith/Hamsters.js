@@ -5,7 +5,7 @@
     "Austin K Smith <austin@asmithdev.com>"
   ],
   "description": "100% Vanilla Javascript Multithreading & Parallel Execution Library",
-  "main": "hamsters.js",
+  "main": "src/es5/hamsters.js",
   "moduleType": [
     "es6"
   ],
