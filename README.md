@@ -296,8 +296,8 @@ Coincidentally FireFox enforces a per origin thread limit of 20, therefore on sy
 * All major browsers IE9+
 * Inside of existing web workers (threads inside threads)
 * Javascript shell environments
-* React Native (Tested under android only, should also function with IOS but is untested)
-* Node.js (Unofficially supported, pending further testing, should function as of v3.9 ** use dev branch **)
+* React Native
+* Node.js
 
 # Browser Support
 
