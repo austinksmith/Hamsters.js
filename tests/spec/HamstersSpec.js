@@ -1,9 +1,11 @@
 describe("WebHamsters Core Functionality", function() {
 
   for(var key in hamsters.wheel.env) {
-    it("Hamsters.wheel.env."+key+" should be boolean", function() {
-      expect(hamsters.wheel.env[key]).toMatch(/true|false/);
-    });
+    if(hamsters.wheel.env.hasOwnProperty(key)) {
+      it("Hamsters.wheel.env."+key+" should be boolean", function() {
+        expect(hamsters.wheel.env[key]).toMatch(/true|false/);
+      });
+    }
   }
 
   it("Hamsters.tools.aggregate should aggregate array of subarrays", function() {
@@ -57,7 +59,7 @@ describe("WebHamsters Core Functionality", function() {
           result = res[0];
           expect(result).toEqual(63);
           done();
-        }, 1, true, dataTypes[i]);
+        }, 1, true, dataTypes[i], true);
       });
     }
 

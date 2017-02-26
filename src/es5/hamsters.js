@@ -8,7 +8,7 @@
 */
 
 var hamsters = {
-    version: '3.9.7',
+    version: '3.9.8',
     debug: false,
     cache: false,
     persistence: true,
@@ -28,6 +28,7 @@ var hamsters = {
         running: [],
         pending: []
       },
+      cache: {},
       hamsters: [], 
       tasks: [],
       errors: [],
@@ -52,54 +53,51 @@ var hamsters = {
     return (new RegExp('msie' + (!isNaN(version) ? ('\\s'+version) : ''), 'i').test(navigator.userAgent));
   };
 
+  var setupBrowserSupport = function() {
+    if(!Worker || navigator.userAgent.indexOf('Kindle/3.0') !== -1 || navigator.userAgent.indexOf('Mobile/8F190') !== -1  || navigator.userAgent.indexOf('IEMobile') !== -1) {
+      hamsters.wheel.env.legacy = true;
+    } else if(navigator.userAgent.toLowerCase().indexOf('firefox') !== -1) {
+      hamsters.maxThreads = (hamsters.maxThreads > 20 ? 20 : hamsters.maxThreads);
+    } else if(isIE(10)) {
+      try {
+        var hamster = new Worker('src/common/wheel.min.js');
+        hamster.terminate();
+        hamsters.wheel.env.ie10 = true;
+      } catch(e) {
+        hamsters.wheel.env.legacy = true;
+      }
+    }
+  };
+
+  var setupWorkerSupport = function() {
+    try {
+      hamsters.wheel.uri = self.URL.createObjectURL(createBlob('(' + String(giveHamsterWork()) + '());'));
+      var SharedHamster = new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel');
+    } catch(e) {
+      hamsters.wheel.env.legacy = true;
+    }
+  };
+
   /**
    * Description
    * @description: Detect support for web workers
    * @method setupEnv
    * @return
    */
-  var setupEnv = function(callback) {
+  var setupHamstersEnvironment = function(callback) {
     hamsters.wheel.env.browser = typeof window === "object";
     hamsters.wheel.env.worker  = typeof importScripts === "function";
     hamsters.wheel.env.node = typeof process === "object" && typeof require === "function" && !hamsters.wheel.env.browser && !hamsters.wheel.env.worker && !hamsters.wheel.env.reactNative;
     hamsters.wheel.env.reactNative = !hamsters.wheel.env.node && typeof global === 'object';
     hamsters.wheel.env.shell = !hamsters.wheel.env.browser && !hamsters.wheel.env.node && !hamsters.wheel.env.worker && !hamsters.wheel.env.reactNative;
-    if(hamsters.wheel.env.reactNative || hamsters.wheel.env.node) {
-      global.self = global;
-    }
-    if(hamsters.wheel.env.node) {
-      try {
-        var hamster = new Worker('src/common/wheel.min.js');
-        hamster.terminate();
-      } catch(e) {
-        hamsters.wheel.env.legacy = true;
-      }
+    if(typeof navigator === 'object') {
+      hamsters.maxThreads = navigator.hardwareConcurrency;
     }
     if(hamsters.wheel.env.browser) {
-      if(isIE(10)) {
-        try {
-          var hamster = new Worker('src/common/wheel.min.js');
-          hamster.terminate();
-          hamsters.wheel.env.ie10 = true;
-        } catch(e) {
-          hamsters.wheel.env.legacy = true;
-        }
-      }
-      if(!Worker || navigator.userAgent.indexOf('Kindle/3.0') !== -1 || navigator.userAgent.indexOf('Mobile/8F190') !== -1  || navigator.userAgent.indexOf('IEMobile') !== -1) {
-        hamsters.wheel.env.legacy = true;
-      } else if(navigator.userAgent.toLowerCase().indexOf('firefox') !== -1) {
-        if(hamsters.maxThreads > 20) {
-          hamsters.maxThreads = 20;
-        }
-      }
+      setupBrowserSupport();
     }
     if(hamsters.wheel.env.worker) {
-       try {
-        hamsters.wheel.uri = self.URL.createObjectURL(createBlob('(' + String(giveHamsterWork(true)) + '());'));
-        var SharedHamster = new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel');
-      } catch(e) {
-        hamsters.wheel.env.legacy = true;
-      }
+      setupWorkerSupport();
     }
     if(hamsters.wheel.env.shell) {
       hamsters.wheel.env.legacy = true;
@@ -108,8 +106,8 @@ var hamsters = {
     if(!Uint8Array) {
       hamsters.wheel.env.transferrable = false;
     }
-    if(typeof navigator === 'object') {
-      hamsters.maxThreads = navigator.hardwareConcurrency;
+    if(hamsters.wheel.env === "reactNative" || hamsters.wheel.env === "node") {
+      global.self = global;
     }
     callback(hamsters.wheel.env.legacy);
   };
@@ -120,11 +118,7 @@ var hamsters = {
    * @return ObjectExpression
    */
   hamsters.tools.checkErrors = function() {
-    return {
-      msg: 'There are currently ' + hamsters.wheel.errors.length + ' errors captured in the wheel',
-      total: hamsters.wheel.errors.length,
-      errors: hamsters.wheel.errors
-    };
+    return hamsters.wheel.errors;
   };
   
   /**
@@ -297,34 +291,16 @@ var hamsters = {
    * @return 
   */
   hamsters.wheel.checkCache = function(fn, input, dataType) {
-    var item;
-    for (var i = 0, len = sessionStorage.length; i < len; i++) {
-      item = eval('('+sessionStorage[i]+')');
-      var equals = hamsters.wheel.compareArrays(item.input, input);
-      if(item && item.func === fn && equals  && !item.dataType && !dataType) {
-        return item.output;
-      } else if(item && item.func === fn && equals && item.dataType === dataType) {
-        return hamsters.wheel.processDataType(item.dataType, item.output);
+    var cachedResult = hamsters.wheel.cache[fn];
+    if(cachedResult) {
+      if(cachedResult[0] === input && cachedResult[2] === dataType) {
+        return cachedResult;
       }
     }
   };
 
   hamsters.wheel.memoize = function(fn, inputArray, output, dataType) {
-    if(hamsters.wheel.checkCache(fn, inputArray, dataType)) {
-      return;
-    }
-    try {
-      sessionStorage.setItem(sessionStorage.length, JSON.stringify({'func': fn, 'input': inputArray, 'output': output, 'dataType': dataType}));
-    } catch(eve) {
-      if(eve.name === 'QuotaExceededError') {
-        sessionStorage.clear();
-        try {
-          sessionStorage.setItem(sessionStorage.length, JSON.stringify({'func': fn, 'input': inputArray, 'output': output, 'dataType': dataType}));
-        } catch(e) { //Do nothing, can't cache this result..too large
-          return;
-        }
-      }
-    }
+    hamsters.wheel.cache[fn] = [inputArray, output, dataType];
   };
 
   /**
@@ -336,7 +312,7 @@ var hamsters = {
   */
   var spawnHamsters = function() {
     if(hamsters.wheel.env.browser) {
-      hamsters.wheel.uri = self.URL.createObjectURL(createBlob('(' + String(giveHamsterWork(false)) + '());'));
+      hamsters.wheel.uri = self.URL.createObjectURL(createBlob('(' + String(giveHamsterWork()) + '());'));
     }
     if(hamsters.persistence) {
       var i = hamsters.maxThreads;
@@ -358,7 +334,7 @@ var hamsters = {
     * @method giveHamsterWork
     * @return work
   */
-  var giveHamsterWork = function(worker) {
+  var giveHamsterWork = function() {
     /**
      * Description
      * @method processDataType
@@ -372,7 +348,7 @@ var hamsters = {
      * @param {object} e
      * @return 
      */
-    if(worker) {
+    if(hamsters.wheel.env.worker) {
       return function() {
         self.processDataType = function(dataType, buffer) {
           var types = {
@@ -524,9 +500,8 @@ var hamsters = {
         }, 4);
         return;
       }
-    } else {
-      hamsters.wheel.work(task, params, fn, callback, aggregate, dataType, memoize, order);
     }
+    hamsters.wheel.work(task, params, fn, callback, aggregate, dataType, memoize, order);
   };
 
   hamsters.wheel.work = function(task, params, fn, callback, aggregate, dataType, memoize, order) {
@@ -798,22 +773,17 @@ var hamsters = {
         }
         hamsters.wheel.tasks[task.id] = null; //Clean up our task, not needed any longer
         if(hamsters.cache && memoize) {
-          prepareToMemoize(task, aggregate, results);
+          if(task.output[id] && !task.output[id].slice) {
+            hamsters.wheel.memoize(task.fn, task.input[0].input, hamsters.wheel.normalizeArray(output), results.dataType);
+          } else {
+            hamsters.wheel.memoize(task.fn, task.input[0].input, hamsters.wheel.getOutput(task.output, aggregate, results.dataType), results.dataType);
+          }
         }
       }
       if(hamsters.wheel.queue.pending.length !== 0) {
         hamsters.wheel.processQueue(hamster, hamsters.wheel.queue.pending.shift());
       } else if(!hamsters.persistence && !hamsters.wheel.env.worker) {
         hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
-      }
-    };
-
-    var prepareToMemoize = function(task, aggregate, results) {
-      var output = hamsters.wheel.getOutput(task.output, aggregate, results.dataType);
-      if(output && !output.slice) {
-        hamsters.wheel.memoize(task.fn, task.input[0].input, hamsters.wheel.normalizeArray(output), results.dataType);
-      } else {
-        hamsters.wheel.memoize(task.fn, task.input[0].input, hamsters.wheel.getOutput(task.output, aggregate, results.dataType), results.dataType);
       }
     };
 
@@ -943,8 +913,8 @@ var hamsters = {
     * @param {blob} dataBlob
     * @return 
    */
-  setupEnv(function(legacy) {
-    if(legacy) {
+  setupHamstersEnvironment(function() {
+    if(hamsters.wheel.env.legacy) {
       hamsters.wheel.newWheel = function(inputArray, hamsterfood, aggregate, callback, task, threadid, hamster, memoize) {
         hamsters.wheel.trackThread(task, hamsters.wheel.queue.running, threadid);
         if(memoize || hamsters.debug) {
