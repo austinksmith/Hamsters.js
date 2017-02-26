@@ -111,15 +111,6 @@ var hamsters = {
     }
     callback(hamsters.wheel.env.legacy);
   };
-
-  /**
-   * @description: Method for checking wheel error log
-   * @method checkErrors
-   * @return ObjectExpression
-   */
-  hamsters.tools.checkErrors = function() {
-    return hamsters.wheel.errors;
-  };
   
   /**
    * @description: Splits an array into equal sized subarrays for individual workers
@@ -271,15 +262,15 @@ var hamsters = {
  * @return CallExpression
  */
   hamsters.wheel.compareArrays = function (array1, array2) {
-      if(!array1 && !array2) {
-        return true;
-      }
-      if (array1.length !== array2.length) {
-          return false;
-      }
-      return array1.every(function (el, i) {
-          return (el === array2[i]);
-      });
+    if(!array1 && !array2) {
+      return true;
+    }
+    if (array1.length !== array2.length) {
+      return false;
+    }
+    return array1.every(function (el, i) {
+      return (el === array2[i]);
+    });
   };
 
   /**
@@ -368,26 +359,26 @@ var hamsters = {
           return new types[dataType](buffer);
         };
         self.addEventListener("connect", function(e) {
-            var port = e.ports[0];
-            port.start();
-            port.addEventListener("message", function(e) {
-                self.rtn = {
-                    success: true,
-                    data: []
-                };
-                self.params = e.data;
-                self.fn = eval("(" + params.fn + ")");
-                if (fn) {
-                  self.fn();
-                }
-                if(self.params.dataType && self.params.dataType != "na") {
-                  self.rtn.data = self.processDataType(self.params.dataType, self.rtn.data);
-                  self.rtn.dataType = self.params.dataType;
-                }
-                port.postMessage({
-                  results: self.rtn
-                });
-            }, false);
+          var port = e.ports[0];
+          port.start();
+          port.addEventListener("message", function(e) {
+            self.rtn = {
+              success: true,
+              data: []
+            };
+            self.params = e.data;
+            self.fn = eval("(" + params.fn + ")");
+            if (fn) {
+              self.fn();
+            }
+            if(self.params.dataType && self.params.dataType != "na") {
+              self.rtn.data = self.processDataType(self.params.dataType, self.rtn.data);
+              self.rtn.dataType = self.params.dataType;
+            }
+            port.postMessage({
+              results: self.rtn
+            });
+          }, false);
         }, false);
       };
     }
