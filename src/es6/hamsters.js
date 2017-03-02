@@ -8,7 +8,7 @@
 */
 
 let hamsters = {
-    version: '3.9.9',
+    version: '4.0.0',
     debug: false,
     cache: false,
     persistence: true,
@@ -97,9 +97,6 @@ let hamsters = {
     }
     if(hamsters.wheel.env.worker) {
       setupWorkerSupport();
-    }
-    if(hamsters.wheel.env.node) {
-      setupNodeSupport();
     }
     if(hamsters.wheel.env.reactNative || hamsters.wheel.env.node) {
       global.self = global;
@@ -310,7 +307,7 @@ let hamsters = {
     if(hamsters.persistence) {
       let i = hamsters.maxThreads;
       for (i; i > 0; i--) {
-        if(hamsters.wheel.env.node || hamsters.wheel.env.ie10) {
+        if(hamsters.wheel.env.ie10) {
           hamsters.wheel.hamsters.push(new Worker('src/common/wheel.min.js'));
         } else if(hamsters.wheel.env.worker) {
           hamsters.wheel.hamsters.push(new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel'));
@@ -946,7 +943,7 @@ let hamsters = {
         if(!hamster) {
           if(hamsters.persistence) {
             hamster = hamsters.wheel.hamsters[hamsters.wheel.queue.running.length];
-          } else if(hamsters.wheel.env.node || hamsters.wheel.env.ie10) {
+          } else if(hamsters.wheel.env.ie10) {
             hamster = new Worker('src/common/wheel.min.js');
           } else if(hamsters.wheel.env.worker) {
             hamster = new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel');
