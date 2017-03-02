@@ -8,7 +8,7 @@
 */
 
 var hamsters = {
-    version: '3.9.8',
+    version: '3.9.9',
     debug: false,
     cache: false,
     persistence: true,
@@ -49,12 +49,12 @@ var hamsters = {
    * @param {integer} version
    * @return CallExpression
    */
-  var isIE = function(version) {
+  function isIE(version) {
     return (new RegExp('msie' + (!isNaN(version) ? ('\\s'+version) : ''), 'i').test(navigator.userAgent));
   };
 
-  var setupBrowserSupport = function() {
-    if(!Worker || navigator.userAgent.indexOf('Kindle/3.0') !== -1 || navigator.userAgent.indexOf('Mobile/8F190') !== -1  || navigator.userAgent.indexOf('IEMobile') !== -1) {
+  function setupBrowserSupport() {
+    if(!Worker || ['Kindle/3.0', 'Mobile/8F190', 'IEMobile'].indexOf(navigator.userAgent) !== -1) {
       hamsters.wheel.env.legacy = true;
     } else if(navigator.userAgent.toLowerCase().indexOf('firefox') !== -1) {
       hamsters.maxThreads = (hamsters.maxThreads > 20 ? 20 : hamsters.maxThreads);
@@ -69,7 +69,7 @@ var hamsters = {
     }
   };
 
-  var setupWorkerSupport = function() {
+  function setupWorkerSupport() {
     try {
       hamsters.wheel.uri = self.URL.createObjectURL(createBlob('(' + String(giveHamsterWork()) + '());'));
       var SharedHamster = new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel');
@@ -77,14 +77,13 @@ var hamsters = {
       hamsters.wheel.env.legacy = true;
     }
   };
-
   /**
    * Description
    * @description: Detect support for web workers
    * @method setupEnv
    * @return
    */
-  var setupHamstersEnvironment = function(callback) {
+  function setupHamstersEnvironment(callback) {
     hamsters.wheel.env.browser = typeof window === "object";
     hamsters.wheel.env.worker  = typeof importScripts === "function";
     hamsters.wheel.env.node = typeof process === "object" && typeof require === "function" && !hamsters.wheel.env.browser && !hamsters.wheel.env.worker && !hamsters.wheel.env.reactNative;
@@ -99,15 +98,18 @@ var hamsters = {
     if(hamsters.wheel.env.worker) {
       setupWorkerSupport();
     }
-    if(hamsters.wheel.env.shell) {
+    if(hamsters.wheel.env.node) {
+      setupNodeSupport();
+    }
+    if(hamsters.wheel.env.reactNative || hamsters.wheel.env.node) {
+      global.self = global;
+    }
+    if(hamsters.wheel.env.shell || typeof Worker === 'undefined') {
       hamsters.wheel.env.legacy = true;
     }
     //Check for transferrable object support
     if(!Uint8Array) {
       hamsters.wheel.env.transferrable = false;
-    }
-    if(hamsters.wheel.env === "reactNative" || hamsters.wheel.env === "node") {
-      global.self = global;
     }
     callback(hamsters.wheel.env.legacy);
   };
@@ -301,7 +303,7 @@ var hamsters = {
     * @method spawnHamsters
     * @return 
   */
-  var spawnHamsters = function() {
+  function spawnHamsters() {
     if(hamsters.wheel.env.browser) {
       hamsters.wheel.uri = self.URL.createObjectURL(createBlob('(' + String(giveHamsterWork()) + '());'));
     }
@@ -325,7 +327,7 @@ var hamsters = {
     * @method giveHamsterWork
     * @return work
   */
-  var giveHamsterWork = function() {
+  function giveHamsterWork() {
     /**
      * Description
      * @method processDataType
@@ -341,7 +343,7 @@ var hamsters = {
      */
     if(hamsters.wheel.env.worker) {
       return function() {
-        self.processDataType = function(dataType, buffer) {
+        function processDataType(dataType, buffer) {
           var types = {
             'uint32': Uint32Array,
             'uint16': Uint16Array,
@@ -372,7 +374,7 @@ var hamsters = {
               self.fn();
             }
             if(self.params.dataType && self.params.dataType != "na") {
-              self.rtn.data = self.processDataType(self.params.dataType, self.rtn.data);
+              self.rtn.data = processDataType(self.params.dataType, self.rtn.data);
               self.rtn.dataType = self.params.dataType;
             }
             port.postMessage({
@@ -389,7 +391,7 @@ var hamsters = {
      * @return 
      */
     return function() {
-      self.processDataType = function(dataType, buffer) {
+      function processDataType(dataType, buffer) {
         var types = {
           'uint32': Uint32Array,
           'uint16': Uint16Array,
@@ -417,7 +419,7 @@ var hamsters = {
           self.fn();
         }
         if(self.params.dataType && self.params.dataType != "na") {
-          self.rtn.data = self.processDataType(self.params.dataType, self.rtn.data);
+          self.rtn.data = processDataType(self.params.dataType, self.rtn.data);
           self.rtn.dataType = self.params.dataType;
           self.postMessage({
             results: self.rtn
@@ -638,7 +640,7 @@ var hamsters = {
     * @param {string} textContent - Web worker boiler plate
     * @return blob
   */
-  var createBlob = function(textContent) {
+  function createBlob(textContent) {
     if(!self.Blob) {
       self.BlobBuilder = self.BlobBuilder || self.WebKitBlobBuilder || self.MozBlobBuilder || self.MSBlobBuilder;
       var blob = new BlobBuilder();
@@ -746,7 +748,7 @@ var hamsters = {
       * @param {object} e - Web Worker event object
       * @return 
     */
-    var onmessage = function(e, results) {
+    function onmessage(e, results) {
       hamsters.wheel.clean(task, id);
       results = e.data.results;
       task.output[id] = results.data;
@@ -785,7 +787,7 @@ var hamsters = {
       * @param {object} e - Web Worker event object
       * @return 
     */
-    var onerror = function(e) {
+    function onerror(e) {
       if(!hamsters.wheel.env.worker) {
         hamster.terminate(); //Kill the thread
       }

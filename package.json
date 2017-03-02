@@ -1,6 +1,6 @@
 {
   "name": "hamsters.js",
-  "version": "3.9.8",
+  "version": "3.9.9",
   "description": "100% Vanilla Javascript Multithreading & Parallel Execution Library",
   "main": "src/es5/hamsters.js",
   "scripts": {
