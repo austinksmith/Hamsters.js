@@ -58,20 +58,27 @@ Once you've downloaded and added the library to your project you should have a v
 
 # How it works
 
-The basic structure of a Hamsters.js function is as follows
+Hamsters.js attempts to mimic exactly how you would write traditional functions in JavaScript in order to make threading your functions feel as natural as possible to your traditional workflow. The library is traditionally invoked by calling a function named `hamsters.run` this function takes several arguments that are paramount to making multithreading easy on you. These arguments are described below and will be important to understnad moving forward.
 
 ```js
-// Params you want accessed by your function, for automatic task splitting your data array must have the index of 'array'
- var params = {'array':[]};  
-  hamsters.run(params, function() {
-      //Operations you wish to perform inside each thread
-  }, function(output) {
-     //Resulting output callback, do as you wish with your output
-  }, threads, aggregate, dataType, memoize, sort);
-
+hamsters.run(object, function, function, integer, boolean, string, boolean, string);
 ```
 
-Inside of your function you have an rtn object available to pass your output into, your function must use this object to push your output into the rtn.data array so the library can manage the data dependencies between each thread efficiently. Failure to use the rtn.data array for your output may lead to unexpected behavior. You've been warned.
+1. This required argument is our parameters object, this object is going to contain everything we want accessbile within our execution context. Since threads are sandboxed environments we cannot share scope with the main thread, it's important we add everything we need.
+
+2. This required argument is going to be the function we want executed within our thread, any logic contained here will be sent to an available thread and executed there. It's important to note that in order to make things as simple as possible, the parameters object you passed previously can be accessed within this function from a internal `params` variable like so `var foo = params.bar;`.
+
+3. This required argument is going to be our callback function which will return our final output from the previous function, this function takes only one argument which is simply your result and can be accessed like so `var result = arguments[0];`.
+
+4. This optional argument will tell the library how many threads to execute the function declared previously across, this allows on a very easy level to change how many threads you are executing across. If you do not supply a value here the library defaults to a value of `1`.
+
+5. This optional argument will tell the library wether or not we want to aggregate our individual thread outputs together after execution, this is only relevant if you are executing across multiple threads and defaults to `false`.
+
+6. This optional argument will inform the library that our data array is one of javascripts [Typed Arrays](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays), when making use of this argument the library can make use of transferrable objects which can provide a dramatic performance improvement compared to serialization. This value is `null` by default and should only be used when needed.
+
+7. This optional argument is intended to be used in conjuction with [memoization mode](#memoization), when memoization mode is enabled this argument allows one to control on an individual function level wether or not the results from that function are cached, this has a default value of `false`.
+
+8. This optional argument will tell the library to automatically sort our final output either alphabetically or numerically, this argument has a default value of `null` and can be configured using the [sorting options](#sorting).
 
 # Restructuring standard functions
 
@@ -109,10 +116,10 @@ function() {
 
 ```
 
-Alternatively we can split this task among 4 threads for paralell execution like so
+Alternatively we can split this task among 2 threads for paralell execution like so
 
 ```js
-//4 threads and let's aggregate our individual thread results into one final output
+//2 threads and let's aggregate our individual thread results into one final output
 function() {
   var params = {'array':[0,1,2,3,4,5,6,7,8,9]};
   hamsters.run(params, function() {
@@ -122,7 +129,7 @@ function() {
       });
   }, function(output) {
      return output;
-  }, 4, true);
+  }, 2, true);
 }
 
 ```
@@ -182,7 +189,7 @@ hamsters.tools.loop(options, function(output) {
 });
 ```
 
-# Performance Tweaking
+# Transferrable Objects
 
 To obtain the best performance possible version 2.0 supports an optional dataType param, if your problem supports being transformed into any of javascripts typed arrays you can see up to 10x the performance boost over previous releases. 
 
@@ -208,62 +215,31 @@ function() {
 
 Where dataType is one of the below options.
 
-* 'Int8'
-* 'Int16'
-* 'Int32'
-* 'Uint8' 
-* 'Uint8Clamped' 
-* 'Uint16' 
-* 'Uint32'
-* 'Float32' 
-* 'Float64'
+* `Int8`
+* `Int16`
+* `Int32`
+* `Uint8` 
+* `Uint8Clamped` 
+* `Uint16`
+* `Uint32`
+* `Float32` 
+* `Float64`
 
 
-# Sorting
- 
- Version 2.7 introduces optional automagical data sorting, you can write a function that automatically sorts like so
+# Memoization
 
-```js
-function() {
-  var params = {'array':[0,1,2,3,4,5,6,7,8,9]};
-  hamsters.run(params, function() {
-      var arr = params.array;
-      arr.forEach(function(item) {
-        rtn.data.push((item * 120)/10);
-      });
-  }, function(output) {
-     return output;
-  }, threads, aggregate, dataType, cache, sortDirection);
-}
+Memoization introduced in versions `v2.2` is an optional operating mode for the library as well as an optional parameter for individual functions. In the event that you know you will be performing the same calculation over and over, then making use of memoization can dramatically reduce the cpu cycles your application consumes as after the first computation future requests for the same function with matching input will return the result from cache. 
 
-```
-Where sortDirection is one of the below options.
-
-* Ascending Numerical: 'asc'
-* Descending Numerical: 'desc'
-* Ascending Alphabetical: 'ascAlpha'
-* Descending Alphabetical: 'descAlpha'
-
-# Persistence
-
-Version 3.3 introduces a new persistence mode that will spawn the maximum number of threads a client can use at startup and reuse them instead of spawning/destroying them dynamically, this option can dramatically reduce runtime latency at the cost of somewhat higher heap allocation and is enabled by default. If you do not require realtime performance from the library or you are developing for memory constrained systems you can disable this by setting
-
-```js
-hamsters.persistance = false;
-```
-
-# Result Caching (Memoization)
-
-To obtain the best performance possible versions 2.2 and later support an optional result caching option, if you know you will be performing the same calculation numerous times enabling cache mode can result in a big performance boost as it will pull the result from cache instead of recalculating the output. In versions below v3.9.8 This cache mode makes use of session storage and is limited to roughly 5MB of space depending on the browser used. The library will attempt to cache as many previous runs as possible and will only clear out past results in the event that session storage is full. Not all outputs can be cached as they may be too large so this is disabled by default. In v3.9.8 and later, the memoization method has been moved from sessionStorage to being an in memory cache, this means the only limit to the number of cached results is how much memory is available on the client so please ensure you're only caching the results you really need to cache.
+The implementation on this has changed several times, in general verions between `v2.2` and `v3.9.7` made use of sessionStorage and were limited to roughly 5MB of cache depending on the browser used. In versions `v3.9.8` and later this is implemented as an in memory cache and is only limited by how much memory can be allocated to the library. 
  
 
-You may enable cache mode by setting
+In order to enable memoization mode you should set `hamsters.cache` to true, like below.
 
 ```js
 hamsters.cache = true;
 ```
 
-You can disable caching for individual functions like so 
+In order to enable caching for individual functions you must have the optional caching parameter set to true.
 
 ```js
 function() {
@@ -275,10 +251,44 @@ function() {
       });
   }, function(output) {
      return output;
-  }, threads, aggregate, dataType, false);
+  }, 2, true, Int32, true);
 }
 ```
 
+
+# Sorting
+ 
+ Sorting introducted in version 2.7 is an optional parameter which allows for automatic sorting of your data contained within the`rtn.data` array.
+
+ 1. Numerical Sorting
+    * `asc`
+    * `desc`
+ 2. Alphabetical Sorting
+    * `ascAlpha`
+    * `descAlpha`
+
+```js
+function() {
+  var params = {'array':[0,1,2,3,4,5,6,7,8,9]};
+  hamsters.run(params, function() {
+      var arr = params.array;
+      arr.forEach(function(item) {
+        rtn.data.push((item * 120)/10);
+      });
+  }, function(output) {
+     return output;
+  }, 2, true, 'Int32', true, 'ascAlpha');
+}
+
+```
+
+# Persistence
+
+Persistence introducted in version 3.3 is an optional operating mode for the libray which is enabled by default and can dramatically reduce runtime latency at the cost of somewhat higher heap allocation. When enabled the library will spawn all threads on initialization and will reuse the threads. When this option is disabled the library will instead spawn threads when needed and will destroy threads when they've completed execution. It is recommended you keep this enabled unless you are developing for memory constrained systems or do not require real time performance.
+
+```js
+hamsters.persistance = false;
+```
 
 # Debugging
 
