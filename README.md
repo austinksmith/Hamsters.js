@@ -22,7 +22,7 @@ Obtain a copy of the library by using one of the options below,
 
 **HTML**
 
-1. Download a copy of the latest relase version, or clone the repo locally
+1. Download a copy of the latest release version, or clone the repo locally
 2. Upload the contents of the `src` directory to your server and add the script to your project as described below
 
 ```html
@@ -61,18 +61,18 @@ npm install hamsters.js
 
 ```
 
-Once you've downloaded and added the library to your project you should have a variable named hamsters available, this variable is the core of the library. Do not create any globally scoped variables with the same name or you will risk causing compatibility issues. Now that you've succesfully added the library to your project, let's get started below.
+Once you've downloaded and added the library to your project you should have a variable named hamsters available, this variable is the core of the library. Do not create any globally scoped variables with the same name or you will risk causing compatibility issues. Now that you've successfully added the library to your project, let's get started below.
 
 
 # How it works
 
-Hamsters.js attempts to mimic exactly how you would write traditional functions in JavaScript in order to make threading your functions feel as natural as possible to your traditional workflow. The library is traditionally invoked by calling a function named `hamsters.run` this function takes several arguments that are paramount to making multithreading easy on you. These arguments are described below and will be important to understnad moving forward.
+Hamsters.js attempts to mimic exactly how you would normally make functions in JavaScript in order to make threading your functions feel as natural as possible to your everyday work flow. The library is traditionally invoked by calling a function named `hamsters.run` this function takes several arguments that are paramount to making multi-threading easy on you. These arguments are described below and will be important to understand moving forward.
 
 ```js
 hamsters.run(object, function, function, integer, boolean, string, boolean, string);
 ```
 
-1. This required argument is our parameters object, this object is going to contain everything we want accessbile within our execution context. Since threads are sandboxed environments we cannot share scope with the main thread, it's important we add everything we need.
+1. This required argument is our parameters object, this object is going to contain everything we want accessible within our execution context. Since threads are sand-boxed environments we cannot share scope with the main thread, it's important we add everything we need.
 
 2. This required argument is going to be the function we want executed within our thread, any logic contained here will be sent to an available thread and executed there. It's important to note that in order to make things as simple as possible, the parameters object you passed previously can be accessed within this function from a internal `params` variable like so `var foo = params.bar;`.
 
@@ -80,11 +80,11 @@ hamsters.run(object, function, function, integer, boolean, string, boolean, stri
 
 4. This optional argument will tell the library how many threads to execute the function declared previously across, this allows on a very easy level to change how many threads you are executing across. If you do not supply a value here the library defaults to a value of `1`.
 
-5. This optional argument will tell the library wether or not we want to aggregate our individual thread outputs together after execution, this is only relevant if you are executing across multiple threads and defaults to `false`.
+5. This optional argument will tell the library whether or not we want to aggregate our individual thread outputs together after execution, this is only relevant if you are executing across multiple threads and defaults to `false`.
 
-6. This optional argument will inform the library that our data array is one of javascripts [Typed Arrays](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays), when making use of this argument the library can make use of transferrable objects which can provide a dramatic performance improvement compared to serialization. This value is `null` by default and should only be used when needed.
+6. This optional argument will inform the library that our data array is one of JavaScript's [Typed Arrays](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays), when making use of this argument the library can make use of transferable objects which can provide a dramatic performance improvement compared to serialization. This value is `null` by default and should only be used when needed.
 
-7. This optional argument is intended to be used in conjuction with [memoization mode](https://github.com/austinksmith/Hamsters.js/wiki/Memoization), when memoization mode is enabled this argument allows one to control on an individual function level wether or not the results from that function are cached, this has a default value of `false`.
+7. This optional argument is intended to be used in conjunction with [memoization mode](https://github.com/austinksmith/Hamsters.js/wiki/Memoization), when memoization mode is enabled this argument allows one to control on an individual function level whether or not the results from that function are cached, this has a default value of `false`.
 
 8. This optional argument will tell the library to automatically sort our final output either alphabetically or numerically, this argument has a default value of `null` and can be configured using the [sorting options](https://github.com/austinksmith/Hamsters.js/wiki/Sorting).
 
@@ -165,6 +165,8 @@ You can find more information on how to make use of the library on the wiki link
 [Limitations](https://github.com/austinksmith/Hamsters.js/wiki/Limitations)
 
 [Performance Considerations](https://github.com/austinksmith/Hamsters.js/wiki/Performance-Considerations)
+
+[Tested Devices & Browsers](https://github.com/austinksmith/Hamsters.js/wiki/Tested-Browsers-&-Devices)
 
 [Debugging](https://github.com/austinksmith/Hamsters.js/wiki/Debugging)
 
