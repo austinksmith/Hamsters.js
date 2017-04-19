@@ -2,27 +2,21 @@
 
 **Author**: Austin K. Smith
 
-**Website**: [Hamsters.io](https://www.hamsters.io)
+**Website**: [Hamsters.io](www.hamsters.io)
 
 **Description**: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
 
 **License**: Artistic License 2.0
 
-
-# Guides
-Detailed Documentation coming soon check [Guides](https://www.hamsters.io/guides) for updates
-
-**New website coming soon that will include better documentation, don't hesitate to contact with questions.**
-
-# Dataflow Example
-
-![alt tag](http://www.hamsters.io/guides/workflow-newest.png)
-
 # Getting Started
 
-First download a copy of the library by using the releases page or clone the repo locally, upload the applicable files from the src directory to your server and add the script to your project as described blow. Make sure you upload the entire common folder to the same directory of the hamsters.js file. Without these files the library will not function inside of web workers, and will also force Internet Explorer 10 to use the legacy fallback mode thus hampering performance.
+Obtain a copy of the library by using one of the options below, 
 
 **HTML**
+
+1. Download a copy of the latest relase version, or clone the repo locally
+2. Upload the contents of the `src` directory to your server and add the script to your project as described below
+
 ```html
 <!-- HTML4 and (x)HTML -->
 <script type="text/javascript" src="path/to/hamsters.js">
@@ -31,9 +25,24 @@ First download a copy of the library by using the releases page or clone the rep
 <script src="path/to/hamsters.js"></script>
 ```
 **React Native**
+
+1. Download a copy of the latest relase version, or clone the repo locally
+2. Add the contents of the `src` directory to your project and import the library like below
 ```js
-import hamsters from 'path/to/hamsters';
+ import hamsters from 'path/to/hamsters';
 ```
+ 
+**Node.js**
+
+1. Use npm to install hamsters.js `npm install --save hamsters.js`
+2. Import the library into your `app.js` file like below
+
+```js
+var hamsters = require('hamsters.js');
+```
+
+Alternatively you can use bower or normal npm to install the library in other environments though support is not guaranteed, submit a ticket if you encounter problems.
+
 **Bower**
 ```js
 bower install WebHamsters
@@ -41,6 +50,7 @@ bower install WebHamsters
 **NPM**
 ```js
 npm install hamsters.js
+
 ```
 
 Once you've downloaded and added the library to your project you should have a variable named hamsters available, this variable is the core of the library. Do not create any globally scoped variables with the same name or you will risk causing compatibility issues. Now that you've succesfully added the library to your project, let's get started below.
@@ -70,7 +80,7 @@ Imagine we have a sequential function that loops through several items and perfo
 ```js
 function() {
   var array = [0,1,2,3,4,5,6,7,8,9];
-  var output = [];
+  var output = new Array(array.length);
   array.forEach(function(item) {
     output.push((item * 120)/10);
   });
@@ -84,7 +94,9 @@ Now we can put this task onto its own thread like so
 ```js
 //1 thread and do not aggregate thread results (only one thread output)
 function() {
-  var params = {'array':[0,1,2,3,4,5,6,7,8,9]};
+  var params = {
+    'array':[0,1,2,3,4,5,6,7,8,9]
+  };
   hamsters.run(params, function() {
       var arr = params.array;
       arr.forEach(function(item) {
@@ -279,7 +291,7 @@ Not every task can be easily paralellized and depending on the size of the task 
 
 Alternatively if your problem size scales with the amount of threads you use, you can see some serious performance gains. This is known as Gustafson's Law you can read more about this at [Gustafson's Law](http://en.wikipedia.org/wiki/Gustafson%27s_law). Also be sure to check out this performance example demonstrating the performance boost additional threads can have. 
 
-[Perf Example](http://www.hamsters.io/performance)
+[Perf Example](www.hamsters.io/performance)
 
 The library attempts to detect the number of available cores on a client machine and formulates a maximum concurrent thread count based on that value, if the library is unable to detect a valid core count it will fallback to a maxThread count of 4. The library will automatically pool and manage execution across all available threads automatically scaling based on demand, and will destroy threads when they do not have pending work to complete, otherwise explicit threads are reused. 
 
@@ -298,42 +310,3 @@ Coincidentally FireFox enforces a per origin thread limit of 20, therefore on sy
 * Javascript shell environments
 * React Native
 * Node.js
-
-# Browser Support
-
-Currently as of v1.4 all browsers excluding IE versions below 9 are supported by the library, modern browsers such as Chrome, Safari, Opera, IE10, IE11, and Firefox have full web worker support and will give the best performance, Older browsers are supported by using a legacy processor fallback, these computations will be run on the main thread however they still follow the library process of breaking a given task into individual pieces and executing each piece at a time.
-
-# Confirmed Working 
-
-(Anything not listed should still function, limited test devices on hand. Submit an issue if you encounter problems.)
-
-* Monochrome Kindle 3
-* Iphone 4s
-* LG G3 (4C/4T)
-* Samsung Galaxy S4
-* Samsung Galaxy S5
-* Iphone 6
-* Iphone 5s
-* Samsung Galaxy Note 4
-* Nokia Lumina Windows Phone 8
-* Xbox One (8C/8T)
-* Asus Zenfone 2 (Intel Atom Z3580 4C/4T)
-* Ipad Retina
-* Samsung Galaxy Tab (8C/8T)
-* 2014 Macbook Pro Retina (i7-4750HQ 4C/8T)
-* Lenovo y580 (i7-3610QM 4C/8T)
-
-* Chrome Desktop (41.0.2272, 39.0.2171, 42.0.2311, 43.0.2316, 43.0.2348, 43.0.2349, 44.0.2369)+
-* Chrome Mobile (33.0.0, 34.0.1847, 37.0.0, 41.0.2272, 42.0.2311)+
-* Chromium (Linux)
-* Firefox (35, 36, 37, 38)+
-* Opera (28.0.1750)+
-* Safari Desktop (8.0.6)+
-* Safari Mobile (7.0)+
-* Internet Explorer 9, 10, 10 (Mobile), 11
-* Xbox One Browser
-* Microsoft Edge
-* Stock Android Browser 4.0+
-* Dolphin Android Browser
-* Opera Mobile
-* Vivaldi Beta
