@@ -4,7 +4,7 @@
 
 **Website**: [Hamsters.io](www.hamsters.io)
 
-**Description**: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
+**Description**: 100% Vanilla Javascript Multithreading & Parallel Execution Library
 
 **License**: Artistic License 2.0
 
@@ -162,18 +162,18 @@ function() {
 You can find more information on how to make use of the library on the wiki links below.
 
 
-[Limitations](wiki/Limitations)
+[Limitations](https://github.com/austinksmith/Hamsters.js/wiki/Limitations)
 
-[Performance Considerations](wiki/Performance-Considerations)
+[Performance Considerations](https://github.com/austinksmith/Hamsters.js/wiki/Performance-Considerations)
 
-[Debugging](wiki/Debugging)
+[Debugging](https://github.com/austinksmith/Hamsters.js/wiki/Debugging)
 
-[Tools](wiki/Tools)
+[Tools](https://github.com/austinksmith/Hamsters.js/wiki/Tools)
 
-[Sorting](wiki/Sorting)
+[Sorting](https://github.com/austinksmith/Hamsters.js/wiki/Sorting)
 
-[Persistence](wiki/Persistence)
+[Persistence](https://github.com/austinksmith/Hamsters.js/wiki/Persistence)
 
-[Memoization](wiki/Memoization)
+[Memoization](https://github.com/austinksmith/Hamsters.js/wiki/Memoization)
 
-[Transferrable Objects](wiki/Transferrable-Objects)
+[Transferrable Objects](https://github.com/austinksmith/Hamsters.js/wiki/Transferrable-Objects)
