@@ -153,7 +153,7 @@ hamsters.init = function(startOptions) {
       var port = e.ports[0];
       port.start();
       port.addEventListener("message", function(e) {
-        self.processDataType(dataType, buffer) {
+        self.processDataType = function(dataType, buffer) {
           var types = {
             'uint32': Uint32Array,
             'uint16': Uint16Array,
