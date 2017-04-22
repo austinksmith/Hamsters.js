@@ -8,39 +8,35 @@
 */
 
 var hamsters = {
-    version: '4.0.0',
-    debug: false,
-    cache: false,
-    persistence: true,
-    maxThreads: 4,
-    tools: {},
-    wheel: {
-      env: {
-        legacy: false,
-        node: false,
-        shell: false,
-        worker: false,
-        browser: false,
-        ie10: false,
-        transferrable: true
-      },
-      queue: {
-        running: [],
-        pending: []
-      },
-      cache: {},
-      hamsters: [], 
-      tasks: [],
-      errors: [],
-      uri: null
-    }
-  };
+  version: '4.1.0',
+  debug: false,
+  cache: false,
+  persistence: true,
+  maxThreads: 4,
+  tools: {},
+  wheel: {
+    env: {
+      legacy: false,
+      node: false,
+      shell: false,
+      worker: false,
+      browser: false,
+      ie10: false,
+      transferrable: true
+    },
+    queue: {
+      running: [],
+      pending: []
+    },
+    cache: {},
+    hamsters: [], 
+    tasks: [],
+    errors: [],
+    uri: null
+  }
+};
 
-/**
- * @description: Initializes and sets up library functionality
- * @return
- */
-(function() {
+hamsters.init = function(startOptions) {
   "use strict";
 
   function isIE(version) {
@@ -50,9 +46,11 @@ var hamsters = {
   function setupBrowserSupport() {
     if(!Worker || ['Kindle/3.0', 'Mobile/8F190', 'IEMobile'].indexOf(navigator.userAgent) !== -1) {
       hamsters.wheel.env.legacy = true;
-    } else if(navigator.userAgent.toLowerCase().indexOf('firefox') !== -1) {
+    }
+    if(navigator.userAgent.toLowerCase().indexOf('firefox') !== -1) {
       hamsters.maxThreads = (hamsters.maxThreads > 20 ? 20 : hamsters.maxThreads);
-    } else if(isIE(10)) {
+    }
+    if(isIE(10)) {
       try {
         var hamster = new Worker('src/common/wheel.min.js');
         hamster.terminate();
@@ -72,14 +70,25 @@ var hamsters = {
     }
   }
 
-  function setupHamstersEnvironment(callback) {
+  function processStartOptions() {
+    for(var key in hamsters) {
+      if(hamsters.hasOwnProperty(key)) {
+        hamsters[key] = startOptions[key] || hamsters[key];
+      }
+    }
+  }
+
+  function setupHamstersEnvironment(onSuccess) {
     hamsters.wheel.env.browser = typeof window === "object";
     hamsters.wheel.env.worker  = typeof importScripts === "function";
     hamsters.wheel.env.node = typeof process === "object" && typeof require === "function" && !hamsters.wheel.env.browser && !hamsters.wheel.env.worker && !hamsters.wheel.env.reactNative;
     hamsters.wheel.env.reactNative = !hamsters.wheel.env.node && typeof global === 'object';
     hamsters.wheel.env.shell = !hamsters.wheel.env.browser && !hamsters.wheel.env.node && !hamsters.wheel.env.worker && !hamsters.wheel.env.reactNative;
-    if(typeof navigator === 'object') {
+    if(typeof navigator !== 'undefined') {
       hamsters.maxThreads = navigator.hardwareConcurrency;
+    }
+    if(typeof startOptions !== 'undefined') {
+      processStartOptions();
     }
     if(hamsters.wheel.env.browser) {
       setupBrowserSupport();
@@ -96,19 +105,20 @@ var hamsters = {
     if(typeof Uint8Array === 'undefined') {
       hamsters.wheel.env.transferrable = false;
     }
-    callback(hamsters.wheel.env.legacy);
+    onSuccess();
   }
 
   function spawnHamsters() {
     if(hamsters.wheel.env.browser) {
-      hamsters.wheel.uri = self.URL.createObjectURL(createBlob('(' + String(giveHamsterWork()) + '());'));
+      hamsters.wheel.uri = URL.createObjectURL(createBlob('(' + String(giveHamsterWork()) + ')();'));
     }
     if(hamsters.persistence) {
       var i = hamsters.maxThreads;
       for (i; i > 0; i--) {
         if(hamsters.wheel.env.ie10) {
           hamsters.wheel.hamsters.push(new Worker('src/common/wheel.min.js'));
-        } else if(hamsters.wheel.env.worker) {
+        }
+        if(hamsters.wheel.env.worker) {
           hamsters.wheel.hamsters.push(new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel'));
         } else {
           hamsters.wheel.hamsters.push(new Worker(hamsters.wheel.uri));
@@ -139,23 +149,6 @@ var hamsters = {
   }
 
   function workerWorker() {
-    function processDataType(dataType, buffer) {
-      var types = {
-        'uint32': Uint32Array,
-        'uint16': Uint16Array,
-        'uint8': Uint8Array,
-        'uint8clamped': Uint8ClampedArray,
-        'int32': Int32Array,
-        'int16': Int16Array,
-        'int8': Int8Array,
-        'float32': Float32Array,
-        'float64': Float64Array
-      };
-      if(!types[dataType]) {
-        return buffer;
-      }
-      return new types[dataType](buffer);
-    }
     self.addEventListener("connect", function(e) {
       var port = e.ports[0];
       port.start();
@@ -170,7 +163,7 @@ var hamsters = {
           self.fn();
         }
         if(self.params.dataType && self.params.dataType != "na") {
-          self.rtn.data = processDataType(self.params.dataType, self.rtn.data);
+          self.rtn.data = self.processDataType(self.params.dataType, self.rtn.data);
           self.rtn.dataType = self.params.dataType;
         }
         port.postMessage({
@@ -197,20 +190,19 @@ var hamsters = {
         return buffer;
       }
       return new types[dataType](buffer);
-    };
+    }
     self.onmessage = function(e) {
       self.params = e.data;
       self.rtn = {
-        success: true, 
-        data: []
+        data: [],
+        dataType: self.params.dataType
       };
-      var loopOp = new Function(self.params.fn);
-      if(loopOp) {
-        loopOp();
+      var fn = new Function(self.params.fn);
+      if(fn) {
+        fn();
       }
-      if(self.params.dataType && self.params.dataType != "na") {
+      if(self.params.dataType) {
         self.rtn.data = processDataType(self.params.dataType, self.rtn.data);
-        self.rtn.dataType = self.params.dataType;
         self.postMessage({
           results: self.rtn
         }, [rtn.data.buffer]);
@@ -262,54 +254,46 @@ var hamsters = {
     }
     hamsters.wheel.trainHamster(threadid, aggregate, callback, task, hamster, memoize);
     hamsters.wheel.trackThread(task, hamsters.wheel.queue.running, threadid);
-    hamsters.wheel.feedHamster(hamster, hamsterfood, inputArray);
+    hamsterfood.array = inputArray;
+    hamsters.wheel.feedHamster(hamster, hamsterfood);
     task.count += 1; //Increment count, thread is running
     if(hamsters.debug === 'verbose') {
       console.info('Spawning Hamster #' + threadid + ' @ ' + new Date().getTime());
     }
   }
 
-  hamsters.tools.splitArray = function(array, chunks) {
-    var subArraySize = Math.floor((array.length/chunks));
-    var splitArrays = new Array(chunks);
-    var sliceIndex = 0;
+  function chewGarbage() {
+    delete hamsters.init;
+    startOptions = null;
+  }
+
+  hamsters.tools.splitArray = function(array, n) {
     var i = 0;
-    for (i; i < chunks; i++) {
-      if(array.subarray) {
-        splitArrays[i] = array.subarray(sliceIndex, sliceIndex += subArraySize);
+    var tasks = [];
+    var size = Math.ceil(array.length/n);
+    if(array.slice) {
+      while(i < array.length) {
+        tasks.push(array.slice(i, i += size));
       }
-      if(array.slice) {
-        splitArrays[i] = array.slice(sliceIndex, sliceIndex += subArraySize);
+    } else {
+      while (i < array.length) {
+        tasks.push(array.subarray(i, i += size));
       }
     }
-    return splitArrays;
+    return tasks;
   };
 
-  hamsters.tools.loop = function(input, callback) {
-    if(!input.array) {
-      console.error('Missing data array');
-      return;
-    }
+  hamsters.tools.loop = function(input, onSuccess) {
     var threads = input.threads || 1;
-    if(!hamsters.wheel.env.legacy) {
-      input.operator = String(input.operator);
-      if(!hamsters.wheel.env.worker) {
-        input.operator = input.operator.substring(input.operator.indexOf("{")+1, input.operator.length-1);
-      }
-    }
     var params = {
-      run: input.operator,
+      run: hamsters.tools.prepareFunction(input.operator),
       init: input.startIndex || 0,
+      limit: input.limit,
       array: input.array,
       incrementBy: input.incrementBy || 1,
       dataType: input.dataType || null,
       worker: hamsters.wheel.env.worker
     };
-    if(threads === 1) {
-      params.limit = input.limit || input.array.length;
-    } else {
-      params.limit = 'compute';
-    }
     hamsters.run(params, function() {
       var operator;
       if(params.worker) {
@@ -317,55 +301,61 @@ var hamsters = {
       } else {
         operator = new Function(self.params.run);
       }
-      if(params.limit === 'compute') {
+      if(!params.limit) {
         params.limit = params.array.length;
       }
       var i = params.init;
       for (i; i < params.limit; i += params.incrementBy) {
-        rtn.data.push(operator(params.array[i]));
+        rtn.data[i] = operator(params.array[i]);
       }
     }, function(rtn) {
-      callback(rtn);
+      onSuccess(rtn);
     }, threads, true, input.dataType);
   };
 
-  hamsters.tools.parseJson = function(string, callback) {
-    hamsters.run({input: string}, function() {
-      rtn.data.push(JSON.parse(params.input));
-    }, function(output) {
-      callback(output[0]);
-    }, 1, true);
-  };
-
-  hamsters.tools.stringifyJson = function(json, callback) {
-    hamsters.run({input: json}, function() {
-      rtn.data.push(JSON.stringify(params.input));
-    }, function(output) {
-      callback(output[0]);
-    }, 1, true);
-  };
-
-  hamsters.tools.randomArray = function(count, callback) {
-    if(!count || !callback) {
-      hamsters.wheel.errors.push({
-        msg: 'Unable to generate random array, missing required params'
-      });
-      return;
+  hamsters.tools.prepareFunction = function(functionBody) {
+    if(!hamsters.wheel.env.legacy) {
+      functionBody = String(functionBody);
+      if(!hamsters.wheel.env.worker) {
+        var startingIndex = (functionBody.indexOf("{") + 1);
+        var endingIndex = (functionBody.length - 1);
+        return functionBody.substring(startingIndex, endingIndex);
+      }
     }
+    return functionBody;
+  };
+
+  hamsters.tools.parseJson = function(string, onSuccess) {
+    hamsters.run({input: string}, function() {
+      rtn.data = JSON.parse(params.input);
+    }, function(output) {
+      onSuccess(output[0]);
+    }, 1);
+  };
+
+  hamsters.tools.stringifyJson = function(json, onSuccess) {
+    hamsters.run({input: json}, function() {
+      rtn.data = JSON.stringify(params.input);
+    }, function(output) {
+      onSuccess(output[0]);
+    }, 1);
+  };
+
+  hamsters.tools.randomArray = function(count, onSuccess) {
     var params = {
       count: count
     };
     hamsters.run(params, function() {
-      var i = 0;
-      while(i < params.count) {
+      while(params.count > 0) {
         rtn.data[rtn.data.length] = Math.round(Math.random() * (100 - 1) + 1);
-        i += 1;
+        params.count -= 1;
       }
-    }, callback, 1, false, null, false);
+    }, function(result) {
+      onSuccess(result);
+    });
   };
 
-  
-  hamsters.tools.aggregate = function(input, dataType) {
+  hamsters.tools.aggregate = function(input, dataType) {  
     if(!dataType || !hamsters.wheel.env.transferrable) {
       return input.reduce(function(a, b) {
         return a.concat(b);
@@ -400,21 +390,18 @@ var hamsters = {
   };
 
   hamsters.wheel.sort = function(arr, order) {
-    if(order === 'desc') {
-      return Array.prototype.sort.call(arr, function(a, b) {
-        return b - a; 
-     });
-    } 
-    if(order === 'asc') {
-      return Array.prototype.sort.call(arr, function(a, b) {
-        return a - b; 
-     });
-    }
-    if(order === 'ascAlpha') {
-      return arr.sort();
-    }
-    if(order === 'descAlpha') {
-      return arr.reverse();
+    switch(order) {
+      case 'desc':
+      case 'asc':
+        return Array.prototype.sort.call(arr, function(a, b) {
+          return (order === 'asc' ? (a - b) : (b - a)); 
+        });
+      case 'ascAlpha':
+        return arr.sort();
+      case 'descAlpha':
+        return arr.reverse();
+      default:
+        return arr;
     }
   };
 
@@ -426,8 +413,6 @@ var hamsters = {
     var task = hamsters.wheel.newTask(hamsters.wheel.tasks.length, workers, order, dataType, fn, callback);
     if(dataType) {
       dataType = dataType.toLowerCase();
-    } else {
-      dataType = "na";
     }
     if(hamsters.cache && memoize) {
       var result = hamsters.wheel.checkCache(fn, task.input, dataType);
@@ -447,14 +432,6 @@ var hamsters = {
     if(params.array && task.threads !== 1) {
       workArray = hamsters.tools.splitArray(params.array, task.threads); //Divide our array into equal array sizes
     }
-    if(!hamsters.wheel.env.legacy) {
-      params.fn = String(fn);
-      if(!hamsters.wheel.env.worker) { //Truncate function string so we can use new Function call instead of eval
-        params.fn = params.fn.substring(params.fn.indexOf("{")+1, params.fn.length-1);
-      }
-    } else {
-      params.fn = fn;
-    }
     var food = {};
     var key;
     for(key in params) {
@@ -462,6 +439,7 @@ var hamsters = {
         food[key] = params[key];
       }
     }
+    food.fn = hamsters.tools.prepareFunction(fn);
     food.dataType = dataType;
     var i = 0;
     while(i < task.threads) {
@@ -628,34 +606,23 @@ var hamsters = {
     if(hamsters.wheel.env.transferrable) {
       return hamsters.wheel.processData(dataType, buffer);
     }
-    return buffer; //Return normal array if transferrable objects not supported
+    return buffer;
   };
 
-  hamsters.wheel.feedHamster = function(hamster, food, inputArray) {
-    if(hamsters.wheel.env.worker || hamsters.wheel.env.ie10) {
-      food.array = inputArray;
-      if(hamsters.wheel.env.ie10) {
-        food.ie = true;
-        hamster.postMessage(food);
-      } else {
-        hamster.port.postMessage(food);
-      }
-    } else {
-      var key, buffers = [];
-      if(inputArray) {
-        if(food.dataType && food.dataType != 'na') { //Transferable object transfer if using typed array
-          food.array = hamsters.wheel.processDataType(food.dataType, inputArray);
-        } else {
-          food.array = inputArray;
-        }
-      }
-      for(key in food) {
-        if(food.hasOwnProperty(key) && food[key] && food[key].buffer) {
-          buffers.push(food[key].buffer);
-        }
-      }
-      hamster.postMessage(food,  buffers);
+  hamsters.wheel.feedHamster = function(hamster, food) {
+    if(hamsters.wheel.env.ie10) {
+      hamster.postMessage(food);
     }
+    if(hamsters.wheel.env.worker) {
+      hamster.port.postMessage(food);
+    }
+    var buffers = [], key;
+    for(key in food) {
+      if(food.hasOwnProperty(key) && food[key] && food[key].buffer) {
+        buffers.push(food[key].buffer);
+      }
+    }
+    hamster.postMessage(food,  buffers);
   };
 
   setupHamstersEnvironment(function() {
@@ -667,8 +634,9 @@ var hamsters = {
       }
     })();
     spawnHamsters();
+    chewGarbage();
   });
-})();
+};
 
 if(typeof module !== 'undefined') {
   module.exports = hamsters;
