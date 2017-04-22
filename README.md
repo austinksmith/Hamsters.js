@@ -63,6 +63,22 @@ npm install hamsters.js
 
 Once you've downloaded and added the library to your project you should have a variable named hamsters available, this variable is the core of the library. Do not create any globally scoped variables with the same name or you will risk causing compatibility issues. Now that you've successfully added the library to your project, let's get started below.
 
+# Initializing the library
+
+Starting in version 4.1.0 the library will no longer automatically initialize when your application loads, in order to allow for more fine tuned control over the library operation you can now pass an optional `startOptions` configuration object to control library behavior.
+
+```js
+  var startOptions = {
+    maxThreads: integer,
+    cache: boolean,
+    debug: booealn,
+    persistence: boolean
+  };
+  hamsters.init(startOptions);
+```
+
+At the moment only the above configuration options are available for your control, in later releases more options will be exposed.
+
 
 # How it works
 
@@ -87,23 +103,6 @@ hamsters.run(object, function, function, integer, boolean, string, boolean, stri
 7. This optional argument is intended to be used in conjunction with [memoization mode](https://github.com/austinksmith/Hamsters.js/wiki/Memoization), when memoization mode is enabled this argument allows one to control on an individual function level whether or not the results from that function are cached, this has a default value of `false`.
 
 8. This optional argument will tell the library to automatically sort our final output either alphabetically or numerically, this argument has a default value of `null` and can be configured using the [sorting options](https://github.com/austinksmith/Hamsters.js/wiki/Sorting).
-
-
-# Initializing the library
-
-Starting in version 4.1.0 the library will no longer automatically initialize when your application loads, in order to allow for more fine tuned control over the library operation you can now pass an optional `startOptions` configuration object to control library behavior.
-
-```js
-  var startOptions = {
-    maxThreads: integer,
-    cache: boolean,
-    debug: booealn,
-    persistence: boolean
-  };
-  hamsters.init(startOptions);
-```
-
-At the moment only the above configuration options are available for your control, in later releases more options will be exposed.
 
 
 # Restructuring standard functions
