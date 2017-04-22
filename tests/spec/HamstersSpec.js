@@ -1,4 +1,10 @@
 describe("WebHamsters Core Functionality", function() {
+  
+  hamsters.init({
+    maxThreads: 1,
+    persistence: false,
+    cache: false
+  });
 
   for(var key in hamsters.wheel.env) {
     if(hamsters.wheel.env.hasOwnProperty(key)) {
@@ -66,7 +72,6 @@ describe("WebHamsters Core Functionality", function() {
     it("Should stringify json to string", function(done) {
       var json = {test: 1};
       hamsters.tools.stringifyJson(json, function(string) {
-        debugger;
         expect(typeof string).toEqual('string');
         done();
       });

@@ -88,6 +88,24 @@ hamsters.run(object, function, function, integer, boolean, string, boolean, stri
 
 8. This optional argument will tell the library to automatically sort our final output either alphabetically or numerically, this argument has a default value of `null` and can be configured using the [sorting options](https://github.com/austinksmith/Hamsters.js/wiki/Sorting).
 
+
+# Initializing the library
+
+Starting in version 4.1.0 the library will no longer automatically initialize when your application loads, in order to allow for more fine tuned control over the library operation you can now pass an optional `startOptions` configuration object to control library behavior.
+
+```js
+  var startOptions = {
+    maxThreads: integer,
+    cache: boolean,
+    debug: booealn,
+    persistence: boolean
+  };
+  hamsters.init(startOptions);
+```
+
+At the moment only the above configuration options are available for your control, in later releases more options will be exposed.
+
+
 # Restructuring standard functions
 
 Imagine we have a sequential function that loops through several items and performs operations on them, traditionally this would be written like below.
