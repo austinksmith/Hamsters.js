@@ -66,6 +66,7 @@ describe("WebHamsters Core Functionality", function() {
     it("Should stringify json to string", function(done) {
       var json = {test: 1};
       hamsters.tools.stringifyJson(json, function(string) {
+        debugger;
         expect(typeof string).toEqual('string');
         done();
       });
