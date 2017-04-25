@@ -2,7 +2,7 @@
 
 **Author**: Austin K. Smith
 
-**Website**: [Hamsters.io](www.hamsters.io)
+**Website**: [Hamsters.io](http://www.hamsters.io)
 
 **Description**: 100% Vanilla Javascript Multithreading & Parallel Execution Library
 
