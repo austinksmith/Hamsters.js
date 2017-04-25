@@ -90,6 +90,14 @@ hamsters.run(object, function, function, integer, boolean, string, boolean, stri
 
 1. This required argument is our parameters object, this object is going to contain everything we want accessible within our execution context. Since threads are sand-boxed environments we cannot share scope with the main thread, it's important we add everything we need.
 
+```js
+  var params = {
+    array: [1,2,3,4,5,6,7,8,9,10],
+    foo: ....,
+    bar: ....
+  };
+```
+
 2. This required argument is going to be the function we want executed within our thread, any logic contained here will be sent to an available thread and executed there. It's important to note that in order to make things as simple as possible, the parameters object you passed previously can be accessed within this function from a internal `params` variable like so `var foo = params.bar;`.
 
 3. This required argument is going to be our callback function which will return our final output from the previous function, this function takes only one argument which is simply your result and can be accessed like so `var result = arguments[0];`.
@@ -104,6 +112,44 @@ hamsters.run(object, function, function, integer, boolean, string, boolean, stri
 
 8. This optional argument will tell the library to automatically sort our final output either alphabetically or numerically, this argument has a default value of `null` and can be configured using the [sorting options](https://github.com/austinksmith/Hamsters.js/wiki/Sorting).
 
+
+# How the library manages your data
+
+In order to enable the library to automatically manage your data and execution across many threads there are a few conventions that were chosen that you will need to follow when making use of the library.
+
+1. When using multiple threads the library needs a consistent place to look at the data supplied to control which pieces of your input data go to which threads, to accomplish this the library expects any array that you want executed across multiple threads must have the index of `array`. Any arrays you pass inside your parameters object that does *not* have the index of `array` will be copied to all threads.
+
+```js
+var params = {
+  array: [1,2,3,4,5,6,7,8,9,10]
+};
+```
+
+2. Similiar to the above, the library needs a consistent way to handle outputs from threads, this is accomplished by an internal `rtn` object, inside of your function body you should pass any and all output data into the `rtn.data` array. You can also simply make `rtn.data` your output however it's recommended you simply push your output into the existing `rtn.data` array as it will already match your input array type.
+
+```js
+hamsters.run(params, function() {
+  rtn.data.push("Hamsters");
+}, function(result) {
+   alert(result + " are awesome");
+});
+```
+
+3. The same parameters object mentioned above is also accessible within your execution scope with a `params` object, this object will contain everything you included.
+
+```js
+var params = {
+  array: [1,2,3,4,5,6,7,8,9,10],
+  animal: 'Hamster'
+};
+hamsters.run(params, function() {
+  if(params.animal === 'Hamster') {
+    rtn.data.push("Hamsters are awesome");
+  }
+}, function(result) {
+   alert(result);
+});
+```
 
 # Restructuring standard functions
 
