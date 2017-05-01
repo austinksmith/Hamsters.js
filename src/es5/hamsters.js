@@ -8,7 +8,7 @@
 */
 
 var hamsters = {
-  version: '4.1.0',
+  version: '4.1.1',
   debug: false,
   cache: false,
   persistence: true,
@@ -284,7 +284,6 @@ hamsters.init = function(startOptions) {
   };
 
   hamsters.tools.loop = function(input, onSuccess) {
-    var threads = input.threads || 1;
     var params = {
       run: hamsters.tools.prepareFunction(input.operator),
       init: input.startIndex || 0,
@@ -295,11 +294,13 @@ hamsters.init = function(startOptions) {
       worker: hamsters.wheel.env.worker
     };
     hamsters.run(params, function() {
-      var operator;
-      if(params.worker) {
-        operator = eval("(" + self.params.run + ")");
-      } else {
-        operator = new Function(self.params.run);
+      var operator = self.params.run;
+      if(typeof operator === "string") {
+        if(params.worker) {
+          operator = eval("(" + operator + ")");
+        } else {
+          operator = new Function(operator);
+        }
       }
       if(!params.limit) {
         params.limit = params.array.length;
@@ -310,7 +311,7 @@ hamsters.init = function(startOptions) {
       }
     }, function(rtn) {
       onSuccess(rtn);
-    }, threads, true, input.dataType);
+    }, input.threads, 1, input.dataType);
   };
 
   hamsters.tools.prepareFunction = function(functionBody) {
@@ -409,7 +410,7 @@ hamsters.init = function(startOptions) {
     if(!params || !fn) {
       return 'Error processing for loop, missing params or function';
     }
-    workers = workers || 1;
+    workers = (hamsters.wheel.env.legacy ? 1 : (workers || 1));
     var task = hamsters.wheel.newTask(hamsters.wheel.tasks.length, workers, order, dataType, fn, callback);
     if(dataType) {
       dataType = dataType.toLowerCase();
@@ -610,11 +611,11 @@ hamsters.init = function(startOptions) {
   };
 
   hamsters.wheel.feedHamster = function(hamster, food) {
-    if(hamsters.wheel.env.ie10) {
-      hamster.postMessage(food);
-    }
     if(hamsters.wheel.env.worker) {
-      hamster.port.postMessage(food);
+      return hamster.port.postMessage(food);
+    }
+    if(hamsters.wheel.env.ie10) {
+      return hamster.postMessage(food);
     }
     var buffers = [], key;
     for(key in food) {
@@ -622,18 +623,16 @@ hamsters.init = function(startOptions) {
         buffers.push(food[key].buffer);
       }
     }
-    hamster.postMessage(food,  buffers);
+    return hamster.postMessage(food,  buffers);
   };
 
   setupHamstersEnvironment(function() {
-    hamsters.wheel.newWheel = (function() {
-      if(hamsters.wheel.env.legacy) {
-        return legacyHamsterWheel;
-      } else {
-        return hamsterWheel;
-      }
-    })();
-    spawnHamsters();
+    if(hamsters.wheel.env.legacy) {
+      hamsters.wheel.newWheel = legacyHamsterWheel;
+    } else {
+      hamsters.wheel.newWheel = hamsterWheel;
+      spawnHamsters();
+    }
     chewGarbage();
   });
 };
