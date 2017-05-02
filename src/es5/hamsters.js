@@ -109,22 +109,38 @@ hamsters.init = function(startOptions) {
   }
 
   function spawnHamsters() {
-    if(hamsters.wheel.env.browser) {
+    if(typeof URL !== 'undefined') {
       hamsters.wheel.uri = URL.createObjectURL(createBlob('(' + String(giveHamsterWork()) + ')();'));
     }
     if(hamsters.persistence) {
       var i = hamsters.maxThreads;
       for (i; i > 0; i--) {
-        if(hamsters.wheel.env.ie10) {
-          hamsters.wheel.hamsters.push(new Worker('src/common/wheel.min.js'));
-        }
-        if(hamsters.wheel.env.worker) {
-          hamsters.wheel.hamsters.push(new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel'));
-        } else {
-          hamsters.wheel.hamsters.push(new Worker(hamsters.wheel.uri));
-        }
+        hamsters.wheel.hamsters.push(newHamster());
       }
     }
+  }
+
+  function newHamster() {
+    if(hamsters.wheel.env.ie10) {
+      return new Worker('../common/wheel.min.js');
+    }
+    if(hamsters.wheel.env.node) {
+      if(typeof path === 'undefined') {
+        var path = require('path');
+      }
+      if(typeof Worker === 'undefined') {
+        var webWorkerThreads = require('webworker-threads');
+        if(typeof webWorkerThreads !== 'undefined') {
+          var Worker = webWorkerThreads.Worker;
+        }
+      }
+      var relative_path = path.resolve('node_modules/hamsters.js/src/common/wheel.min.js');
+      return new Worker(relative_path);
+    }
+    if(hamsters.wheel.env.worker) {
+      return new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel');
+    }
+    return new Worker(hamsters.wheel.uri);
   }
 
   function giveHamsterWork() {
