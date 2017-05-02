@@ -1,7 +1,6 @@
 describe("WebHamsters Core Functionality", function() {
   
   hamsters.init({
-    maxThreads: 1,
     persistence: false,
     cache: false
   });
