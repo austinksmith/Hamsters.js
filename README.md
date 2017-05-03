@@ -43,7 +43,7 @@ Obtain a copy of the library by using one of the options below,
  
 **Node.js**
 
-It's important to note that Node.js does not ship with a native worker implementation out of the box and the library will therefore make use of the legacy fallback mode in versions 4.1.0 and lower, newer versions make use of the npm module `webworker-threads` since that implementation is pretty straight forward so once it's installed Hamsters.js will automatically pick that up for it's own use inside the Hamsters.js execution scope. You do **not** need to manually `require('webworker-threads)` in your app.js. If the library does not detect that `Worker` is defined by the `webworker-threads` npm module then Hamsters.js will run in legacy mode making use of only the main thread.
+It's important to note that Node.js does not ship with a native worker implementation out of the box and the library will therefore make use of the legacy fallback mode in versions 4.1.0 and lower, newer versions will allow you to pass a `Worker` object into the initialization options for the library to use allowing you to use any third party web worker implementation.
 
 1. Use npm to install hamsters.js `npm install --save hamsters.js`
 2. Use npm to install webworker-threads `npm install webworker-threads` 
