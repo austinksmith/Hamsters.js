@@ -27,5 +27,14 @@
   "bugs": {
     "url": "https://github.com/austinksmith/Hamsters.js/issues"
   },
-  "homepage": "http://www.hamsters.io"
+  "homepage": "http://www.hamsters.io",
+  "devDependencies": {
+    "babel-preset-es2015": "^6.24.1",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-browserify": "^0.5.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-util": "^3.0.8"
+  }
 }

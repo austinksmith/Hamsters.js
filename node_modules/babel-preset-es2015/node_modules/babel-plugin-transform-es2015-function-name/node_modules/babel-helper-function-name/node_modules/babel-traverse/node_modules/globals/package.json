@@ -1,0 +1,81 @@
+{
+  "name": "globals",
+  "version": "9.17.0",
+  "description": "Global identifiers from different JavaScript environments",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sindresorhus/globals.git"
+  },
+  "author": {
+    "name": "Sindre Sorhus",
+    "email": "sindresorhus@gmail.com",
+    "url": "http://sindresorhus.com"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "files": [
+    "index.js",
+    "globals.json"
+  ],
+  "keywords": [
+    "globals",
+    "global",
+    "identifiers",
+    "variables",
+    "vars",
+    "jshint",
+    "eslint",
+    "environments"
+  ],
+  "devDependencies": {
+    "mocha": "*"
+  },
+  "gitHead": "49b918ba1e72d831247a3f92cd8c59acc763a6bf",
+  "bugs": {
+    "url": "https://github.com/sindresorhus/globals/issues"
+  },
+  "homepage": "https://github.com/sindresorhus/globals#readme",
+  "_id": "globals@9.17.0",
+  "_shasum": "0c0ca696d9b9bb694d2e5470bd37777caad50286",
+  "_from": "globals@>=9.0.0 <10.0.0",
+  "_npmVersion": "2.15.11",
+  "_nodeVersion": "4.7.3",
+  "_npmUser": {
+    "name": "sindresorhus",
+    "email": "sindresorhus@gmail.com"
+  },
+  "dist": {
+    "shasum": "0c0ca696d9b9bb694d2e5470bd37777caad50286",
+    "tarball": "https://registry.npmjs.org/globals/-/globals-9.17.0.tgz"
+  },
+  "maintainers": [
+    {
+      "name": "byk",
+      "email": "ben@byk.im"
+    },
+    {
+      "name": "lo1tuma",
+      "email": "schreck.mathias@gmail.com"
+    },
+    {
+      "name": "nzakas",
+      "email": "nicholas@nczconsulting.com"
+    },
+    {
+      "name": "sindresorhus",
+      "email": "sindresorhus@gmail.com"
+    }
+  ],
+  "_npmOperationalInternal": {
+    "host": "packages-18-east.internal.npmjs.com",
+    "tmp": "tmp/globals-9.17.0.tgz_1490427430895_0.24591433047316968"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/globals/-/globals-9.17.0.tgz",
+  "readme": "ERROR: No README data found!"
+}
