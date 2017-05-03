@@ -1,0 +1,82 @@
+{
+  "name": "make-error",
+  "version": "1.2.3",
+  "license": "ISC",
+  "description": "Make your own error types!",
+  "keywords": [
+    "create",
+    "custom",
+    "derive",
+    "error",
+    "errors",
+    "extend",
+    "extending",
+    "extension",
+    "factory",
+    "inherit",
+    "make",
+    "subclass"
+  ],
+  "homepage": "https://github.com/JsCommunity/make-error",
+  "bugs": {
+    "url": "https://github.com/JsCommunity/make-error/issues"
+  },
+  "author": {
+    "name": "Julien Fontanet",
+    "email": "julien.fontanet@isonoe.net"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/JsCommunity/make-error.git"
+  },
+  "devDependencies": {
+    "browserify": "^14.1.0",
+    "husky": "^0.13.1",
+    "jest": "^19.0.2",
+    "standard": "^9.0.0",
+    "uglify-js": "^2.4.19"
+  },
+  "scripts": {
+    "commitmsg": "yarn test",
+    "dev-test": "jest --watch",
+    "prepublish": "mkdir -p dist && browserify -s makeError index.js | uglifyjs -c > dist/make-error.js",
+    "pretest": "standard",
+    "test": "jest"
+  },
+  "files": [
+    "dist/",
+    "index.js",
+    "index.d.ts"
+  ],
+  "gitHead": "bbec8ae4681809328ddba847b1909e2ecb4c9d74",
+  "_id": "make-error@1.2.3",
+  "_shasum": "6c4402df732e0977ac6faf754a5074b3d2b1d19d",
+  "_from": "make-error@>=1.2.0 <2.0.0",
+  "_npmVersion": "4.2.0",
+  "_nodeVersion": "7.6.0",
+  "_npmUser": {
+    "name": "julien-f",
+    "email": "julien.fontanet@isonoe.net"
+  },
+  "dist": {
+    "shasum": "6c4402df732e0977ac6faf754a5074b3d2b1d19d",
+    "tarball": "https://registry.npmjs.org/make-error/-/make-error-1.2.3.tgz"
+  },
+  "maintainers": [
+    {
+      "name": "julien-f",
+      "email": "julien.fontanet@isonoe.net"
+    },
+    {
+      "name": "marsaud",
+      "email": "marsaud.fabrice@neuf.fr"
+    }
+  ],
+  "_npmOperationalInternal": {
+    "host": "packages-12-west.internal.npmjs.com",
+    "tmp": "tmp/make-error-1.2.3.tgz_1489050107670_0.17617521877400577"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/make-error/-/make-error-1.2.3.tgz",
+  "readme": "ERROR: No README data found!"
+}

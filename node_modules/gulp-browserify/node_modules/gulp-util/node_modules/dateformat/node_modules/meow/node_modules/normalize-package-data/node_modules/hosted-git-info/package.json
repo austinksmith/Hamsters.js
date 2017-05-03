@@ -1,0 +1,73 @@
+{
+  "name": "hosted-git-info",
+  "version": "2.4.2",
+  "description": "Provides metadata and conversions from repository urls for Github, Bitbucket and Gitlab",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/npm/hosted-git-info.git"
+  },
+  "keywords": [
+    "git",
+    "github",
+    "bitbucket",
+    "gitlab"
+  ],
+  "author": {
+    "name": "Rebecca Turner",
+    "email": "me@re-becca.org",
+    "url": "http://re-becca.org"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/npm/hosted-git-info/issues"
+  },
+  "homepage": "https://github.com/npm/hosted-git-info",
+  "scripts": {
+    "test": "standard && tap -J --coverage test/*.js"
+  },
+  "devDependencies": {
+    "standard": "^9.0.2",
+    "tap": "^10.3.0"
+  },
+  "files": [
+    "index.js",
+    "git-host.js",
+    "git-host-info.js"
+  ],
+  "gitHead": "91fb3adc2c3c7c024f7fb4e34a1510db0f7625ed",
+  "_id": "hosted-git-info@2.4.2",
+  "_shasum": "0076b9f46a270506ddbaaea56496897460612a67",
+  "_from": "hosted-git-info@>=2.1.4 <3.0.0",
+  "_npmVersion": "4.5.0",
+  "_nodeVersion": "7.7.4",
+  "_npmUser": {
+    "name": "iarna",
+    "email": "me@re-becca.org"
+  },
+  "dist": {
+    "shasum": "0076b9f46a270506ddbaaea56496897460612a67",
+    "tarball": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-2.4.2.tgz"
+  },
+  "maintainers": [
+    {
+      "name": "iarna",
+      "email": "me@re-becca.org"
+    },
+    {
+      "name": "othiym23",
+      "email": "ogd@aoaioxxysz.net"
+    },
+    {
+      "name": "zkat",
+      "email": "kat@sykosomatic.org"
+    }
+  ],
+  "_npmOperationalInternal": {
+    "host": "packages-12-west.internal.npmjs.com",
+    "tmp": "tmp/hosted-git-info-2.4.2.tgz_1492124098717_0.3664245803374797"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/hosted-git-info/-/hosted-git-info-2.4.2.tgz",
+  "readme": "ERROR: No README data found!"
+}
