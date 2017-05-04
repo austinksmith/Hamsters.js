@@ -1,6 +1,6 @@
 "use strict";
 
-exports.wheel = {
+const hamstersWheel = {
 
   env: Object.create({
     legacy: false,
@@ -255,3 +255,5 @@ exports.wheel = {
     return hamster.postMessage(food,  buffers);
   }
 };
+
+module.exports = hamstersWheel;

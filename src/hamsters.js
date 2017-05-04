@@ -9,15 +9,37 @@
 
 "use strict";
 
-exports.hamsters = {
+const hamsters = {
 
-  version: false,
+  version: "4.2.0",
   debug: false,
   cache: false,
   persistence: false,
   maxThreads: 4,
-  tools: require("./tools.js"),
-  wheel: require("./wheel.js"),
+  tools: require("./hamsters-tools"),
+  wheel: require("./hamsters-wheel"),
+
+  run: (params, fn, callback, workers, aggregate, dataType, memoize, order) => {
+    if(!params || !fn) {
+      return 'Error processing for loop, missing params or function';
+    }
+    workers = (hamsters.wheel.env.legacy ? 1 : (workers || 1));
+    var task = hamsters.wheel.newTask(hamsters.wheel.tasks.length, workers, order, dataType, fn, callback);
+    if(dataType) {
+      dataType = dataType.toLowerCase();
+    }
+    if(hamsters.cache && memoize) {
+      var result = hamsters.wheel.checkCache(fn, task.input, dataType);
+      if(result && callback) {
+        setTimeout(() => {
+          hamsters.wheel.tasks[taskid] = null; //Clean up our task, not needed any longer
+          callback(result);
+        }, 4);
+        return;
+      }
+    }
+    hamsters.wheel.work(task, params, fn, callback, aggregate, dataType, memoize, order);
+  },
 
   init: (startOptions) => {
     "use strict";
@@ -28,29 +50,29 @@ exports.hamsters = {
 
     function setupBrowserSupport() {
       if(!Worker || ["Kindle/3.0", "Mobile/8F190", "IEMobile"].indexOf(navigator.userAgent) !== -1) {
-        this.wheel.env.legacy = true;
+        hamsters.wheel.env.legacy = true;
       }
       if(navigator.userAgent.toLowerCase().indexOf("firefox") !== -1) {
-        this.maxThreads = (this.maxThreads > 20 ? 20 : this.maxThreads);
+        hamsters.maxThreads = (hamsters.maxThreads > 20 ? 20 : hamsters.maxThreads);
       }
       if(isIE(10)) {
         try {
-          let hamster = new Worker("src/common/this.wheel.min.js");
+          let hamster = new Worker("src/common/hamsters.wheel.min.js");
           hamster.terminate();
-          this.wheel.env.ie10 = true;
+          hamsters.wheel.env.ie10 = true;
         } catch(e) {
-          this.wheel.env.legacy = true;
+          hamsters.wheel.env.legacy = true;
         }
       }
     }
 
     function setupWorkerSupport() {
       try {
-        this.wheel.uri = URL.createObjectURL(createBlob("(" + String(giveHamsterWork()) + "());"));
-        const SharedHamster = new SharedWorker(this.wheel.uri, "SharedHamsterWheel");
+        hamsters.wheel.uri = URL.createObjectURL(createBlob("(" + String(giveHamsterWork()) + "());"));
+        const SharedHamster = new SharedWorker(hamsters.wheel.uri, "SharedHamsterWheel");
         SharedHamster.terminate();
       } catch(e) {
-        this.wheel.env.legacy = true;
+        hamsters.wheel.env.legacy = true;
       }
     }
 
@@ -58,55 +80,55 @@ exports.hamsters = {
       let key;
       for(key in startOptions) {
         if(startOptions.hasOwnProperty(key)) {
-          hamsters[key] = startOptions[key];
+          this[key] = startOptions[key];
         }
       }
     }
 
     function setupHamstersEnvironment(onSuccess) {
-      this.wheel.env.browser = typeof window === "object";
-      this.wheel.env.worker  = typeof importScripts === "function";
-      this.wheel.env.node = typeof process === "object" && typeof require === "function" && !this.wheel.env.browser && !this.wheel.env.worker && !this.wheel.env.reactNative;
-      this.wheel.env.reactNative = !this.wheel.env.node && typeof global === "object";
-      this.wheel.env.shell = !this.wheel.env.browser && !this.wheel.env.node && !this.wheel.env.worker && !this.wheel.env.reactNative;
+      hamsters.wheel.env.browser = typeof window === "object";
+      hamsters.wheel.env.worker  = typeof importScripts === "function";
+      hamsters.wheel.env.node = typeof process === "object" && typeof require === "function" && !hamsters.wheel.env.browser && !hamsters.wheel.env.worker && !hamsters.wheel.env.reactNative;
+      hamsters.wheel.env.reactNative = !hamsters.wheel.env.node && typeof global === "object";
+      hamsters.wheel.env.shell = !hamsters.wheel.env.browser && !hamsters.wheel.env.node && !hamsters.wheel.env.worker && !hamsters.wheel.env.reactNative;
       if(typeof navigator !== "undefined") {
-        this.maxThreads = navigator.hardwareConcurrency;
+        hamsters.maxThreads = navigator.hardwareConcurrency;
       }
       if(typeof startOptions !== "undefined") {
         processStartOptions();
       }
-      if(this.wheel.env.browser) {
+      if(hamsters.wheel.env.browser) {
         setupBrowserSupport();
       }
-      if(this.wheel.env.worker) {
+      if(hamsters.wheel.env.worker) {
         setupWorkerSupport();
       }
-      if(this.wheel.env.reactNative || this.wheel.env.node) {
+      if(hamsters.wheel.env.reactNative || hamsters.wheel.env.node) {
         global.self = global;
       }
-      if(this.wheel.env.shell || typeof Worker === "undefined") {
-        this.wheel.env.legacy = true;
+      if(hamsters.wheel.env.shell || typeof Worker === "undefined") {
+        hamsters.wheel.env.legacy = true;
       }
       if(typeof Uint8Array === "undefined") {
-        this.wheel.env.transferrable = false;
+        hamsters.wheel.env.transferrable = false;
       }
       onSuccess();
     }
 
     function spawnHamsters() {
       if(typeof URL !== "undefined") {
-        this.wheel.uri = URL.createObjectURL(createBlob("(" + String(giveHamsterWork()) + ")();"));
+        hamsters.wheel.uri = URL.createObjectURL(createBlob("(" + String(giveHamsterWork()) + ")();"));
       }
-      if(this.persistence) {
-        let i = this.maxThreads;
+      if(hamsters.persistence) {
+        let i = hamsters.maxThreads;
         for (i; i > 0; i--) {
-          this.wheel.this.push(this.wheel.newHamster());
+          hamsters.wheel.hamsters.push(hamsters.wheel.newHamster());
         }
       }
     }
 
     function giveHamsterWork() {
-      if(this.wheel.env.worker) {
+      if(hamsters.wheel.env.worker) {
         return workerWorker;
       }
       return worker;
@@ -193,18 +215,18 @@ exports.hamsters = {
     }
 
     function legacyHamsterWheel(inputArray, hamsterfood, aggregate, callback, task, threadid, hamster, memoize) {
-      this.wheel.trackThread(task, this.wheel.queue.running, threadid);
-      if(memoize || this.debug) {
-        this.wheel.trackInput(inputArray, threadid, task, hamsterfood);
+      hamsters.wheel.trackThread(task, hamsters.wheel.queue.running, threadid);
+      if(memoize || hamsters.debug) {
+        hamsters.wheel.trackInput(inputArray, threadid, task, hamsterfood);
       }
-      this.wheel.legacyProcessor((hamsterfood, inputArray, output) => {
-        this.wheel.clean(task, threadid);
+      hamsters.wheel.legacyProcessor((hamsterfood, inputArray, output) => {
+        hamsters.wheel.clean(task, threadid);
         task.output[threadid] = output.data;
         if(task.workers.length === 0 && task.count === task.threads) {
-          callback(this.wheel.getOutput(task.output, aggregate, output.dataType));
-          this.wheel.tasks[task.id] = null;
-          if(this.cache && memoize !== false) {
-            this.wheel.memoize(task.fn, task.input, output.data, output.dataType);
+          callback(hamsters.wheel.getOutput(task.output, aggregate, output.dataType));
+          hamsters.wheel.tasks[task.id] = null;
+          if(hamsters.cache && memoize !== false) {
+            hamsters.wheel.memoize(task.fn, task.input, output.data, output.dataType);
           }
         }
       });
@@ -212,43 +234,45 @@ exports.hamsters = {
     }
 
     function hamsterWheel(inputArray, hamsterfood, aggregate, callback, task, threadid, hamster, memoize) {
-      if(this.maxThreads === this.wheel.queue.running.length) {
-        this.wheel.poolThread(inputArray, hamsterfood, threadid, callback, task, aggregate, memoize);
+      if(hamsters.maxThreads === hamsters.wheel.queue.running.length) {
+        hamsters.wheel.poolThread(inputArray, hamsterfood, threadid, callback, task, aggregate, memoize);
         return;
       }
-      if(memoize || this.debug) {
-        this.wheel.trackInput(inputArray, threadid, task, hamsterfood);
+      if(memoize || hamsters.debug) {
+        hamsters.wheel.trackInput(inputArray, threadid, task, hamsterfood);
       }
       if(!hamster) {
-        if(this.persistence) {
-          hamster = this.wheel.hamsters[this.wheel.queue.running.length];
+        if(hamsters.persistence) {
+          hamster = hamsters.wheel.hamsters[hamsters.wheel.queue.running.length];
         } else {
-          hamster = this.wheel.newHamster();
+          hamster = hamsters.wheel.newHamster();
         }
       }
-      this.wheel.trainHamster(threadid, aggregate, callback, task, hamster, memoize);
-      this.wheel.trackThread(task, this.wheel.queue.running, threadid);
+      hamsters.wheel.trainHamster(threadid, aggregate, callback, task, hamster, memoize);
+      hamsters.wheel.trackThread(task, hamsters.wheel.queue.running, threadid);
       hamsterfood.array = inputArray;
-      this.wheel.feedHamster(hamster, hamsterfood);
+      hamsters.wheel.feedHamster(hamster, hamsterfood);
       task.count += 1; //Increment count, thread is running
-      if(this.debug === "verbose") {
+      if(hamsters.debug === "verbose") {
         console.info("Spawning Hamster #" + threadid + " @ " + new Date().getTime());
       }
     }
 
     function chewGarbage() {
-      delete this.init;
+      delete hamsters.init;
       startOptions = null;
     }
 
     setupHamstersEnvironment(() => {
-      if(this.wheel.env.legacy) {
-        this.wheel.newWheel = legacyHamsterWheel;
+      if(hamsters.wheel.env.legacy) {
+        hamsters.wheel.newWheel = legacyHamsterWheel;
       } else {
-        this.wheel.newWheel = hamsterWheel;
+        hamsters.wheel.newWheel = hamsterWheel;
         spawnHamsters();
       }
       chewGarbage();
     });
   }
 };
+
+module.exports = hamsters;
