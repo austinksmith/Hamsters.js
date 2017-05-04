@@ -1,6 +1,6 @@
 "use strict";
 
-exports.tools = {
+const hamstersTools = {
 
   splitArray: (array, n) => {
     let i = 0;
@@ -109,4 +109,7 @@ exports.tools = {
     }
     return output;
   }
-}
+};
+
+module.exports = hamstersTools;
+  
