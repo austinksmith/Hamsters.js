@@ -1,6 +1,10 @@
 
 
-const loop = (input, onSuccess) => {
+
+"use strict";
+
+
+module.exports = (input, onSuccess) => {
   let params = {
     run: prepareFunction(input.operator),
     init: input.startIndex || 0,
@@ -31,5 +35,3 @@ const loop = (input, onSuccess) => {
   }, input.threads, 1, input.dataType);
 
 };
-
-module.exports = loops;

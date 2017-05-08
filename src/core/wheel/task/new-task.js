@@ -1,3 +1,5 @@
+"use strict";
+
   newTask: (taskid, workers, order, dataType, fn, cb) => {
     this.tasks.push({
       id: taskid,

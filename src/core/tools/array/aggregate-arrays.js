@@ -1,6 +1,10 @@
 
+"use strict";
 
-const aggregate = (input, dataType) => {
+
+const processDataType = require("../../wheel/data/process-data").processDataType;
+
+module.exports = (input, dataType) => {
   if(!dataType || !hamsters.wheel.env.transferrable) {
     return input.reduce((a, b) => a.concat(b));
   }
@@ -10,7 +14,7 @@ const aggregate = (input, dataType) => {
   for (i; i < len; i += 1) {
     bufferLength += input[i].length;
   }
-  let output = hamsters.wheel.processDataType(dataType, bufferLength);
+  let output = processDataType(dataType, bufferLength);
   let offset = 0;
   for (i = 0; i < len; i += 1) {
     output.set(input[i], offset);
@@ -18,5 +22,3 @@ const aggregate = (input, dataType) => {
   }
   return output;
 };
-
-module.exports = aggregate;

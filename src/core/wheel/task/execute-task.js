@@ -1,3 +1,5 @@
+"use strict";
+
   work: (task, params, fn, callback, aggregate, dataType, memoize, order) => {
     let workArray = params.array || null;
     if(params.array && task.threads !== 1) {

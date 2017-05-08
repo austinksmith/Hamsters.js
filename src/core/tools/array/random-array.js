@@ -1,4 +1,6 @@
 
-const randomArray = () => {
+"use strict";
+
+module.exports = (number) => {
 	
 };
