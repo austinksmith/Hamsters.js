@@ -7,6 +7,8 @@
 * License: Artistic License 2.0
 */
 
+"use strict";
+
 let environment = require("./detect-environment");
 let maxThreads = 4;
 let threads = [];
@@ -29,21 +31,17 @@ const setupBrowserSupport = () => {
   //   }
   // }
 };
- 
-module.exports = () => {
-	"use strict";
 
-	if(typeof navigator !== "undefined") {
-	  maxThreads = navigator.hardwareConcurrency;
-	}
-	
-	if(environment.browser) {
-	  setupBrowserSupport();
-	}
-	
-	if(environment.reactNative || environment.node) {
-	  global.self = global;
-	}
-	
-	return environment;
-};
+if(typeof navigator !== "undefined") {
+  maxThreads = navigator.hardwareConcurrency;
+}
+
+if(environment.browser) {
+  setupBrowserSupport();
+}
+
+if(environment.reactNative || environment.node) {
+  global.self = global;
+}
+ 
+module.exports = environment;

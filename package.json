@@ -2,7 +2,7 @@
   "name": "hamsters.js",
   "version": "4.1.1",
   "description": "100% Vanilla Javascript Multithreading & Parallel Execution Library",
-  "main": "src/es5/hamsters.js",
+  "main": "src/core/hamsters.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

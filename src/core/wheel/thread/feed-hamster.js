@@ -1,3 +1,4 @@
+"use strict";
 
 
   feedHamster: (hamster, food) => {

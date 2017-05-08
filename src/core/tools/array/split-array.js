@@ -1,5 +1,7 @@
 
-const splitArray = (array, n) => {
+"use strict";
+
+module.exports = (array, n) => {
   let i = 0;
   let tasks = [];
   let size = Math.ceil(array.length/n);
@@ -14,5 +16,3 @@ const splitArray = (array, n) => {
   }
   return tasks;
 };
-
-module.exports = splitArray;
