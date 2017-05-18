@@ -50,11 +50,15 @@ Obtain a copy of the library by using one of the options below,
 var hamsters = require('hamsters.js');
 ```
 
-It's important to note that Node.js does not ship with a native worker implementation out of the box and the library will therefore make use of the legacy fallback mode allowing you to still write your logic and validate it works with the library but will not provide the performance benefits of multiple threads. To resolve this you will need to make use of a third party worker implementation for Node.js, there are many of these on npm and github, the library will work with any implementation that adheres to the worker specifications. Once you've obtained a third party worker implementation package you can simply declare `Worker` before declaring `hamsters`.
+It's important to note that Node.js does not ship with a native worker implementation out of the box and the library will therefore make use of the legacy fallback mode allowing you to still write your logic and validate it works with the library but will not provide the performance benefits of multiple threads. To resolve this you will need to make use of a third party worker implementation for Node.js, there are many of these on npm and github, the library should work with any implementation that adheres to the worker specifications. Once you've obtained a third party worker implementation package you can simply declare `Worker` before declaring `hamsters`.
 
 ```js
   var Worker = require('...').Worker;
   var hamsters = require('hamsters.js');
+  hamsters.init({
+    maxThreads: 2,
+    Worker: Worker
+  })
 ```
 
 
