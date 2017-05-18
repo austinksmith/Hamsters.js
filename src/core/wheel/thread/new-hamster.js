@@ -9,7 +9,7 @@ module.exports = () => {
     return new SharedWorker(uri, "SharedHamsterWheel");
   }
   if(environment.ie10) {
-    return new Worker("../../common/wheel.min.js");
+    return new Worker("../../../common/wheel.min.js");
   }
   return new Worker(uri);
 };

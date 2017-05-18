@@ -10,10 +10,6 @@
 
 "use strict";
 
-const buildURI = () => {
-	return (typeof Worker === 'undefined');
-};
-
 module.exports = () => {
-	return buildURI();
+	return (typeof Worker === 'undefined');
 };
