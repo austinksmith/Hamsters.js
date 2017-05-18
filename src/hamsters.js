@@ -84,7 +84,7 @@ hamsters.init = function(startOptions) {
     hamsters.wheel.env.node = typeof process === "object" && typeof require === "function" && !hamsters.wheel.env.browser && !hamsters.wheel.env.worker && !hamsters.wheel.env.reactNative;
     hamsters.wheel.env.reactNative = !hamsters.wheel.env.node && typeof global === 'object';
     hamsters.wheel.env.shell = !hamsters.wheel.env.browser && !hamsters.wheel.env.node && !hamsters.wheel.env.worker && !hamsters.wheel.env.reactNative;
-    if(typeof navigator !== 'undefined' && navigator.hardwareConcurrency) {
+    if(typeof navigator !== 'undefined' && typeof navigator.hardwareConcurrency !== 'undefined') {
       hamsters.maxThreads = navigator.hardwareConcurrency;
     }
     if(typeof startOptions !== 'undefined') {
