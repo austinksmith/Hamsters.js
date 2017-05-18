@@ -9,56 +9,64 @@
 
 "use strict";
 
-const libraryVersion = "4.2.0";
-const defaultMaxThreads = 4;
-const detectedEnvironment = require("./environment/setup-environment");
+const hamsterEnvironment = require("./environment/setup-environment");
 const hamsterTools = require("./tools/hamster-tools");
+const memoizer = require("./cache/memoize");
+const threadPool = require("./pool/thread-pool");
+const hamsterWheel = require("./processor/hamster-wheel");
 
-let spawnedHamsters = [];
-let memoizeCache = require("./cache/memoize");
-let threadPool = require("./pool/thread-pool");
-let defaultOptions = new Object({
-	maxThreads: defaultMaxThreads,
+module.exports = {
+	version: "4.2.0",
 	persistence: true,
 	debug: false,
 	cache: false,
-	Worker: null
-});
+	habitat: hamsterEnvironment,
+	pool: threadPool,
+	tools: hamsterTools,
+	memoizer: memoizer,
+	wheel: hamsterWheel,
+	errors: [],
 
-const wakeHamsters = (startOptions) => {
-	console.log("WOKE!");
-};
+	init: (startOptions) => {
+		if(typeof startOptions !== "undefined") {
+			this.processStartOptions(startOptions);
+		}
+		this.wakeHamsters();
+	},
 
-const processStartOptions = (startOptions) => {
-  let key;
-  for(key in startOptions) {
-    if(startOptions.hasOwnProperty(key)) {
-      defaultOptions[key] = startOptions[key];
+	processStartOptions: (startOptions) => {
+		let key;
+	  for(key in startOptions) {
+	    if(startOptions.hasOwnProperty(key)) {
+	    	if(key === "maxThreads") {
+	    		this.habitat.maxThreads = startOptions[key];
+	    	} else {
+	      	this[key] = startOptions[key];
+	    	}
+	    }
+	  }
+	},
+
+	run: () => {
+
+	},
+
+	wakeHamsters: () => {
+		if(this.env.browser) {
+      hamsters.wheel.uri = URL.createObjectURL(createBlob('(' + String(giveHamsterWork()) + ')();'));
     }
-  }
-};
-
-const hamsterRunner = () => {
-
-};
-
-module.exports = (startOptions) => {
-	if(typeof startOptions !== "undefined") {
-		processStartOptions(startOptions);
+    if(hamsters.persistence) {
+      var i = hamsters.maxThreads;
+      for (i; i > 0; i--) {
+        if(hamsters.wheel.env.ie10) {
+          hamsters.wheel.hamsters.push(new Worker('src/common/wheel.min.js'));
+        }
+        if(hamsters.wheel.env.worker) {
+          hamsters.wheel.hamsters.push(new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel'));
+        } else {
+          hamsters.wheel.hamsters.push(new Worker(hamsters.wheel.uri));
+        }
+      }
+    }
 	}
-
-	return new Object({
-		version: libraryVersion,
-		maxThreads: defaultOptions.maxThreads,
-		debug: defaultOptions.debug,
-		persistence: defaultOptions.persistence,
-		cache: defaultOptions.cache,
-		environment: detectedEnvironment,
-		pool: threadPool,
-		memoizer: memoizeCache,
-		hamsters: spawnedHamsters,
-		tools: hamsterTools,
-		run: hamsterRunner,
-		errors: []
-	});
 };

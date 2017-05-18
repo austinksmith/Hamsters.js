@@ -9,24 +9,18 @@
 
 "use strict";
 
-const trainHamster = require('./');
-const trackThread = require('./');
-const feedHamster = require('./');
-const poolThread = require('./');
-const newHamster = require('./');
-const queue = require('./');
-
-
-const cookHamsterFood = () => {
-
-};
-
+const trainHamster = require('../wheel/thread/train-hamster');
+const newHamster = require('../wheel/thread/new-hamster');
+const trackHamster = require('../wheel/thread/track-hamster');
+const feedHamster = require('../wheel/thread/feed-hamster');
+const threadPool = require('../pool/thread-pool');
+const memoizer = require('../cache/mmemoizer');
 
 module.exports = (inputArray, parameters, aggregate, onSuccess, task, id, thread, memoize) => {
-  if(maxThreads === queue.running.length) {
-    poolThread(inputArray, params, threadid, callback, task, aggregate, memoize);
-    return;
-  }
+  // if(maxThreads === queue.running.length) {
+  //   poolThread(inputArray, params, threadid, callback, task, aggregate, memoize);
+  //   return;
+  // }
   if(memoize || debug) {
     trackInput(inputArray, threadid, task, hamsterfood);
   }

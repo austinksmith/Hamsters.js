@@ -7,6 +7,8 @@
 * License: Artistic License 2.0
 */
 
+"use strict";
+
 const stringifyJSON = require("./json/stringify-json");
 const parseJSON = require("./json/parse-json");
 const randomArray = require("./array/random-array");
