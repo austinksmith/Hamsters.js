@@ -564,6 +564,7 @@ hamsters.init = function(startOptions) {
             hamsters.wheel.memoize(task.fn, task.input[0].input, hamsters.wheel.getOutput(task.output, aggregate, results.dataType), results.dataType);
           }
         }
+		task.output = [];
       }
       if(hamsters.wheel.queue.pending.length !== 0) {
         hamsters.wheel.processQueue(hamster, hamsters.wheel.queue.pending.shift());
