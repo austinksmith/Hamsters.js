@@ -14,7 +14,7 @@ Some issues may be isolated to specific environments or systems, an issue you ar
 
 ### If the answer above was a browser, which browser and browser version are you using?
 
-Browser feature support can vary wildly and any issues you are facing may be exclusive to a specific browser or specific version of a browser. Please include not only the version of the specific browser you are facing the issue on.
+Browser feature support can vary wildly and any issues you are facing may be exclusive to a specific browser or specific version of a browser. Please include not only the version of the specific browser you are facing the issue on but ideally the operating system as well.
 
 ### Please provide example logic
 
