@@ -8,7 +8,7 @@
 */
 
 var hamsters = {
-  version: '4.1.2',
+  version: '4.1.3',
   debug: false,
   cache: false,
   persistence: true,
@@ -123,8 +123,9 @@ hamsters.init = function(startOptions) {
       for (i; i > 0; i--) {
         if(hamsters.wheel.env.ie10) {
           hamsters.wheel.hamsters.push(new Worker('./common/wheel.min.js'));
-        }
-        if(hamsters.wheel.env.worker) {
+        } else if(hamsters.wheel.env.node) {
+          hamsters.wheel.hamsters.push(new Worker(giveHamsterWork()));
+        } else if(hamsters.wheel.env.worker) {
           hamsters.wheel.hamsters.push(new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel'));
         } else {
           hamsters.wheel.hamsters.push(new Worker(hamsters.wheel.uri));
@@ -250,12 +251,16 @@ hamsters.init = function(startOptions) {
     if(!hamster) {
       if(hamsters.persistence) {
         hamster = hamsters.wheel.hamsters[hamsters.wheel.queue.running.length];
-      } else if(hamsters.wheel.env.ie10) {
-        hamster = new Worker('src/common/wheel.min.js');
-      } else if(hamsters.wheel.env.worker) {
-        hamster = new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel');
       } else {
-        hamster = new Worker(hamsters.wheel.uri);
+        if(hamsters.wheel.env.ie10) {
+          hamster = new Worker('src/common/wheel.min.js');
+        } else if(hamsters.wheel.env.worker) {
+          hamster = new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel');
+        } else if (hamsters.wheel.env.node) {
+          hamster = new Worker(giveHamsterWork());
+        } else {
+          hamster = new Worker(hamsters.wheel.uri);
+        }
       }
     }
     hamsters.wheel.trainHamster(threadid, aggregate, callback, task, hamster, memoize);
