@@ -11,7 +11,7 @@
 
 const hamsterEnvironment = require("./environment/setup-environment");
 const hamsterTools = require("./tools/hamster-tools");
-const memoizer = require("./cache/memoize");
+const memoizer = require("./cache/memoizer");
 const threadPool = require("./pool/thread-pool");
 const hamsterWheel = require("./processor/hamster-wheel");
 
