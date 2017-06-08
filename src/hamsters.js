@@ -8,11 +8,12 @@
 */
 
 var hamsters = {
-  version: '4.1.3',
+  version: '4.1.4',
   debug: false,
   cache: false,
   persistence: true,
   maxThreads: 4,
+  atomics: false,
   tools: {},
   wheel: {
     env: {
@@ -22,6 +23,7 @@ var hamsters = {
       worker: false,
       browser: false,
       ie10: false,
+      atomics: false,
       transferrable: true
     },
     queue: {
@@ -90,26 +92,26 @@ hamsters.init = function(startOptions) {
     if(typeof startOptions !== 'undefined') {
       processStartOptions();
     }
-    if(hamsters.wheel.env.browser) {
+    if(hamsters.wheel.env.browser && !hamsters.wheel.env.reactNative) {
       setupBrowserSupport();
     }
     if(hamsters.wheel.env.worker) {
       setupWorkerSupport();
     }
-    if(hamsters.wheel.env.node) {
+    if(hamsters.wheel.env.node || hamsters.wheel.env.reactNative) {
       global.self = global;
       if(typeof hamsters.Worker !== 'undefined') {
         global.Worker = hamsters.Worker;
       }
-    }
-    if(hamsters.wheel.env.reactNative) {
-      global.self = global;
     }
     if(hamsters.wheel.env.shell || typeof Worker === 'undefined') {
       hamsters.wheel.env.legacy = true;
     }
     if(typeof Uint8Array === 'undefined') {
       hamsters.wheel.env.transferrable = false;
+    }
+    if(typeof SharedArrayBuffer !== 'undefined') {
+      hamsters.wheel.env.atomics = true;
     }
     onSuccess();
   }
@@ -440,9 +442,9 @@ hamsters.init = function(startOptions) {
   };
 
   hamsters.wheel.work = function(task, params, fn, callback, aggregate, dataType, memoize, order) {
-    var workArray = params.array || null;
-    if(params.array && task.threads !== 1) {
-      workArray = hamsters.tools.splitArray(params.array, task.threads); //Divide our array into equal array sizes
+    var workArray = params.array;
+    if(workArray && task.threads !== 1) {
+      workArray = hamsters.tools.splitArray(workArray, task.threads); //Divide our array into equal array sizes
     }
     var food = {};
     var key;
@@ -478,6 +480,13 @@ hamsters.init = function(startOptions) {
       callback: cb
     });
     return hamsters.wheel.tasks[taskid];
+  };
+
+  hamsters.wheel.assignOutput = function(task, inputArray) {
+    if(!task || !inputArray || !hamsters.wheel.env.atomics) {
+      return;
+    }
+    task.output = new SharedArrayBuffer(inputArray.length);
   };
 
   hamsters.wheel.trackInput = function(inputArray, threadid, task, hamsterfood) {
