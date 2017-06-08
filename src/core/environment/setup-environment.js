@@ -35,12 +35,12 @@ if(typeof navigator !== "undefined") {
   detectedEnvironment.maxThreads = navigator.hardwareConcurrency;
 }
 
-if(environment.browser) {
+if(detectedEnvironment.browser) {
   setupBrowserSupport();
 }
 
-if(environment.reactNative || environment.node) {
+if(detectedEnvironment.reactNative || detectedEnvironment.node) {
   global.self = global;
 }
  
-module.exports = environment;
+module.exports = detectedEnvironment;

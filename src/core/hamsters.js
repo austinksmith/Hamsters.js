@@ -15,58 +15,80 @@ const memoizer = require("./cache/memoizer");
 const threadPool = require("./pool/thread-pool");
 const hamsterWheel = require("./processor/hamster-wheel");
 
-module.exports = {
-	version: "4.2.0",
-	persistence: true,
-	debug: false,
-	cache: false,
-	habitat: hamsterEnvironment,
-	pool: threadPool,
-	tools: hamsterTools,
-	memoizer: memoizer,
-	wheel: hamsterWheel,
-	errors: [],
-
-	init: (startOptions) => {
-		if(typeof startOptions !== "undefined") {
-			this.processStartOptions(startOptions);
-		}
-		this.wakeHamsters();
-	},
-
-	processStartOptions: (startOptions) => {
-		let key;
-	  for(key in startOptions) {
-	    if(startOptions.hasOwnProperty(key)) {
-	    	if(key === "maxThreads") {
-	    		this.habitat.maxThreads = startOptions[key];
-	    	} else {
-	      	this[key] = startOptions[key];
-	    	}
-	    }
-	  }
-	},
-
-	run: () => {
-
-	},
-
-	wakeHamsters: () => {
-		if(this.env.browser) {
-      hamsters.wheel.uri = URL.createObjectURL(createBlob('(' + String(giveHamsterWork()) + ')();'));
-    }
-    if(hamsters.persistence) {
-      var i = hamsters.maxThreads;
-      for (i; i > 0; i--) {
-        if(hamsters.wheel.env.ie10) {
-          hamsters.wheel.hamsters.push(new Worker('src/common/wheel.min.js'));
-        }
-        if(hamsters.wheel.env.worker) {
-          hamsters.wheel.hamsters.push(new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel'));
-        } else {
-          hamsters.wheel.hamsters.push(new Worker(hamsters.wheel.uri));
-        }
+const processStartOptions = (startOptions) => {
+  let key;
+  for(key in startOptions) {
+    if(startOptions.hasOwnProperty(key)) {
+      if(key === "maxThreads") {
+        hamsters.habitat[key] = startOptions[key];
+      } else {
+        hamsters[key] = startOptions[key];
       }
     }
-	}
+  }
 };
+
+const wakeHamsters = () => {
+  if(hamsterEnvironment.browser) {
+    hamsters.wheel.uri = URL.createObjectURL(createBlob('(' + String(giveHamsterWork()) + ')();'));
+  }
+  if(hamsters.persistence) {
+    var i = hamsters.maxThreads;
+    for (i; i > 0; i--) {
+      if(hamsters.wheel.env.ie10) {
+        hamsters.wheel.hamsters.push(new Worker('src/common/wheel.min.js'));
+      }
+      if(hamsters.wheel.env.worker) {
+        hamsters.wheel.hamsters.push(new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel'));
+      } else {
+        hamsters.wheel.hamsters.push(new Worker(hamsters.wheel.uri));
+      }
+    }
+  }
+};
+
+let hamsters = {
+  version: "4.2.0",
+  persistence: true,
+  debug: false,
+  cache: false,
+  atomics: false,
+  habitat: hamsterEnvironment,
+  pool: threadPool,
+  tools: hamsterTools,
+  memoizer: memoizer,
+  wheel: hamsterWheel,
+  errors: [],
+  init: (startOptions) => {
+    if(typeof startOptions !== "undefined") {
+      processStartOptions(startOptions);
+    }
+    wakeHamsters();
+  },
+  run: (threadParams, functionToExecute, onSuccess, numberOfThreads, aggregateThreadOutputs, dataType, memoize, order) => {
+    var totalWorkers = numberOfThreads;
+    if(hamsterEnvironment.legacy) {
+      totalWorkers = 1;
+    }
+    var task = hamsterWheel.newTask(hamsterWheel.tasks.length, totalWorkers, order, dataType, functionToExecute, onSuccess);
+    if(dataType) {
+      dataType = dataType.toLowerCase();
+    }
+    if(hamsters.cache && memoize) {
+      var result = this.wheel.checkCache(functionToExecute, task.input, dataType);
+      if(result) {
+        setTimeout(function() {
+          hamsters.wheel.tasks[taskid] = null; //Clean up our task, not needed any longer
+          onSuccess(result);
+        }, 4);
+        return;
+      }
+    }
+    this.wheel.work(task, threadParams, functionToExecute, onSuccess, aggregateThreadOutputs, dataType, memoize, order);
+  },
+
+};
+
+
+
+module.exports = hamsters;

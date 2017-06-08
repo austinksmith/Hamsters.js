@@ -11,7 +11,7 @@
 "use strict";
 
 const supportsWorkers = () => {
-	return (typeof Worker === 'undefined');
+	return (typeof Worker !== 'undefined');
 };
 
 module.exports = supportsWorkers();

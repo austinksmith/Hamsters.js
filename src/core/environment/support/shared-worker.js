@@ -11,7 +11,7 @@
 "use strict";
 
 const supportsSharedWorkers = () => {
-	return (typeof SharedWorker === 'undefined');
+	return (typeof SharedWorker !== 'undefined');
 };
 
 module.exports = supportsSharedWorkers();
