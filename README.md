@@ -234,7 +234,6 @@ function() {
      return output;
   }, hamsters.maxThreads, true);
 }
-
 ```
 
 You can find more information on how to make use of the library on the wiki links below.
