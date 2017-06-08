@@ -10,8 +10,10 @@
 
 "use strict";
 
-const supportsTransferrableObjects = () => {
-	return (typeof Uint8Array !== "undefined");
+const isNode = require("./node");
+
+const isReactNative = () => {
+	return (isNode === false && typeof global === "object");
 };
 
-module.exports = supportsTransferrableObjects();
+module.exports = isReactNative();

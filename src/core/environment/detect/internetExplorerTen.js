@@ -1,4 +1,7 @@
 
+
+
+
 /*
 * Title: Hamsters.js
 * Description: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
@@ -10,8 +13,13 @@
 
 "use strict";
 
-const supportsTransferrableObjects = () => {
-	return (typeof Uint8Array !== "undefined");
+const isBrowser = require("./browser");
+
+const isInternetExplorer = (version) => {
+	if(typeof navigator === "undefined" || !isBrowser) {
+		return false;
+	}
+	return (new RegExp('msie' + (!isNaN(version) ? ('\\s'+version) : ''), 'i').test(navigator.userAgent));
 };
 
-module.exports = supportsTransferrableObjects();
+module.exports = isInternetExplorer(10);

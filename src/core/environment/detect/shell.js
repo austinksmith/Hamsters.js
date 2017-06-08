@@ -10,8 +10,13 @@
 
 "use strict";
 
-const supportsTransferrableObjects = () => {
-	return (typeof Uint8Array !== "undefined");
+const isBrowser = require("./browser");
+const isNode = require("./node");
+const isWorker = require("./worker");
+const isReactNative = require("./reactNative");
+
+const isShell = () => {
+	return (!isBrowser && !isNode && !isWorker && !isReactNative);
 };
 
-module.exports = supportsTransferrableObjects();
+module.exports = isShell();

@@ -12,51 +12,33 @@
 const supportsWorkers = require("./support/worker");
 const supportsTransferrableObjects = require("./support/transferrable-object");
 const supportsSharedWorkers = require("./support/shared-worker");
+const supportsAtomics = require("./support/atomics");
+
+const isNode = require("./detect/node");
+const isBrowser = require("./detect/browser");
+const isShell = require("./detect/shell");
+const isReactNative = require("./detect/reactNative");
+const isWorker = require("./detect/worker");
+const isInternetExplorerTen = require("./detect/internetExplorerTen");
 
 const hasFullSupport = () => {
-	if(isShell()) {
+	if(isShell) {
 		return false;
 	}
-	if(isWorker()) {
+	if(isWorker) {
 		return supportsSharedWorkers;
 	}
 	return supportsWorkers;
 };
 
-const isBrowser = () => {
-	return (typeof window === "object");
-};
-
-const isInternetExplorer = (version) => {
-	if(typeof navigator === "undefined" || !isBrowser()) {
-		return false;
-	}
-	return (new RegExp('msie' + (!isNaN(version) ? ('\\s'+version) : ''), 'i').test(navigator.userAgent));
-};
-
-const isNode = () => {
-	return (typeof process === "object" && typeof require === "function");
-};
-
-const isWorker = () => {
-	return (typeof importScripts === "function");
-};
-
-const isReactNative = () => {
-	return (isNode() === false && typeof global === "object");
-};
-
-const isShell = () => {
-	return (!isBrowser() && !isNode() && !isWorker() && !isReactNative());
-};
-
 module.exports = {
-	node: isNode(),
-	browser: isBrowser(),
-	worker: isWorker(),
-	reactNative: isReactNative(),
-	shell: isShell(),
+	node: isNode,
+	browser: isBrowser,
+	worker: isWorker,
+	reactNative: isReactNative,
+	shell: isShell,
+	atomics: supportsAtomics,
 	transferrable: supportsTransferrableObjects,
-	ie10: isInternetExplorer(10),
+	ie10: isInternetExplorerTen,
 	legacy: !hasFullSupport()
 };

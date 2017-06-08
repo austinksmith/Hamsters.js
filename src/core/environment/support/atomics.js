@@ -10,8 +10,8 @@
 
 "use strict";
 
-const supportsTransferrableObjects = () => {
-	return (typeof Uint8Array !== "undefined");
+const supportsAtomics = () => {
+	return (typeof SharedArrayBuffer !== 'undefined');
 };
 
-module.exports = supportsTransferrableObjects();
+module.exports = supportsAtomics();

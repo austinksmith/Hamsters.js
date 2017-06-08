@@ -10,8 +10,8 @@
 
 "use strict";
 
-const supportsTransferrableObjects = () => {
-	return (typeof Uint8Array !== "undefined");
+const isNode = () => {
+	return (typeof process === "object" && typeof require === "function");
 };
 
-module.exports = supportsTransferrableObjects();
+module.exports = isNode();

@@ -10,8 +10,14 @@
 
 "use strict";
 
-const supportsTransferrableObjects = () => {
-	return (typeof Uint8Array !== "undefined");
+const isWorker = () => {
+	return (typeof importScripts === "function");
 };
 
-module.exports = supportsTransferrableObjects();
+module.exports = isWorker();
+
+
+
+
+
+
