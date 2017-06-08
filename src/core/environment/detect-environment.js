@@ -20,16 +20,7 @@ const isShell = require("./detect/shell");
 const isReactNative = require("./detect/reactNative");
 const isWorker = require("./detect/worker");
 const isInternetExplorerTen = require("./detect/internetExplorerTen");
-
-const hasFullSupport = () => {
-	if(isShell) {
-		return false;
-	}
-	if(isWorker) {
-		return supportsSharedWorkers;
-	}
-	return supportsWorkers;
-};
+const isLegacy = require('./detect/legacy');
 
 module.exports = {
 	node: isNode,
@@ -40,5 +31,5 @@ module.exports = {
 	atomics: supportsAtomics,
 	transferrable: supportsTransferrableObjects,
 	ie10: isInternetExplorerTen,
-	legacy: !hasFullSupport()
+	legacy: isLegacy
 };
