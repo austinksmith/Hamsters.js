@@ -1,6 +1,5 @@
 
-Thank you for using Hamsters.js! In order to best assist you please follow the guidelines laid out below as they will help significantly in resolving your issues. Tickets that do not follow the provided issue template have less 
-than statisfactory information to resolve the problem reported
+Thank you for using Hamsters.js! In order to best assist you please follow the guidelines laid out below as they will help significantly in resolving your issues. Tickets that do not follow the provided issue template have less than statisfactory information to resolve the problem reported and will therefore not recieve priority support.
 
 ### Be polite and courteous 
 
