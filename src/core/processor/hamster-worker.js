@@ -9,8 +9,13 @@
 
 "use strict";
 
-const isNode = () => {
-	return (typeof process === "object" && typeof require === "function");
-};
+const environment = require("../environment/setup-environment");
+const workerWorker = require("./worker/worker-worker");
+const worker = require("./worker/worker");
 
-module.exports = isNode();
+module.exports = () => {
+	if(environment.worker) {
+    return workerWorker;
+  }
+  return worker;
+};
