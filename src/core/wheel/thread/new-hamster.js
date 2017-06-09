@@ -2,14 +2,19 @@
 
 
 const environment = require("../../environment/setup-environment");
-const uri = require("../../environment/uri");
+const giveHamsterWork = require("../../processor/hamster-worker");
+const uri = require("../data/new-uri");
 
 module.exports = () => {
-  if(environment.worker) {
-    return new SharedWorker(uri, "SharedHamsterWheel");
-  }
   if(environment.ie10) {
-    return new Worker("../../../common/wheel.min.js");
+		return new Worker("../../../common/wheel.min.js");
+  } else if(environment.node) {
+    return new Worker(giveHamsterWork());
+  } else if(environment.worker) {
+    return new SharedWorker(hamsters.wheel.uri, 'SharedHamsterWheel');
+  } else {
+    return new Worker(uri);
   }
-  return new Worker(uri);
 };
+
+

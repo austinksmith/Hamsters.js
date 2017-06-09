@@ -7,10 +7,11 @@
 * License: Artistic License 2.0
 */
 
+
 "use strict";
 
-const isNode = () => {
-	return (typeof process === "object" && typeof require === "function");
-};
+const createBlob = require("./create-blob");
 
-module.exports = isNode();
+module.exports = () => {
+  return URL.createObjectURL(createBlob('(' + String(giveHamsterWork()) + ')();'));
+};
