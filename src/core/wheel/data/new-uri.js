@@ -7,10 +7,10 @@
 * License: Artistic License 2.0
 */
 
-
 "use strict";
 
 const createBlob = require("./create-blob");
+const giveHamsterWork = require(".");
 
 module.exports = () => {
   return URL.createObjectURL(createBlob('(' + String(giveHamsterWork()) + ')();'));
