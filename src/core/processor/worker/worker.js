@@ -27,27 +27,25 @@ module.exports = () => {
     }
     return new types[dataType](buffer);
   }
-
-  self.addEventListener("connect", function(e) {
-    var port = e.ports[0];
-    port.start();
-    port.addEventListener("message", function(e) {
-      self.rtn = {
-        success: true,
-        data: []
-      };
-      self.params = e.data;
-      self.fn = eval("(" + params.fn + ")");
-      if (fn) {
-        self.fn();
-      }
-      if(self.params.dataType && self.params.dataType != "na") {
-        self.rtn.data = self.processDataType(self.params.dataType, self.rtn.data);
-        self.rtn.dataType = self.params.dataType;
-      }
-      port.postMessage({
+  self.onmessage = function(e) {
+    self.params = e.data;
+    self.rtn = {
+      data: [],
+      dataType: self.params.dataType
+    };
+    var fn = new Function(self.params.fn);
+    if(fn) {
+      fn();
+    }
+    if(self.params.dataType) {
+      self.rtn.data = processDataType(self.params.dataType, self.rtn.data);
+      self.postMessage({
+        results: self.rtn
+      }, [rtn.data.buffer]);
+    } else {
+      self.postMessage({
         results: self.rtn
       });
-    }, false);
-  }, false);
+    }
+  };
 };

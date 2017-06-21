@@ -13,7 +13,6 @@ const hamsterEnvironment = require("./environment/setup-environment");
 const hamsterTools = require("./tools/hamster-tools");
 const memoizer = require("./cache/memoizer");
 const threadPool = require("./pool/thread-pool");
-const hamsterWheel = require("./processor/hamster-wheel");
 
 const processStartOptions = (startOptions) => {
   let key;
@@ -47,7 +46,8 @@ const wakeHamsters = () => {
   }
 };
 
-let hamsters = {
+
+module.exports = {
   version: "4.2.0",
   persistence: true,
   debug: false,
@@ -70,7 +70,7 @@ let hamsters = {
     if(hamsterEnvironment.legacy) {
       totalWorkers = 1;
     }
-    var task = hamsterWheel.newTask(hamsterWheel.tasks.length, totalWorkers, order, dataType, functionToExecute, onSuccess);
+    var task = newTask(hamsterWheel.tasks.length, totalWorkers, order, dataType, functionToExecute, onSuccess);
     if(dataType) {
       dataType = dataType.toLowerCase();
     }
@@ -85,10 +85,5 @@ let hamsters = {
       }
     }
     this.wheel.work(task, threadParams, functionToExecute, onSuccess, aggregateThreadOutputs, dataType, memoize, order);
-  },
-
+  }
 };
-
-
-
-module.exports = hamsters;

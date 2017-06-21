@@ -1,8 +1,13 @@
-
-
+/*
+* Title: Hamsters.js
+* Description: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
+* Author: Austin K. Smith
+* Contact: austin@asmithdev.com
+* Copyright: 2015 Austin K. Smith - austin@asmithdev.com
+* License: Artistic License 2.0
+*/
 
 "use strict";
-
 
 module.exports = (input, onSuccess) => {
   let params = {
@@ -12,10 +17,11 @@ module.exports = (input, onSuccess) => {
     array: input.array,
     incrementBy: input.incrementBy || 1,
     dataType: input.dataType || null,
-    worker: hamsters.wheel.env.worker
+    worker: environment.worker
   };
-  hamsters.run(params, () => {
-    let operator = self.params.run;
+
+  run(params, () => {
+    let operator = params.run;
     if(typeof operator === "string") {
       if(params.worker) {
         operator = eval("(" + operator + ")");
@@ -33,5 +39,4 @@ module.exports = (input, onSuccess) => {
   }, (output) => {
     onSuccess(output);
   }, input.threads, 1, input.dataType);
-
 };

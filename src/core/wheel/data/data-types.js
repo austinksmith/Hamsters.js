@@ -7,20 +7,17 @@
 * License: Artistic License 2.0
 */
 
+
 "use strict";
 
-module.exports = (taskid, workers, order, dataType, fn, cb) => {
-  tasks.push({
-    id: taskid,
-    workers: [],
-    count: 0,
-    threads: workers, 
-    input: [],
-    dataType: dataType || null,
-    fn: fn,
-    output: [], 
-    order: order || null,
-    callback: cb
-  });
-  return this.tasks[taskid];
-},
+module.exports = {
+  "uint32": Uint32Array,
+  "uint16": Uint16Array,
+  "uint8": Uint8Array,
+  "uint8clamped": Uint8ClampedArray,
+  "int32": Int32Array,
+  "int16": Int16Array,
+  "int8": Int8Array,
+  "float32": Float32Array,
+  "float64": Float64Array
+};

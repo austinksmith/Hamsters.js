@@ -10,7 +10,7 @@
 "use strict";
 
 const environment = require("../environment/setup-environment");
-const workerWorker = require("./")
+const workerWorker = require("./worker/worker-worker");
 
 module.exports = () => {
 	if(environment.worker) {

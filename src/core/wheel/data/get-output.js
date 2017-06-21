@@ -7,7 +7,6 @@
 * License: Artistic License 2.0
 */
 
-
 "use strict";
 
 const aggregate = require("../../tools/array/aggregate-array");

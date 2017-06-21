@@ -11,7 +11,7 @@
 
 const newHamster = require("../wheel/thread/new-hamster");
 const newWheel = require("../wheel/new-wheel");
-const giveHamsterWork = require("./prepare-thread");
+const giveHamsterWork = require("../wheel/hamster-wheel");
 
 module.exports = {
 	pendingTasks: [],
@@ -29,7 +29,7 @@ module.exports = {
 	  }
 	},
 	poolThread: (inputArray, hamsterfood, threadid, cb, task, agg, memoize) => {
-    this.pendingTasks.push({
+    pendingTasks.push({
       memoize: memoize,
       input: inputArray,
       params: hamsterfood,
@@ -57,10 +57,10 @@ module.exports = {
   },
   trackThread: (task, running, id) => {
     task.workers.push(id); //Keep track of threads scoped to current task
-    this.runningTasks.push(id); //Keep track of all currently running threads
+    runningTasks.push(id); //Keep track of all currently running threads
   },
   poolThread: (inputArray, hamsterfood, threadid, cb, task, agg, memoize) => {
-    this.pendingTasks.push({
+    pendingTasks.push({
       memoize: memoize,
       input: inputArray,
       params: hamsterfood,
