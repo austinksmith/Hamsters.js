@@ -10,7 +10,7 @@
 "use strict";
 
 const createBlob = require("./create-blob");
-const giveHamsterWork = require(".");
+const giveHamsterWork = require("../../processor/hamster-worker");
 
 module.exports = () => {
   return URL.createObjectURL(createBlob('(' + String(giveHamsterWork()) + ')();'));

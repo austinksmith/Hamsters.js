@@ -9,25 +9,26 @@
 
 "use strict";
 
-const trackThread = require("./");
-const trackInput = require("./");
-const memoize = require("./");
-const clean = require("./");
+const legacyWorker = require("./worker/legacy-worker");
+const trackThread = require("../pool/thread-pool").trackThread;
+const trackInput = require("../pool/thread-pool").trackInput;
+// const memoizer = require("./");
+const cleanUpTask = require("../wheel/task/clean-task");
 
-module.exports = (inputArray, hamsterfood, aggregate, onSuccess, task, threadid, hamster, memoize) => {
+module.exports = (inputArray, hamsterFood, aggregate, onSuccess, task, threadId, hamster, memoize) => {
   trackThread(task, hamsters.wheel.queue.running, threadid);
   if(memoize || hamsters.debug) {
-    trackInput(inputArray, threadid, task, hamsterfood);
+    trackInput(inputArray, threadId, task, hamsterFood);
   }
-  legacyProcessor((hamsterfood, inputArray, output) => {
-    hamsters.wheel.clean(task, threadid);
-    task.output[threadid] = output.data;
+  legacyWorker((hamsterFood, inputArray, output) => {
+    cleanUpTask(task, threadId);
+    task.output[threadId] = output.data;
     if(task.workers.length === 0 && task.count === task.threads) {
       onSuccess(getOutput(task.output, aggregate, output.dataType));
       hamsters.wheel.tasks[task.id] = null;
-      if(hamsters.cache && memoize !== false) {
-        memoize(task.fn, task.input, output.data, output.dataType);
-      }
+      // if(hamsters.cache && memoize !== false) {
+      //   memoize(task.fn, task.input, output.data, output.dataType);
+      // }
     }
   });
   task.count += 1; //Thread finished

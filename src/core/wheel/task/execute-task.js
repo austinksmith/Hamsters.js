@@ -9,6 +9,10 @@
 
 "use strict";
 
+const splitArray = require('../../tools/array/split-array');
+const prepareFunction = require('./prepare-function');
+const newWheel = require('../hamster-wheel');
+
 module.exports = (task, params, fn, callback, aggregate, dataType, memoize, order) => {
   let workArray = params.array || null;
   if(params.array && task.threads !== 1) {
@@ -32,4 +36,4 @@ module.exports = (task, params, fn, callback, aggregate, dataType, memoize, orde
     }
     i += 1;
   }
-},
+};

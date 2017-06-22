@@ -9,13 +9,13 @@
 
 "use strict";
 
-const run = require("..");
+const executeTask = require("../../hamsters-run");
 
 module.exports = (inputAmount, onSuccess) => {
   var params = {
     count: inputAmount
   };
-  run(params, () => {
+  executeTask(params, () => {
     while(params.count > 0) {
       rtn.data[rtn.data.length] = Math.round(Math.random() * (100 - 1) + 1);
       params.count -= 1;

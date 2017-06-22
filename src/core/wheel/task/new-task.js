@@ -9,8 +9,10 @@
 
 "use strict";
 
+const runningTasks = require('../../pool/thread-pool').runningTasks;
+
 module.exports = (taskid, workers, order, dataType, fn, cb) => {
-  tasks.push({
+  runningTasks.push({
     id: taskid,
     workers: [],
     count: 0,
@@ -22,5 +24,5 @@ module.exports = (taskid, workers, order, dataType, fn, cb) => {
     order: order || null,
     callback: cb
   });
-  return this.tasks[taskid];
-},
+  return runningTasks[taskid];
+};

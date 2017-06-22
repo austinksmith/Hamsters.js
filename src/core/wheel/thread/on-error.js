@@ -21,4 +21,4 @@ module.exports = (id, aggregate, callback, task, hamster, memoize) => {
     // });
     console.error("Error Hamster #" + id + ": Line " + e.lineno + " in " + e.filename + ": " + e.message);
   }  
-},
+};

@@ -9,9 +9,9 @@
 
 "use strict";
 
+const newWheel = require("../wheel/hamster-wheel");
 const newHamster = require("../wheel/thread/new-hamster");
-const newWheel = require("../wheel/new-wheel");
-const giveHamsterWork = require("../wheel/hamster-wheel");
+const giveHamsterWork = require("../processor/hamster-worker");
 
 module.exports = {
 	pendingTasks: [],

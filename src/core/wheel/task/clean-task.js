@@ -9,7 +9,7 @@
 
 "use strict";
 
-const runningTasks = require('.');
+const runningTasks = require('../../pool/thread-pool').runningTasks;
 
 module.exports = (task, id) => {
 	runningTasks.splice(hamsters.wheel.queue.running.indexOf(id), 1); //Remove thread from running pool

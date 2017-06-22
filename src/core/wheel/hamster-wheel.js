@@ -9,6 +9,13 @@
 
 "use strict";
 
-module.exports = () => {
+const legacyProcessor = require("../processor/legacy-processor");
+const modernProcessor = require("../processor/modern-processor");
+const environment = require("../environment/setup-environment");
 
+module.exports = () => {
+	if(environment.legacy) {
+		return legacyProcessor;
+	}
+	return modernProcessor;
 };
