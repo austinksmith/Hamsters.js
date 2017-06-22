@@ -9,13 +9,13 @@
 
 "use strict";
 
-const run = require("../");
+const executeTask = require("../../hamsters-run");
 
 module.exports = (inputString, onSuccess) => {
 	let params = {
 		input: inputString
 	};
-  run(params, () => {
+  executeTask(params, () => {
     rtn.data = JSON.parse(params.input);
   }, (output) => {
     onSuccess(output[0]);

@@ -9,6 +9,7 @@
 
 "use strict";
 
+const environment = require('../../environment/setup-environment');
 
 module.exports = (functionBody) => {    
 	if(!environment.legacy) {

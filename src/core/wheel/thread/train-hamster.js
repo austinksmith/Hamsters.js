@@ -25,4 +25,4 @@ module.exports = (id, aggregate, callback, task, hamster, memoize) => {
     hamster.onmessage = trainingMessageData;
     hamster.onerror = trainingErrorData;
   }   
-},
+};

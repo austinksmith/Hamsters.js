@@ -39,4 +39,4 @@ module.exports = (id, aggregate, onSuccess, task, hamster, memoize) => {
       hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
     }
   }  
-},
+};

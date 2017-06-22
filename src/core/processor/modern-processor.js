@@ -11,10 +11,10 @@
 
 const trainHamster = require('../wheel/thread/train-hamster');
 const newHamster = require('../wheel/thread/new-hamster');
-const trackHamster = require('../wheel/thread/track-hamster');
+const trackHamster = require('../pool/thread-pool').trackHamster;
 const feedHamster = require('../wheel/thread/feed-hamster');
 const threadPool = require('../pool/thread-pool');
-const memoizer = require('../cache/mmemoizer');
+// const memoizer = require('../cache/mmemoizer');
 
 module.exports = (inputArray, parameters, aggregate, onSuccess, task, id, thread, memoize) => {
   // if(maxThreads === queue.running.length) {

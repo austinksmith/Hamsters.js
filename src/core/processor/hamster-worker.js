@@ -10,10 +10,14 @@
 "use strict";
 
 const environment = require("../environment/setup-environment");
+const legacyWorker = require("./worker/legacy-worker");
 const workerWorker = require("./worker/worker-worker");
 const worker = require("./worker/worker");
 
 module.exports = () => {
+	if(environment.legacy) {
+		return legacyWorker;
+	}
 	if(environment.worker) {
     return workerWorker;
   }
