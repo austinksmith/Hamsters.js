@@ -9,10 +9,11 @@ var rename = require('gulp-rename');
 var babel = require('gulp-babel');
 
 gulp.task('build', function() {
-  return gulp.src(['src/*'])
+  return gulp.src(['src/core/*'])
     .pipe(concat('hamsters.min.js'))
     .pipe(babel())
-    .pipe(uglify())
+    .pipe(browserify())
+    // .pipe(uglify())
     .on('error', function (err) { gutil.log(gutil.colors.red('[Error]'), err.toString()); })
     .pipe(gulp.dest('build'));
 })
