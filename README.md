@@ -102,14 +102,13 @@ Starting in version 4.1.0 the library will no longer automatically initialize wh
   var startOptions = {
     maxThreads: integer,
     cache: boolean,
-    debug: booealn,
+    debug: boolean,
     persistence: boolean
   };
   hamsters.init(startOptions);
 ```
 
 At the moment only the above configuration options are available for your control, in later releases more options will be exposed.
-
 
 # How it works
 
@@ -156,7 +155,7 @@ In order to enable the library to automatically manage your data and execution a
   };
 ```
 
-2. Similiar to the above, the library needs a consistent way to handle outputs from threads, this is accomplished by an internal `rtn` object, inside of your function body you should pass any and all output data into the `rtn.data` array. You can also simply make `rtn.data` your output however it's recommended you simply push your output into the existing `rtn.data` array as it will already match your input array type.
+2. Similar to the above, the library needs a consistent way to handle outputs from threads, this is accomplished by an internal `rtn` object, inside of your function body you should pass any and all output data into the `rtn.data` array. You can also simply make `rtn.data` your output however it's recommended you simply push your output into the existing `rtn.data` array as it will already match your input array type.
 
 ```js
   hamsters.run(params, function() {
@@ -216,7 +215,7 @@ Now we can put this task onto its own thread like so
   }
 ```
 
-Alternatively we can split this task among 2 threads for paralell execution like so
+Alternatively we can split this task among 2 threads for parallel execution like so
 
 ```js
   //2 threads and let's aggregate our individual thread results into one final output
@@ -268,7 +267,7 @@ You can find more information on how to make use of the library on the wiki link
 
 [Memoization](https://github.com/austinksmith/Hamsters.js/wiki/Memoization)
 
-[Transferrable Objects](https://github.com/austinksmith/Hamsters.js/wiki/Transferrable-Objects)
+[Transferable  Objects](https://github.com/austinksmith/Hamsters.js/wiki/Transferrable-Objects)
 
 
 # Support Hamsters.js
