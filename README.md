@@ -267,7 +267,7 @@ You can find more information on how to make use of the library on the wiki link
 
 [Memoization](https://github.com/austinksmith/Hamsters.js/wiki/Memoization)
 
-[Transferable  Objects](https://github.com/austinksmith/Hamsters.js/wiki/Transferrable-Objects)
+[Transferable  Objects](https://github.com/austinksmith/Hamsters.js/wiki/Transferable-Objects)
 
 
 # Support Hamsters.js
