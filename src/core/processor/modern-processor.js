@@ -17,10 +17,10 @@ const threadPool = require('../pool/thread-pool');
 // const memoizer = require('../cache/mmemoizer');
 
 module.exports = (inputArray, parameters, aggregate, onSuccess, task, id, thread, memoize) => {
-  // if(maxThreads === queue.running.length) {
-  //   poolThread(inputArray, params, threadid, callback, task, aggregate, memoize);
-  //   return;
-  // }
+  if(maxThreads === queue.running.length) {
+    threadPool.poolThread(inputArray, params, threadid, callback, task, aggregate, memoize);
+    return;
+  }
   if(memoize || debug) {
     trackInput(inputArray, threadid, task, hamsterfood);
   }

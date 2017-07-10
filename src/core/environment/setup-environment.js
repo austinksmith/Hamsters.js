@@ -21,7 +21,9 @@ const setupBrowserSupport = () => {
   if(navigator.userAgent.toLowerCase().indexOf('firefox') !== -1) {
     detectedEnvironment.maxThreads = (maxThreads > 20 ? 20 : maxThreads);
   }
+  
   if(detectedEnvironment.ie10) {
+    console.info("Explicit worker support for Internet Explorer 10 is being deprecated, please upgrade your browser.");
     try {
       var hamster = new Worker('../../common/wheel.min.js');
       hamster.terminate();

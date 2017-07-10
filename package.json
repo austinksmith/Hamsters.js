@@ -36,5 +36,8 @@
     "gulp-concat": "^2.6.1",
     "gulp-rename": "^1.2.2",
     "gulp-util": "^3.0.8"
+  },
+  "dependencies": {
+    "gulp-browserify": "^0.5.1"
   }
 }
