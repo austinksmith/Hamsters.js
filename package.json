@@ -38,6 +38,9 @@
     "gulp-util": "^3.0.8"
   },
   "dependencies": {
+    "babel": "^6.23.0",
+    "babel-cli": "^6.24.1",
+    "browserify": "^14.4.0",
     "gulp-browserify": "^0.5.1"
   }
 }

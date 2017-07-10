@@ -45,7 +45,7 @@ ParseError: Unexpected identifier
 var check = require('syntax-error')
 ```
 
-## var err = check(src, file)
+## var err = check(src, file, opts={})
 
 Check the source code string `src` for syntax errors.
 Optionally you can specify a filename `file` that will show up in the output.
@@ -54,6 +54,10 @@ If `src` has a syntax error, return an error object `err` that can be printed or
 stringified.
 
 If there are no syntax errors in `src`, return `undefined`.
+
+Optionally set:
+
+* `opts.ecmaVersion` - default: 8
 
 ## err.toString()
 

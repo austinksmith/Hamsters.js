@@ -1,12 +1,13 @@
 var aparse = require('acorn').parse;
-function parse (src) {
+function parse (src, opts) {
+    if (!opts) opts = {}
     return aparse(src, {
-        ecmaVersion: 6,
+        ecmaVersion: opts.ecmaVersion || 8,
         allowHashBang: true
     });
 }
 
-module.exports = function (src, file) {
+module.exports = function (src, file,opts) {
     if (typeof src !== 'string') src = String(src);
     
     try {
@@ -16,12 +17,12 @@ module.exports = function (src, file) {
     catch (err) {
         if (err === 'STOP') return undefined;
         if (err.constructor.name !== 'SyntaxError') return err;
-        return errorInfo(src, file);
+        return errorInfo(src, file, opts);
     }
 };
 
-function errorInfo (src, file) {
-    try { parse(src) }
+function errorInfo (src, file, opts) {
+    try { parse(src,opts) }
     catch (err) {
         return new ParseError(err, src, file);
     }

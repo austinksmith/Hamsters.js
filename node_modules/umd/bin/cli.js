@@ -34,6 +34,10 @@ if (help || !args[0]) {
 } else {
   var source = args[1] ? read(args[1]) : process.stdin
   var dest = args[2] ? write(args[2]) : process.stdout
-
-  source.pipe(umd(args[0], commonJS)).pipe(dest)
+  var prelude = umd.prelude(args[0], {commonJS: commonJS})
+  var postlude = umd.postlude(args[0], {commonJS: commonJS})
+  dest.write(prelude)
+  source.on('end', function () {
+    dest.write(postlude + '\n')
+  }).pipe(dest, {end: false})
 }
