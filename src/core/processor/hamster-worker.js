@@ -19,7 +19,7 @@ module.exports = () => {
 		return legacyWorker;
 	}
 	if(environment.worker) {
-    return workerWorker;
-  }
+		return workerWorker;
+	}
   return worker;
 };

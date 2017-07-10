@@ -12,6 +12,6 @@
 const runningTasks = require('../../pool/thread-pool').runningTasks;
 
 module.exports = (task, id) => {
-	runningTasks.splice(hamsters.wheel.queue.running.indexOf(id), 1); //Remove thread from running pool
+  runningTasks.splice(runningTasks.indexOf(id), 1); //Remove thread from running pool
   task.workers.splice(task.workers.indexOf(id), 1); //Remove thread from task running pool
 };
