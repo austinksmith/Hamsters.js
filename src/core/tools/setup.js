@@ -28,5 +28,5 @@ const hamstersTools = () => {
 };
 
 module.exports = () => {
-	return new hamsterTools();
+	return new hamstersTools();
 };

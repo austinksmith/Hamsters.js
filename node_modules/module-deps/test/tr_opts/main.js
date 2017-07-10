@@ -1,1 +1,1 @@
-console.log(FFF * GGG);
+console.log(FFF * GGG * HHH);

@@ -4,6 +4,7 @@ module.exports = function (src) {
     var locals = {};
     var implicit = {};
     var exported = {};
+    var implicitProps = {};
     
     if (typeof src === 'string') {
         src = String(src).replace(/^#![^\n]*\n/, '');
@@ -65,6 +66,18 @@ module.exports = function (src) {
             if (!exported[node.name]
             || exported[node.name] < keyOf(node).length) {
                 implicit[node.name] = keyOf(node).length;
+                if (!implicitProps[node.name]) implicitProps[node.name] = {};
+                if (node.parent && node.parent.type === 'MemberExpression'
+                && node.parent.property.type === 'Identifier') {
+                    implicitProps[node.name][node.parent.property.name] = true;
+                }
+                else if (node.parent && node.parent.type === 'CallExpression'
+                && node.parent.callee === node) {
+                    implicitProps[node.name]['()'] = true;
+                }
+                else {
+                    implicitProps[node.name]['*'] = true;
+                }
             }
         }
     });
@@ -75,11 +88,17 @@ module.exports = function (src) {
         var key = lks[i];
         localScopes[key] = objectKeys(locals[key]);
     }
-    
+
+    var props = {};
+    var pkeys = objectKeys(implicitProps);
+    for (var i = 0; i < pkeys.length; i++) {
+        props[pkeys[i]] = objectKeys(implicitProps[pkeys[i]]);
+    }
     return {
         locals: localScopes,
         globals: {
             implicit: objectKeys(implicit),
+            implicitProperties: props,
             exported: objectKeys(exported)
         }
     };

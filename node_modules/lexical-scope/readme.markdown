@@ -14,7 +14,7 @@ var fs = require('fs');
 var src = fs.readFileSync(__dirname + '/src.js');
 
 var scope = detect(src);
-console.dir(scope);
+console.log(JSON.stringify(scope,null,2));
 ```
 
 input:
@@ -53,14 +53,56 @@ output:
 
 ```
 $ node example/detect.js
-{ locals: 
-   { '': [ 'x', 'y', 'z' ],
-     'body.7.arguments.0': [ 'BAR', 'doom' ],
-     'body.7.arguments.0.body.1.arguments.0': [ 'xyz' ],
-     'body.7.arguments.0.body.2': [] },
-  globals: 
-   { implicit: [ 'w', 'foo', 'process', 'console', 'xyz' ],
-     exported: [ 'w', 'RAWR', 'BLARG', 'ZZZ' ] } }
+{
+  "locals": {
+    "": [
+      "x",
+      "y",
+      "z"
+    ],
+    "body.7.expression.body.7.arguments.0": [
+      "BAR",
+      "doom"
+    ],
+    "body.7.expression.body.7.arguments.0.body.body.1.expression.body.1.arguments.0": [
+      "xyz",
+      "ZZZZZZZZZZZZ"
+    ],
+    "body.7.expression.body.7.arguments.0.body.body.2": []
+  },
+  "globals": {
+    "implicit": [
+      "w",
+      "foo",
+      "process",
+      "console",
+      "xyz"
+    ],
+    "implicitProperties": {
+      "w": [
+        "foo"
+      ],
+      "foo": [
+        "()"
+      ],
+      "process": [
+        "nextTick"
+      ],
+      "console": [
+        "log"
+      ],
+      "xyz": [
+        "*"
+      ]
+    },
+    "exported": [
+      "w",
+      "RAWR",
+      "BLARG",
+      "ZZZ"
+    ]
+  }
+}
 ```
 
 # live demo
@@ -85,6 +127,13 @@ already exist in the environment by the script.
 
 `scope.globals.explicit` contains the global variable names that are exported by
 the script.
+
+`scope.globals.implicitProperties` contains the properties of global variable
+names that have been used. There are two special implicit property names:
+
+* `"()"` - when an implicit variable has been called
+* `"*"` - when an implicit variable has been used in a context that is not a
+property and not a call
 
 # install
 

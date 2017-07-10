@@ -10,7 +10,7 @@
 "use strict";
 
 // const hamsterWheel = require("./wheel/hamster-wheel");
-const hamsterTools = require("./tools/hamster-tools");
+const hamsterTools = require("./tools/setup");
 const memoizer = require("./cache/memoizer");
 const threadPool = require("./pool/thread-pool");
 const createBlob = require("./wheel/data/create-blob");
@@ -18,14 +18,14 @@ const giveHamsterWork = require("./processor/hamster-worker");
 const getOutput = require('./wheel/data/get-output');
 const cleanTask = require('./wheel/task/clean-task/');
 const feedHamster = require('./wheel/thread/feed-hamster');
-const prepareFunction = require('./task/prepare-function');
+const prepareFunction = require('./wheel/task/prepare-function');
 const splitArray = require('./tools/array/split-array');
 const aggregate = require('./tools/array/aggregate-array');
 const sort = require('./tools/array/sort-array');
 
 let threads = [];
 
-function processStartOptions() {
+function processStartOptions(startOptions) {
   for(var key in startOptions) {
     if(startOptions.hasOwnProperty(key)) {
       hamsters[key] = startOptions[key];
@@ -415,16 +415,19 @@ var processDataType = function(dataType, buffer) {
   return buffer;
 };
 
-if(environment.legacy) {
-  var newWheel = legacyHamsterWheel;
-} else {
-  var newWheel = hamsterWheel;
-  spawnHamsters();
-}
-
+var initLibrary = function(startOptions) {
+  processStartOptions(startOptions);
+  if(environment.legacy) {
+    var newWheel = legacyHamsterWheel;
+  } else {
+    var newWheel = hamsterWheel;
+    spawnHamsters();
+  }
+};
 
 var hamsters = {
   version: '4.1.4',
+  init: initLibrary,
   debug: false,
   cache: false,
   persistence: true,
