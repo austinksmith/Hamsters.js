@@ -9,8 +9,6 @@
 
 "use strict";
 
-const aggregate = require("../../tools/array/aggregate-array");
-
 module.exports = (output, aggregate, dataType) => {
   if(aggregate && output.length <= 20) {
     return aggregate(output, dataType);

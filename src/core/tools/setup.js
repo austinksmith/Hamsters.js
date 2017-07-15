@@ -17,16 +17,16 @@ const sortArray = require("./array/sort-array");
 const splitArray = require("./array/split-array");
 const loopAbstraction = require("./abstractions/loop-abstraction");
 
-const hamstersTools = () => {
-	this.stringifyJson = stringifyJSON,
-	this.parseJson = parseJSON,
-	this.randomArray = randomArray,
-	this.aggregate = aggregateArrays,
-	this.sort = sortArray,
-	this.splitArray = splitArray,
-	this.loop = loopAbstraction 
+const hamsterTools = {
+	stringifyJson: stringifyJSON,
+	parseJson: parseJSON,
+	randomArray: randomArray,
+	aggregate: aggregateArrays,
+	sort: sortArray,
+	splitArray: splitArray,
+	loop: loopAbstraction 
 };
 
 module.exports = () => {
-	return new hamstersTools();
+	return hamsterTools;
 };
