@@ -3,28 +3,29 @@
     <head>
 
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-      <meta name="author" content="Asmithdev" />
         <meta name="description" content="Hamsters.js - Javascript Multithreading">
-        <meta name="keywords" content="threading, javascript, web workers, concurrency, webhamsters, hamsters.js, parallelism, multithreaded javascript, asmithdev, hamsters.io, parallel javascript, web application, open source, multicore, memoization">
+        <meta name="keywords" content="threading, javascript, web workers, concurrency, webhamsters, hamsters.js, parallelism, multithreaded javascript, javascript multithreading, hamsters.io, fast javascript, parallel javascript, web application, open source, multicore, memoization">
+
 
         <!-- Stylesheets
         ============================================= -->
-      <link href="http://fonts.googleapis.com/css?family=Lato:300,400,400italic,600,700|Raleway:300,400,500,600,700|Crete+Round:400italic" rel="stylesheet" type="text/css" />
-        <link rel="stylesheet" href="https://s3.amazonaws.com/cdn.hamsters.io/css/bootstrap.css" type="text/css" />
-        <link rel="stylesheet" href="https://s3.amazonaws.com/cdn.hamsters.io/style.css" type="text/css" />
-        <link rel="stylesheet" href="css/font-icons.css" type="text/css" />
-        <link rel="stylesheet" href="css/benchmark.css" type="text/css" />
-        <link rel="stylesheet" href="https://s3.amazonaws.com/cdn.hamsters.io/css/responsive.css" type="text/css" />
+        <link href="http://fonts.googleapis.com/css?family=Lato:300,400,400italic,600,700|Raleway:300,400,500,600,700|Crete+Round:400italic" rel="stylesheet" type="text/css" />
+        <link rel="stylesheet" href="stylesheets/bootstrap.css" type="text/css" />
+        <link rel="stylesheet" href="stylesheets/style.css" type="text/css" />
+        <link rel="stylesheet" href="stylesheets/font-icons.css" type="text/css" />
+        <link rel="stylesheet" href="stylesheets/benchmark/benchmark.css" type="text/css" />
+        <link rel="stylesheet" href="stylesheets/responsive.css" type="text/css" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <!--[if lt IE 9]>
           <script src="http://css3-mediaqueries-js.googlecode.com/svn/trunk/css3-mediaqueries.js"></script>
-        <![endif]-->
+        <![endif]-->  
 
         <!-- External JavaScripts
         ============================================= -->
-      <script type="text/javascript" src="../src/es5/hamsters.js"></script>
-      <script type="text/javascript" src="js/polyfill.js"></script>
-      <script type="text/javascript" src="js/benchmark.js"></script>
+      <script type="text/javascript" src="javascripts/benchmark/lzwFloss.js"></script>
+      <script type="text/javascript" src="javascripts/benchmark/hamsters.js"></script>
+      <script type="text/javascript" src="javascripts/benchmark/polyfill.js"></script>
+      <script type="text/javascript" src="javascripts/benchmark/benchmark.js"></script>
         <!-- Document Title
         ============================================= -->
       <title>Hamsters.js | Javascript Multithreading</title>
@@ -32,62 +33,56 @@
     </head>
     <body>
         <header id="header">
-
             <div id="header-wrap">
-
                 <div class="container clearfix">
-
-                    <div id="primary-menu-trigger"><i class="icon-reorder"></i></div>
-
-                    <!-- Logo
-                    ============================================= -->
-                    <div id="logo">
-                        <a href="index.html" class="standard-logo" data-dark-logo="../images/logo-dark.png"><img src="../images/logo.png" alt="Hamsters.js"></a>
-                        <a href="index.html" class="retina-logo" data-dark-logo="../images/logo-dark@2x.png"><img src="https://s3.amazonaws.com/cdn.hamsters.io/images/icons/features/logo@2x.png" alt="Hamsters.js"></a>
-                    </div><!-- #logo end -->
-
-                    <!-- Primary Navigation
-                    ============================================= -->
-                    <nav id="primary-menu">
-
-                        <ul class="one-page-menu">
-                            <li class="current"><a href="https://hamsters.io" data-href="#section-home"><div>Home</div></a></li>
-                        </ul>
-
-                    </nav><!-- #primary-menu end -->
+                  <div id="primary-menu-trigger"><i class="icon-reorder"></i></div>
+                  <div id="logo">
+                    <a href="/" class="standard-logo" data-dark-logo="images/logo.png"><img src="images/logo.png" alt="Hamsters.io"></a>
+                    <a href="/" class="retina-logo" data-dark-logo="images/logo.png"><img src="images/logo.png" alt="Hamsters.io"></a>
+                  </div>
+                  <nav id="primary-menu">
+                    <ul class="one-page-menu">
+                      <li><a href="/"><div>Home</div></a></li>
+                      <li><a href="/#section-features"><div>Features</div></a></li>
+                      <li><a href="/#section-faqs"><div>FAQ</div></a></li>
+                      <li><a href="https://github.com/austinksmith/Hamsters.js/wiki" data-href="#"><div>Wiki</div></a></li>
+                      <li><a href="/#section-support"><div>Support</div></a></li>
+                      <li><a href="/#section-donate"><div>Donate</div></a></li>
+                    </ul>
+                  </nav>
                 </div>
             </div>
-        </header><!-- #header end -->
+        </header>
         <div class="jumbotron">
           <div class="container">
-              <div class="alert alert-info" role="alert">
+            <div class="alert alert-info" role="alert">
               <p>
-                Provided benchmark is a very simple test case of parralelism, results may vary depending on browser used and between runs.
-                It's recommended to run a given test size more than once to give the JIT time to optimize.
+                Provided benchmark is a very simple test case of parallelism, results may vary depending on browser used and between runs. It's recommended to run a given test size more than once to give the JIT time to optimize.
               </p>
             </div>
-            <h2>Machine Summary</h2>
-            Max Threads: <span class="maxThreads"></span><br />
-            Browser: <span class="testBrowser"></span>
-
+            <h2>Summary</h2>
+            <ul>
+              Version: <span class="version"></span><br />
+              Maximum Threads: <span class="maxThreads"></span><br />
+              Detected Browser: <span class="testBrowser"></span><br />
+              Legacy Mode: <span class="legacy"></span><br />
+              Atomic Operations Support: <span class="atomic"></span><br />
+              Transferable Object Support: <span class="transferable"></span>
           </div>
         </div>
         <div class="test_size">
-          <h1>Test Size</h1>
+          <h1>Calculate Square Root</h1>
           <select class="form-control test_size_select">
-              <option value="0.025">25k</option>
-              <option value="0.050">50k</option>
-              <option value="0.1">100k</option>
-              <option value="0.2">200k</option>
-              <option value="0.4">400k</option>
-              <option value="0.8">800k</option>
-              <option value="1.2">1.2 Million</option>
-              <option value="1.4">1.4 Million</option>
-              <option value="1.6">1.6 Million</option>
-              <option value="3.2">3.2 Million</option>
-              <option value="6.4">6.4 Million</option>
-              <option value="12.8">12.8 Million</option>
-              <option value="25.6">25.6 Million</option>
+              <option value="2.0">2M Integers</option>
+              <option value="4.0">4M Integers</option>
+              <option value="6.0">6M Integers</option>
+              <option value="8.0">8M Integers</option>
+              <option value="10.0">10M Integers</option>
+              <option value="12.0">12M Integers</option>
+              <option value="14.0">14M Integers</option>
+              <option value="16.0">16M Integers</option>
+              <option value="18.0">18M Integers</option>
+              <option value="20.0">20M Integers</option>
           </select>
         </div>
         <div class="results">
@@ -101,7 +96,6 @@
                     <table class="table">
                       <thead>
                         <tr>
-                          <th>Test #</th>
                           <th>Thread(s)</th>
                           <th>Duration (ms)</th>
                           <th>Improvement (+/-)</th>
@@ -109,58 +103,45 @@
                       </thead>
                       <tbody>
                         <tr id="main_row">
-                          <th scope="row">0</th>
-                          <td>Main</td>
-                           <td class="duration_0"></td>
+                        <tr>
+                          <th scope="row">1 Hamster</th>
+                          <td class="duration_0"></td>
                           <td class="difference_0"></td>
                         </tr>
                         <tr>
-                          <th scope="row">1</th>
-                          <td>One</td>
+                          <th scope="row">2 Hamsters</th>
                           <td class="duration_1"></td>
                           <td class="difference_1"></td>
                         </tr>
                         <tr>
-                          <th scope="row">2</th>
-                          <td>Two</td>
+                          <th scope="row">3 Hamsters</th>
                           <td class="duration_2"></td>
                           <td class="difference_2"></td>
                         </tr>
-                        <tr>
-                          <th scope="row">3</th>
-                          <td>Three</td>
+                       <tr>
+                          <th scope="row">4 Hamsters</th>
                           <td class="duration_3"></td>
                           <td class="difference_3"></td>
                         </tr>
                         <tr>
-                          <th scope="row">4</th>
-                          <td>Four</td>
+                          <th scope="row">5 Hamsters</th>
                           <td class="duration_4"></td>
                           <td class="difference_4"></td>
                         </tr>
-                       <tr>
-                          <th scope="row">5</th>
-                          <td>Five</td>
+                        <tr>
+                          <th scope="row">6 Hamsters</th>
                           <td class="duration_5"></td>
                           <td class="difference_5"></td>
                         </tr>
                         <tr>
-                          <th scope="row">6</th>
-                          <td>Six</td>
+                          <th scope="row">7 Hamsters</th>
                           <td class="duration_6"></td>
                           <td class="difference_6"></td>
                         </tr>
                         <tr>
-                          <th scope="row">7</th>
-                          <td>Seven</td>
+                          <th scope="row">8 Hamsters</th>
                           <td class="duration_7"></td>
                           <td class="difference_7"></td>
-                        </tr>
-                         <tr>
-                          <th scope="row">8</th>
-                          <td>Eight</td>
-                          <td class="duration_8"></td>
-                          <td class="difference_8"></td>
                         </tr>
                       </tbody>
                     </table>
@@ -169,7 +150,7 @@
               </div>
         </div>
         <div id="center">
-            <a href="#" onclick="hamstersBenchmark.run()" data-animate="tada" class="button button-3d button-teal button-xlarge nobottommargin"><i class="icon-refresh"></i>Make Hamsters Run</a>
+            <a href="#" onclick="hamstersBenchmark.run()" data-animate="tada" class="button button-3d button-purple button-xlarge nobottommargin"><i class="icon-refresh"></i>Make Hamsters Run</a>
         </div>
         <div class="progress_indicator">
             <div class="status_text"></div>
@@ -180,7 +161,11 @@
             </div>
         </div>
         <script>
+          document.getElementsByClassName('version')[0].innerHTML = hamsters.version;
           document.getElementsByClassName('maxThreads')[0].innerHTML = hamsters.maxThreads;
+          document.getElementsByClassName('legacy')[0].innerHTML = hamsters.habitat.legacy;
+          document.getElementsByClassName('transferable')[0].innerHTML = hamsters.habitat.transferrable;
+          document.getElementsByClassName('atomic')[0].innerHTML = hamsters.atomics;
           navigator.sayswho= (function() {
               var ua= navigator.userAgent, tem,
               M= ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
@@ -199,4 +184,3 @@
         </script>
     </body>
 </html>
-
