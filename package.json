@@ -1,8 +1,8 @@
 {
   "name": "hamsters.js",
-  "version": "4.1.1",
+  "version": "4.2.0",
   "description": "100% Vanilla Javascript Multithreading & Parallel Execution Library",
-  "main": "src/core/hamsters.js",
+  "main": "build/hamsters.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -34,6 +34,7 @@
     "gulp-babel": "^6.1.2",
     "gulp-browserify": "^0.5.1",
     "gulp-concat": "^2.6.1",
+    "gulp-js-minify": "0.0.3",
     "gulp-rename": "^1.2.2",
     "gulp-util": "^3.0.8"
   },
