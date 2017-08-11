@@ -52,6 +52,8 @@ hamsters.init = function (startOptions) {
   hamsters.run = runHamster;
   hamsters.tools.randomArray = randomArray;
   hamsters.tools.loop = loop;
+  hamsters.tools.parseJson = parseJsonOnThread;
+  hamsters.tools.stringifyJson = stringifyJsonOnThread;
 };
 
 function isIE(version) {
@@ -349,7 +351,7 @@ function prepareFunction(functionBody) {
   return functionBody;
 }
 
-function parseJson(string, onSuccess) {
+function parseJsonOnThread(string, onSuccess) {
   runHamster({ input: string }, function () {
     rtn.data = JSON.parse(params.input);
   }, function (output) {
@@ -357,7 +359,7 @@ function parseJson(string, onSuccess) {
   }, 1);
 }
 
-function stringifyJson(json, onSuccess) {
+function stringifyJsonOnThread(json, onSuccess) {
   runHamster({ input: json }, function () {
     rtn.data = JSON.stringify(params.input);
   }, function (output) {
