@@ -22,9 +22,10 @@
 
         <!-- External JavaScripts
         ============================================= -->
-      <script type="text/javascript" src="../build/hamsters.js"></script>
-      <script type="text/javascript" src="js/polyfill.js"></script>
-      <script type="text/javascript" src="js/benchmark.js"></script>
+      <script type="text/javascript" src="javascripts/benchmark/lzwFloss.js"></script>
+      <script type="text/javascript" src="javascripts/benchmark/hamsters.js"></script>
+      <script type="text/javascript" src="javascripts/benchmark/polyfill.js"></script>
+      <script type="text/javascript" src="javascripts/benchmark/benchmark.js"></script>
         <!-- Document Title
         ============================================= -->
       <title>Hamsters.js | Javascript Multithreading</title>
@@ -54,16 +55,22 @@
         </header>
         <div class="jumbotron">
           <div class="container">
-            <div class="alert alert-info" role="alert">
               <p>
-                Provided benchmark is a very simple test case of parallelism, results may vary depending on browser used and between runs. It's recommended to run a given test size more than once to give the JIT time to optimize.
+                Provided benchmark is a very simple test case of parallelism, the benchmark will calculate the square root of a randomly generated array of N million integers starting from a single thread up to the maximum threads available.
               </p>
-            </div>
-            <h2>Summary</h2>
+              <br />
+              <p>
+                This is not an example of the maximum performance you can expect which is highly dependent on your workload, it is mostly an example used in the development of the library to locate areas of diminishing returns and to stress test the library itself. 
+              </p>
+              <br />
+              <p>
+               With this in mind results may vary depending on browser used and between runs. It's recommended to run a given test size more than once to give the JIT time to optimize.
+              </p>
+            <h2>Client Summary</h2>
             <ul>
-              Version: <span class="version"></span><br />
+              Hamsters.js Version: <span class="version"></span><br />
               Maximum Threads: <span class="maxThreads"></span><br />
-              Detected Browser: <span class="testBrowser"></span><br />
+              Browser: <span class="testBrowser"></span><br />
               Legacy Mode: <span class="legacy"></span><br />
               Atomic Operations Support: <span class="atomic"></span><br />
               Transferable Object Support: <span class="transferable"></span>
@@ -92,7 +99,7 @@
 
                   <!-- Table -->
                   <div class="table-responsive">
-                    <table class="table">
+                    <table id="fancy_results_table" class="table">
                       <thead>
                         <tr>
                           <th>Thread(s)</th>
@@ -101,47 +108,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr id="main_row">
-                        <tr>
-                          <th scope="row">1 Hamster</th>
-                          <td class="duration_0"></td>
-                          <td class="difference_0"></td>
-                        </tr>
-                        <tr>
-                          <th scope="row">2 Hamsters</th>
-                          <td class="duration_1"></td>
-                          <td class="difference_1"></td>
-                        </tr>
-                        <tr>
-                          <th scope="row">3 Hamsters</th>
-                          <td class="duration_2"></td>
-                          <td class="difference_2"></td>
-                        </tr>
-                       <tr>
-                          <th scope="row">4 Hamsters</th>
-                          <td class="duration_3"></td>
-                          <td class="difference_3"></td>
-                        </tr>
-                        <tr>
-                          <th scope="row">5 Hamsters</th>
-                          <td class="duration_4"></td>
-                          <td class="difference_4"></td>
-                        </tr>
-                        <tr>
-                          <th scope="row">6 Hamsters</th>
-                          <td class="duration_5"></td>
-                          <td class="difference_5"></td>
-                        </tr>
-                        <tr>
-                          <th scope="row">7 Hamsters</th>
-                          <td class="duration_6"></td>
-                          <td class="difference_6"></td>
-                        </tr>
-                        <tr>
-                          <th scope="row">8 Hamsters</th>
-                          <td class="duration_7"></td>
-                          <td class="difference_7"></td>
-                        </tr>
+                        
                       </tbody>
                     </table>
                   </div>
@@ -180,6 +147,7 @@
               if((tem= ua.match(/version\/(\d+)/i))!= null) M.splice(1, 1, tem[1]);
                 document.getElementsByClassName('testBrowser')[0].innerHTML = M.join(' ');
           })();
+          hamstersBenchmark.addResultElements();
         </script>
     </body>
 </html>
