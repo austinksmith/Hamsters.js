@@ -4,7 +4,7 @@
   "description": "100% Vanilla Javascript Multithreading & Parallel Execution Library",
   "main": "build/hamsters.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_packages/.bin/jasmine-node spec"
   },
   "repository": {
     "type": "git",
@@ -36,12 +36,14 @@
     "gulp-concat": "^2.6.1",
     "gulp-js-minify": "0.0.3",
     "gulp-rename": "^1.2.2",
-    "gulp-util": "^3.0.8"
+    "gulp-util": "^3.0.8",
+    "jasmine": "^2.8.0"
   },
   "dependencies": {
     "babel": "^6.23.0",
     "babel-cli": "^6.24.1",
     "browserify": "^14.4.0",
-    "gulp-browserify": "^0.5.1"
+    "gulp-browserify": "^0.5.1",
+    "jasmine-node": "^1.14.5"
   }
 }
