@@ -1,3 +1,3 @@
-var commondir = require('commondir');
-var dir = commondir([ '/x/y/z', '/x/y', '/x/y/w/q' ])
+var commondir = require('../');
+var dir = commondir(process.argv.slice(2));
 console.log(dir);
