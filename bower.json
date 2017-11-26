@@ -1,6 +1,6 @@
 {
   "name": "Hamsters.js",
-  "version": "4.2.0",
+  "version": "4.2.2",
   "authors": [
     "Austin K Smith <austin@asmithdev.com>"
   ],
@@ -18,13 +18,14 @@
     "workers",
     "threads",
     "threading",
-    "web workers",
     "mpi",
+    "web workers",
     "parallel",
-    "promises"
+    "task runner",
+    "thread pool"
   ],
   "license": "Artistic License 2.0",
-  "homepage": "http://hamsters.io",
+  "homepage": "http://www.hamsters.io",
   "ignore": [
     "node_modules",
     "bower_components",
