@@ -36,8 +36,8 @@ module.exports = function (config) {
     htmlReporter: {
       outputFile: 'report/testReport.html',
       // Optional
-      pageTitle: 'Unit Tests',
-      subPageTitle: 'A sample project description',
+      pageTitle: 'Hamsters.js Jasmine Output',
+      subPageTitle: '',
       groupSuites: true,
       useCompactStyle: true,
       useLegacyStyle: true

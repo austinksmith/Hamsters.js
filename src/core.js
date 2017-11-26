@@ -347,7 +347,7 @@ export class hamsters {
   }
 
   parseJsonOnThread(string, onSuccess) {
-    runHamster({input: string}, function() {
+    this.runHamster({input: string}, function() {
       rtn.data = JSON.parse(params.input);
     }, function(output) {
       onSuccess(output[0]);
@@ -355,7 +355,7 @@ export class hamsters {
   }
 
   stringifyJsonOnThread(json, onSuccess) {
-    runHamster({input: json}, function() {
+    this.runHamster({input: json}, function() {
       rtn.data = JSON.stringify(params.input);
     }, function(output) {
       onSuccess(output[0]);
@@ -366,7 +366,7 @@ export class hamsters {
     let params = {
       count: count
     };
-    runHamster(params, function() {
+    this.runHamster(params, function() {
       while(params.count > 0) {
         rtn.data[rtn.data.length] = Math.round(Math.random() * (100 - 1) + 1);
         params.count -= 1;
@@ -388,7 +388,7 @@ export class hamsters {
     for (i; i < len; i += 1) {
       bufferLength += input[i].length;
     }
-    let output = processDataType(dataType, bufferLength);
+    let output = this.processDataType(dataType, bufferLength);
     let offset = 0;
     for (i = 0; i < len; i += 1) {
       output.set(input[i], offset);
@@ -431,7 +431,7 @@ export class hamsters {
       return 'Error processing for loop, missing params or function';
     }
     workers = (this.habitat.legacy ? 1 : (workers || 1));
-    let task = newTask(this.pool.tasks.length, workers, order, dataType, fn, onSuccess);
+    let task = this.newTask(this.pool.tasks.length, workers, order, dataType, fn, onSuccess);
     if(dataType) {
       dataType = dataType.toLowerCase();
     }
@@ -445,13 +445,13 @@ export class hamsters {
         return;
       }
     }
-    work(task, params, fn, onSuccess, aggregate, dataType, memoize, order);
+    this.work(task, params, fn, onSuccess, aggregate, dataType, memoize, order);
   }
 
   work(task, params, fn, onSuccess, aggregate, dataType, memoize, order) {
     let workArray = params.array;
     if(workArray && task.threads !== 1) {
-      workArray = splitArray(workArray, task.threads); //Divide our array into equal array sizes
+      workArray = this.splitArray(workArray, task.threads); //Divide our array into equal array sizes
     }
     let food = {};
     let key;
@@ -460,7 +460,7 @@ export class hamsters {
         food[key] = params[key];
       }
     }
-    food.fn = prepareFunction(fn);
+    food.fn = this.prepareFunction(fn);
     food.dataType = dataType;
     let i = 0;
     while(i < task.threads) {
