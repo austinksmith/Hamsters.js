@@ -1,3 +1,4 @@
+var hamsters =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -8886,17 +8887,13 @@
 	
 	'use strict';
 	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var hamsters = exports.hamsters = function () {
+	var hamsters = function () {
 	  function hamsters() {
 	    _classCallCheck(this, hamsters);
 	
@@ -8908,7 +8905,11 @@
 	    this.memoize = false;
 	    this.atomics = false;
 	    this.legacy = false;
+	    this.run = this.runHamster;
 	    this.habitat = {};
+	    this.tools = {
+	      randomArray: this.randomArray
+	    };
 	    this.uri = null;
 	    this.tasks = [];
 	    this.errors = [];
@@ -9216,7 +9217,7 @@
 	        dataType: input.dataType || null,
 	        worker: this.habitat.worker
 	      };
-	      runHamster(params, function () {
+	      this.run(params, function () {
 	        var operator = params.run;
 	        if (typeof operator === "string") {
 	          if (params.worker) {
@@ -9252,7 +9253,7 @@
 	  }, {
 	    key: 'parseJsonOnThread',
 	    value: function parseJsonOnThread(string, onSuccess) {
-	      runHamster({ input: string }, function () {
+	      this.run({ input: string }, function () {
 	        rtn.data = JSON.parse(params.input);
 	      }, function (output) {
 	        onSuccess(output[0]);
@@ -9261,11 +9262,34 @@
 	  }, {
 	    key: 'stringifyJsonOnThread',
 	    value: function stringifyJsonOnThread(json, onSuccess) {
-	      runHamster({ input: json }, function () {
+	      this.run({ input: json }, function () {
 	        rtn.data = JSON.stringify(params.input);
 	      }, function (output) {
 	        onSuccess(output[0]);
 	      }, 1);
+	    }
+	  }, {
+	    key: 'runHamster',
+	    value: function runHamster(params, fn, onSuccess, workers, aggregate, dataType, memoize, order) {
+	      if (!params || !fn) {
+	        return 'Error processing for loop, missing params or function';
+	      }
+	      workers = this.habitat.legacy ? 1 : workers || 1;
+	      var task = this.newTask(this.pool.tasks.length, workers, order, dataType, fn, onSuccess);
+	      if (dataType) {
+	        dataType = dataType.toLowerCase();
+	      }
+	      if (this.cache && memoize) {
+	        var result = checkCache(fn, task.input, dataType);
+	        if (result && onSuccess) {
+	          setTimeout(function () {
+	            this.pool.tasks[taskid] = null; //Clean up our task, not needed any longer
+	            onSuccess(result);
+	          }, 4);
+	          return;
+	        }
+	      }
+	      this.work(task, params, fn, onSuccess, aggregate, dataType, memoize, order);
 	    }
 	  }, {
 	    key: 'randomArray',
@@ -9273,7 +9297,7 @@
 	      var params = {
 	        count: count
 	      };
-	      runHamster(params, function () {
+	      hamsters.run(params, function () {
 	        while (params.count > 0) {
 	          rtn.data[rtn.data.length] = Math.round(Math.random() * (100 - 1) + 1);
 	          params.count -= 1;
@@ -9296,7 +9320,7 @@
 	      for (i; i < len; i += 1) {
 	        bufferLength += input[i].length;
 	      }
-	      var output = processDataType(dataType, bufferLength);
+	      var output = this.processDataType(dataType, bufferLength);
 	      var offset = 0;
 	      for (i = 0; i < len; i += 1) {
 	        output.set(input[i], offset);
@@ -9337,34 +9361,11 @@
 	      }
 	    }
 	  }, {
-	    key: 'runHamster',
-	    value: function runHamster(params, fn, onSuccess, workers, aggregate, dataType, memoize, order) {
-	      if (!params || !fn) {
-	        return 'Error processing for loop, missing params or function';
-	      }
-	      workers = this.habitat.legacy ? 1 : workers || 1;
-	      var task = newTask(this.pool.tasks.length, workers, order, dataType, fn, onSuccess);
-	      if (dataType) {
-	        dataType = dataType.toLowerCase();
-	      }
-	      if (this.cache && memoize) {
-	        var result = checkCache(fn, task.input, dataType);
-	        if (result && onSuccess) {
-	          setTimeout(function () {
-	            this.pool.tasks[taskid] = null; //Clean up our task, not needed any longer
-	            onSuccess(result);
-	          }, 4);
-	          return;
-	        }
-	      }
-	      work(task, params, fn, onSuccess, aggregate, dataType, memoize, order);
-	    }
-	  }, {
 	    key: 'work',
 	    value: function work(task, params, fn, onSuccess, aggregate, dataType, memoize, order) {
 	      var workArray = params.array;
 	      if (workArray && task.threads !== 1) {
-	        workArray = splitArray(workArray, task.threads); //Divide our array into equal array sizes
+	        workArray = this.splitArray(workArray, task.threads); //Divide our array into equal array sizes
 	      }
 	      var food = {};
 	      var key = void 0;
@@ -9373,7 +9374,7 @@
 	          food[key] = params[key];
 	        }
 	      }
-	      food.fn = prepareFunction(fn);
+	      food.fn = this.prepareFunction(fn);
 	      food.dataType = dataType;
 	      var i = 0;
 	      while (i < task.threads) {
@@ -9562,9 +9563,11 @@
 	      return hamster.postMessage(food, buffers);
 	    }
 	  }]);
-
+	
 	  return hamsters;
 	}();
+	
+	module.exports = new hamsters();
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(327), (function() { return this; }())))
 
 /***/ }),

@@ -10,6 +10,8 @@ module.exports = {
   output: {
     path: path.resolve('./build'),
     filename: 'hamsters.js',
+    library: 'hamsters',
+    libraryTarget: 'var'
   },
   module: {
     loaders: [
