@@ -9,7 +9,7 @@
 
 'use strict';
 
-export class hamsters {
+class hamsters {
    constructor() {
     this.version = '4.2.2';
     this.maxThreads = this.determineGlobalMaxThreads();
@@ -19,8 +19,12 @@ export class hamsters {
     this.memoize = false;
     this.atomics = false;
     this.legacy = false;
+    this.run = this.runHamster;
     this.habitat = {
 
+    };
+    this.tools = {
+      randomArray: this.randomArray
     };
     this.uri = null;
     this.tasks = [];
@@ -313,7 +317,7 @@ export class hamsters {
       dataType: input.dataType || null,
       worker: this.habitat.worker
     };
-    runHamster(params, function() {
+    this.run(params, function() {
       let operator = params.run;
       if(typeof operator === "string") {
         if(params.worker) {
@@ -347,7 +351,7 @@ export class hamsters {
   }
 
   parseJsonOnThread(string, onSuccess) {
-    this.runHamster({input: string}, function() {
+    this.run({input: string}, function() {
       rtn.data = JSON.parse(params.input);
     }, function(output) {
       onSuccess(output[0]);
@@ -355,18 +359,40 @@ export class hamsters {
   }
 
   stringifyJsonOnThread(json, onSuccess) {
-    this.runHamster({input: json}, function() {
+    this.run({input: json}, function() {
       rtn.data = JSON.stringify(params.input);
     }, function(output) {
       onSuccess(output[0]);
     }, 1);
   }
 
+  runHamster(params, fn, onSuccess, workers, aggregate, dataType, memoize, order) {
+    if(!params || !fn) {
+      return 'Error processing for loop, missing params or function';
+    }
+    workers = (this.habitat.legacy ? 1 : (workers || 1));
+    let task = this.newTask(this.pool.tasks.length, workers, order, dataType, fn, onSuccess);
+    if(dataType) {
+      dataType = dataType.toLowerCase();
+    }
+    if(this.cache && memoize) {
+      let result = checkCache(fn, task.input, dataType);
+      if(result && onSuccess) {
+        setTimeout(function() {
+          this.pool.tasks[taskid] = null; //Clean up our task, not needed any longer
+          onSuccess(result);
+        }, 4);
+        return;
+      }
+    }
+    this.work(task, params, fn, onSuccess, aggregate, dataType, memoize, order);
+  }
+
   randomArray(count, onSuccess) {
     let params = {
       count: count
     };
-    this.runHamster(params, function() {
+    hamsters.run(params, function() {
       while(params.count > 0) {
         rtn.data[rtn.data.length] = Math.round(Math.random() * (100 - 1) + 1);
         params.count -= 1;
@@ -424,28 +450,6 @@ export class hamsters {
       default:
         return arr;
     }
-  }
-
-  runHamster(params, fn, onSuccess, workers, aggregate, dataType, memoize, order) {
-    if(!params || !fn) {
-      return 'Error processing for loop, missing params or function';
-    }
-    workers = (this.habitat.legacy ? 1 : (workers || 1));
-    let task = this.newTask(this.pool.tasks.length, workers, order, dataType, fn, onSuccess);
-    if(dataType) {
-      dataType = dataType.toLowerCase();
-    }
-    if(this.cache && memoize) {
-      let result = checkCache(fn, task.input, dataType);
-      if(result && onSuccess) {
-        setTimeout(function() {
-          this.pool.tasks[taskid] = null; //Clean up our task, not needed any longer
-          onSuccess(result);
-        }, 4);
-        return;
-      }
-    }
-    this.work(task, params, fn, onSuccess, aggregate, dataType, memoize, order);
   }
 
   work(task, params, fn, onSuccess, aggregate, dataType, memoize, order) {
@@ -639,3 +643,5 @@ export class hamsters {
   } 
 
 }
+
+module.exports = new hamsters();
