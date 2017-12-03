@@ -4,7 +4,7 @@ const webpack = require('webpack');
 module.exports = {
   devtool: 'sourcemap',
   entry: [
-    './src/core',
+    './src/hamsters',
   ],
   output: {
     path: path.resolve('./build'),
