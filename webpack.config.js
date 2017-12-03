@@ -4,12 +4,11 @@ const webpack = require('webpack');
 module.exports = {
   devtool: 'sourcemap',
   entry: [
-    'babel-polyfill',
     './src/core',
   ],
   output: {
     path: path.resolve('./build'),
-    filename: 'hamsters.js',
+    filename: 'hamsters.min.js',
     library: 'hamsters',
     libraryTarget: 'var'
   },

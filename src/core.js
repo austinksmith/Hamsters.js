@@ -91,7 +91,7 @@ class hamsters {
     if(this.habitat.browser && !this.habitat.reactNative) {
       this.setupBrowserSupport();
     }
-    if(this.habitat.worker) {
+    if(this.habitat.worker && typeof SharedWorker !== 'undefined') {
       this.setupWorkerSupport();
     }
     if(this.habitat.node || this.habitat.reactNative) {
@@ -129,18 +129,8 @@ class hamsters {
 
 
   setupBrowserSupport() {
-    if(typeof Worker === 'undefined' || ['Kindle/3.0', 'Mobile/8F190', 'IEMobile'].indexOf(navigator.userAgent) !== -1) {
+    if(typeof Worker === 'undefined' || ['Kindle/3.0', 'Mobile/8F190', 'IEMobile'].indexOf(navigator.userAgent) !== -1 || this.isIE(10)) {
       this.habitat.legacy = true;
-    }
-
-    if(this.isIE(10)) {
-      try {
-        let testThread = new Worker('src/common/wheel.min.js');
-        testThread.terminate();
-        this.habitat.ie10 = true;
-      } catch(e) {
-        this.habitat.legacy = true;
-      }
     }
   }
 
