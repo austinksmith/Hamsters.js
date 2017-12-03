@@ -7,7 +7,7 @@
 * License: Artistic License 2.0
 */
 
-import hamsters from '../src/core.js';
+import hamsters from '../src/hamsters';
 
 hamsters.init({
   maxThreads: 1,
