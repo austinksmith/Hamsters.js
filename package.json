@@ -60,7 +60,7 @@
     "webpack-dev-server": "^1.16.1"
   },
   "directories": {
-    "test": "test"
+    "test": "spec"
   },
   "dependencies": {}
 }

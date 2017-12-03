@@ -31,10 +31,10 @@ module.exports = function (config) {
     singleRun: true,
     autoWatch: true,
     // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
-    reporters: ['progress', 'html'],
+    reporters: ['dots', 'progress', 'html'],
 
     htmlReporter: {
-      outputFile: 'report/testReport.html',
+      outputFile: 'specReport/jasmine.html',
       // Optional
       pageTitle: 'Hamsters.js Jasmine Output',
       subPageTitle: '',
