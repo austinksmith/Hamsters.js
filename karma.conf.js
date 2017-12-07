@@ -16,7 +16,8 @@ module.exports = function (config) {
     // - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
     browsers: ['Chrome','PhantomJS','Firefox'],
     files: [
-      { pattern: 'tests.webpack.js', watched: false }
+      { pattern: 'tests.webpack.js', watched: false },
+      'node_modules/babel-polyfill/dist/polyfill.js'
     ],
     frameworks: [
       'jasmine',
