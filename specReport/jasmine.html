@@ -12,15 +12,15 @@
         <td colspan="3" title="Mozilla/5.0 (Unknown; Linux x86_64) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.1.1 Safari/538.1">Browser: PhantomJS 2.1.1 (Linux 0.0.0)</td>
       </tr>
       <tr class="overview">
-        <td colspan="3">Timestamp: 2017-12-3 09:35:13</td>
+        <td colspan="3">Timestamp: 2017-12-7 08:16:01</td>
       </tr>
       <tr>
         <td colspan="3">
           31 tests / 
           0 errors / 
-          0 failures / 
+          21 failures / 
           0 skipped / 
-          runtime: 0.042s
+          runtime: 0.044s
         </td>
       </tr>
       <tr class="header">
@@ -29,7 +29,7 @@
         <td>Suite / Results</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.002s</td>
+        <td>Passed in 0.007s</td>
         <td>Hamsters.habitat.browser should be boolean</td>
         <td>Hamsters Core Functionality</td>
       </tr>
@@ -44,7 +44,7 @@
         <td>Hamsters Core Functionality</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.001s</td>
         <td>Hamsters.habitat.reactNative should be boolean</td>
         <td>Hamsters Core Functionality</td>
       </tr>
@@ -64,7 +64,7 @@
         <td>Hamsters Core Functionality</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.001s</td>
         <td>Hamsters.habitat.atomics should be boolean</td>
         <td>Hamsters Core Functionality</td>
       </tr>
@@ -74,114 +74,264 @@
         <td>Hamsters Core Functionality</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.002s</td>
+        <td>Passed in 0.005s</td>
         <td>Hamsters.tools.splitArray should split array into subarrays</td>
         <td>Hamsters Core Functionality</td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.005s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Computes 8th Fibonacci Number (null)</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+tests.webpack.js:128:30
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Computes 8th Fibonacci Number (Uint8)</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+tests.webpack.js:128:30
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Computes 8th Fibonacci Number (Uint32)</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+tests.webpack.js:128:30
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Computes 8th Fibonacci Number (Uint16)</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+tests.webpack.js:128:30
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Computes 8th Fibonacci Number (Float64)</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+tests.webpack.js:128:30
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Computes 8th Fibonacci Number (Float32)</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+tests.webpack.js:128:30
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Computes 8th Fibonacci Number (Int32)</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+tests.webpack.js:128:30
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Computes 8th Fibonacci Number (Int16)</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+tests.webpack.js:128:30
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Computes 8th Fibonacci Number (Int8)</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+tests.webpack.js:128:30
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Calculates square root of 4000 (null)</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+tests.webpack.js:147:30
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Calculates square root of 4000 (Uint8)</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+tests.webpack.js:147:30
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Calculates square root of 4000 (Uint32)</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+tests.webpack.js:147:30
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Calculates square root of 4000 (Uint16)</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+tests.webpack.js:147:30
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Calculates square root of 4000 (Float64)</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+tests.webpack.js:147:30
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Calculates square root of 4000 (Float32)</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+tests.webpack.js:147:30
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Calculates square root of 4000 (Int32)</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+tests.webpack.js:147:30
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Calculates square root of 4000 (Int16)</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+tests.webpack.js:147:30
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Calculates square root of 4000 (Int8)</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+tests.webpack.js:147:30
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Should stringify json to string</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+stringifyJsonOnThread@tests.webpack.js:602:24
+tests.webpack.js:159:38
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Should parse string to json</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+parseJsonOnThread@tests.webpack.js:593:24
+tests.webpack.js:167:34
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Hamsters.loop should abstract for loop usage</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: Promise in tests.webpack.js (line 662)
+hamstersWork@tests.webpack.js:662:26
+runHamsters@tests.webpack.js:651:25
+hamstersLoop@tests.webpack.js:557:24
+tests.webpack.js:177:29
+
+        </td>
       </tr>
     </table>
     <hr/>
@@ -190,176 +340,42 @@
         <td colspan="3" title="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.89 Safari/537.36">Browser: Chrome 62.0.3202 (Linux 0.0.0)</td>
       </tr>
       <tr class="overview">
-        <td colspan="3">Timestamp: 2017-12-3 09:35:14</td>
+        <td colspan="3">Timestamp: 2017-12-7 08:16:02</td>
       </tr>
       <tr>
-        <td colspan="3">
-          31 tests / 
-          0 errors / 
-          0 failures / 
-          0 skipped / 
-          runtime: 0.054s
-        </td>
+        <td colspan="3"/>
       </tr>
       <tr class="header">
         <td>Status</td>
         <td>Spec</td>
         <td>Suite / Results</td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.003s</td>
-        <td>Computes 8th Fibonacci Number (Uint8)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Computes 8th Fibonacci Number (Uint32)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
-        <td>Computes 8th Fibonacci Number (Uint16)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Computes 8th Fibonacci Number (Float64)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Computes 8th Fibonacci Number (Float32)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
-        <td>Computes 8th Fibonacci Number (Int32)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
-        <td>Computes 8th Fibonacci Number (Int16)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
-        <td>Computes 8th Fibonacci Number (Int8)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
-        <td>Calculates square root of 4000 (null)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Calculates square root of 4000 (Uint8)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Calculates square root of 4000 (Uint32)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
-        <td>Calculates square root of 4000 (Uint16)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Calculates square root of 4000 (Float64)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
-        <td>Calculates square root of 4000 (Float32)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Calculates square root of 4000 (Int32)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
-        <td>Calculates square root of 4000 (Int16)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
-        <td>Calculates square root of 4000 (Int8)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.003s</td>
-        <td>Should stringify json to string</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Should parse string to json</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.004s</td>
-        <td>Hamsters.loop should abstract for loop usage</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.003s</td>
-        <td>Hamsters.habitat.browser should be boolean</td>
-        <td>Hamsters Core Functionality</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Hamsters.habitat.worker should be boolean</td>
-        <td>Hamsters Core Functionality</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Hamsters.habitat.node should be boolean</td>
-        <td>Hamsters Core Functionality</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Hamsters.habitat.reactNative should be boolean</td>
-        <td>Hamsters Core Functionality</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Hamsters.habitat.shell should be boolean</td>
-        <td>Hamsters Core Functionality</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Hamsters.habitat.transferrable should be boolean</td>
-        <td>Hamsters Core Functionality</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Hamsters.habitat.legacy should be boolean</td>
-        <td>Hamsters Core Functionality</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Hamsters.habitat.atomics should be boolean</td>
-        <td>Hamsters Core Functionality</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Hamsters.tools.aggregate should aggregate array of subarrays</td>
-        <td>Hamsters Core Functionality</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.007s</td>
-        <td>Hamsters.tools.splitArray should split array into subarrays</td>
-        <td>Hamsters Core Functionality</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.006s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Computes 8th Fibonacci Number (null)</td>
-        <td>Hamsters running asynchronously</td>
+        <td>
+          Hamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Uint8)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Uint32)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
       </tr>
     </table>
     <hr/>
@@ -368,15 +384,57 @@
         <td colspan="3" title="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:57.0) Gecko/20100101 Firefox/57.0">Browser: Firefox 57.0.0 (Ubuntu 0.0.0)</td>
       </tr>
       <tr class="overview">
-        <td colspan="3">Timestamp: 2017-12-3 09:35:15</td>
+        <td colspan="3">Timestamp: 2017-12-7 08:16:03</td>
+      </tr>
+      <tr>
+        <td colspan="3"/>
+      </tr>
+      <tr class="header">
+        <td>Status</td>
+        <td>Spec</td>
+        <td>Suite / Results</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0.003s</td>
+        <td>Hamsters.tools.splitArray should split array into subarrays</td>
+        <td>Hamsters Core Functionality</td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (null)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL. in node_modules/jasmine-core/lib/jasmine-core/jasmine.js (line 4281)
+attempt/timeoutId&lt;@node_modules/jasmine-core/lib/jasmine-core/jasmine.js:4281:23
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Uint8)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL. in node_modules/jasmine-core/lib/jasmine-core/jasmine.js (line 4281)
+attempt/timeoutId&lt;@node_modules/jasmine-core/lib/jasmine-core/jasmine.js:4281:23
+
+        </td>
+      </tr>
+    </table>
+    <hr/>
+    <table cellspacing="0" cellpadding="0" border="0">
+      <tr class="overview">
+        <td colspan="3" title="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:57.0) Gecko/20100101 Firefox/57.0">Browser: Firefox 57.0.0 (Ubuntu 0.0.0)</td>
+      </tr>
+      <tr class="overview">
+        <td colspan="3">Timestamp: 2017-12-7 08:16:15</td>
       </tr>
       <tr>
         <td colspan="3">
           31 tests / 
-          0 errors / 
-          0 failures / 
+          1 errors / 
+          2 failures / 
           0 skipped / 
-          runtime: 0.065s
+          runtime: 10.03s
         </td>
       </tr>
       <tr class="header">
@@ -385,12 +443,12 @@
         <td>Suite / Results</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.017s</td>
+        <td>Passed in 0.015s</td>
         <td>Hamsters.habitat.browser should be boolean</td>
         <td>Hamsters Core Functionality</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.002s</td>
+        <td>Passed in 0.001s</td>
         <td>Hamsters.habitat.worker should be boolean</td>
         <td>Hamsters Core Functionality</td>
       </tr>
@@ -400,12 +458,93 @@
         <td>Hamsters Core Functionality</td>
       </tr>
       <tr class="pass">
+        <td>Passed in 0.001s</td>
+        <td>Hamsters.habitat.reactNative should be boolean</td>
+        <td>Hamsters Core Functionality</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0.001s</td>
+        <td>Hamsters.habitat.shell should be boolean</td>
+        <td>Hamsters Core Functionality</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0.001s</td>
+        <td>Hamsters.habitat.transferrable should be boolean</td>
+        <td>Hamsters Core Functionality</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0s</td>
+        <td>Hamsters.habitat.legacy should be boolean</td>
+        <td>Hamsters Core Functionality</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0s</td>
+        <td>Hamsters.habitat.atomics should be boolean</td>
+        <td>Hamsters Core Functionality</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0.003s</td>
+        <td>Hamsters.tools.aggregate should aggregate array of subarrays</td>
+        <td>Hamsters Core Functionality</td>
+      </tr>
+      <tr class="system-out">
+        <td colspan="3"><strong>System output:</strong><br />Chrome 62.0.3202 (Linux 0.0.0) ERROR: 'hamster is not defined', ReferenceError{}
+<br />Firefox 57.0.0 (Ubuntu 0.0.0) ERROR: 'assignment to undeclared variable hamster', ReferenceError{}
+<br />Chrome 62.0.3202 (Linux 0.0.0) ERROR: 'hamster is not defined', ReferenceError{}
+<br />Firefox 57.0.0 (Ubuntu 0.0.0) ERROR: 'assignment to undeclared variable hamster', ReferenceError{}
+<br />Chrome 62.0.3202 (Linux 0.0.0) ERROR: 'hamster is not defined', ReferenceError{}
+<br />Firefox 57.0.0 (Ubuntu 0.0.0) ERROR: 'assignment to undeclared variable hamster', ReferenceError{}
+</td>
+      </tr>
+      <tr class="system-errors">
+        <td colspan="3"><strong>Errors:</strong><br />Some of your tests did a full page reload!
+</td>
+      </tr>
+    </table>
+    <hr/>
+    <table cellspacing="0" cellpadding="0" border="0">
+      <tr class="overview">
+        <td colspan="3" title="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.89 Safari/537.36">Browser: Chrome 62.0.3202 (Linux 0.0.0)</td>
+      </tr>
+      <tr class="overview">
+        <td colspan="3">Timestamp: 2017-12-7 08:16:18</td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          31 tests / 
+          1 errors / 
+          3 failures / 
+          0 skipped / 
+          runtime: 15.019s
+        </td>
+      </tr>
+      <tr class="header">
+        <td>Status</td>
+        <td>Spec</td>
+        <td>Suite / Results</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0.002s</td>
+        <td>Hamsters.habitat.browser should be boolean</td>
+        <td>Hamsters Core Functionality</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0s</td>
+        <td>Hamsters.habitat.worker should be boolean</td>
+        <td>Hamsters Core Functionality</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0s</td>
+        <td>Hamsters.habitat.node should be boolean</td>
+        <td>Hamsters Core Functionality</td>
+      </tr>
+      <tr class="pass">
         <td>Passed in 0s</td>
         <td>Hamsters.habitat.reactNative should be boolean</td>
         <td>Hamsters Core Functionality</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.001s</td>
         <td>Hamsters.habitat.shell should be boolean</td>
         <td>Hamsters Core Functionality</td>
       </tr>
@@ -415,7 +554,7 @@
         <td>Hamsters Core Functionality</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.001s</td>
+        <td>Passed in 0s</td>
         <td>Hamsters.habitat.legacy should be boolean</td>
         <td>Hamsters Core Functionality</td>
       </tr>
@@ -430,114 +569,17 @@
         <td>Hamsters Core Functionality</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.001s</td>
+        <td>Passed in 0.008s</td>
         <td>Hamsters.tools.splitArray should split array into subarrays</td>
         <td>Hamsters Core Functionality</td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.022s</td>
-        <td>Computes 8th Fibonacci Number (null)</td>
-        <td>Hamsters running asynchronously</td>
+      <tr class="system-out">
+        <td colspan="3"><strong>System output:</strong><br />Chrome 62.0.3202 (Linux 0.0.0) ERROR: 'hamster is not defined', ReferenceError{}
+</td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Computes 8th Fibonacci Number (Uint8)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
-        <td>Computes 8th Fibonacci Number (Uint32)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Computes 8th Fibonacci Number (Uint16)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Computes 8th Fibonacci Number (Float64)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Computes 8th Fibonacci Number (Float32)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Computes 8th Fibonacci Number (Int32)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Computes 8th Fibonacci Number (Int16)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Computes 8th Fibonacci Number (Int8)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Calculates square root of 4000 (null)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Calculates square root of 4000 (Uint8)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Calculates square root of 4000 (Uint32)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Calculates square root of 4000 (Uint16)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Calculates square root of 4000 (Float64)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Calculates square root of 4000 (Float32)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Calculates square root of 4000 (Int32)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Calculates square root of 4000 (Int16)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Calculates square root of 4000 (Int8)</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Should stringify json to string</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Should parse string to json</td>
-        <td>Hamsters running asynchronously</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
-        <td>Hamsters.loop should abstract for loop usage</td>
-        <td>Hamsters running asynchronously</td>
+      <tr class="system-errors">
+        <td colspan="3"><strong>Errors:</strong><br />Some of your tests did a full page reload!
+</td>
       </tr>
     </table>
     <hr/>
