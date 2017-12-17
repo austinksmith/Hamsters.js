@@ -10,7 +10,7 @@ var browser = {
   ],
   output: {
     path: path.resolve('./build'),
-    filename: 'hamsters.web.min.js',
+    filename: 'hamsters.min.js',
     library: 'hamsters',
     libraryTarget: 'var'
   },
@@ -28,33 +28,32 @@ var browser = {
   }
 };
 
-var server = {
-  target: 'node',
-  devtool: 'sourcemap',
-  entry: [
-    './src/hamsters',
-  ],
-  output: {
-    path: path.resolve('./build'),
-    filename: 'hamsters.node.min.js',
-    library: 'hamsters',
-    libraryTarget: 'var'
-  },
-  module: {
-    loaders: [
-      {
-        test: [/\.js?$/],
-        exclude: path.resolve(__dirname, 'node_modules'),
-        loader: 'babel',
-        query: {
-          presets: ['es2015'],
-        },
-      }
-    ],
-  }
-};
+// var server = {
+//   target: 'node',
+//   devtool: 'sourcemap',
+//   entry: [
+//     './src/hamsters',
+//   ],
+//   output: {
+//     path: path.resolve('./build'),
+//     filename: 'hamsters.node.min.js',
+//     library: 'hamsters',
+//     libraryTarget: 'var'
+//   },
+//   module: {
+//     loaders: [
+//       {
+//         test: [/\.js?$/],
+//         exclude: path.resolve(__dirname, 'node_modules'),
+//         loader: 'babel',
+//         query: {
+//           presets: ['es2015'],
+//         },
+//       }
+//     ],
+//   }
+// };
 
 module.exports = [
-  browser, 
-  server 
+  browser
 ];

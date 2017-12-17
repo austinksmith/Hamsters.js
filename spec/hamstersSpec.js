@@ -7,7 +7,8 @@
 * License: Artistic License 2.0
 */
 
-import hamsters from '../src/hamsters';
+var hamsters = require('hamsters.js');
+
 
 hamsters.init({
   maxThreads: 1,
