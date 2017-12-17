@@ -1,5 +1,5 @@
   /*
-  * Title: this.js
+  * Title: Hamsters.js
   * Description: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
   * Author: Austin K. Smith
   * Contact: austin@asmithdev.com
