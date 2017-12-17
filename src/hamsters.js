@@ -313,6 +313,27 @@
       return threadArrays;
     }
 
+    determineSubArrayIndexes(array, n) {
+      var i = 0;
+      let size = Math.ceil(array.length/n);
+      var indexes = [];
+      while(i < array.length) {
+        indexes.push({
+          start: i, 
+          end: ((i += size) - 1)
+        });
+      }
+      return indexes;
+    }
+
+    subArrayFromIndex(array, start, end) {
+      if(array.slice) {
+        return array.slice(start, end);
+      } else {
+        return array.subarray(start, end);
+      }
+    }
+
     hamstersLoop(input, onSuccess) {
       let params = {
         run: this.prepareFunction(input.operator),
@@ -384,7 +405,7 @@
       });
     }
 
-    prepareAndSaveTaskOptions(params, functionToRun, onSuccessCallback, numberOfWorkers, aggregateThreadOutputs, dataType, memoize, sortOrder) {
+    prepareAndSaveTaskOptions(params, functionToRun) {
       var taskOptions = {
         inputParams: params,
         id: this.pool.tasks.length,
@@ -405,10 +426,10 @@
       return this.newTask(taskOptions);
     }
 
-    runHamsters(params, functionToRun, onSuccess, numberOfWorkers, aggregateThreadOutputs, dataType, cacheResults, sortOrder) {
+    runHamsters(params, functionToRun) {
       // Legacy processing use only 1 simulated thread, avoid doing extra work splitting & aggregating
       let workerCount = (this.habitat.legacy ? 1 : (numberOfWorkers || 1));
-      let task = this.prepareAndSaveTaskOptions(params, functionToRun, onSuccess, workerCount, aggregateThreadOutputs, dataType, cacheResults, sortOrder);
+      let task = this.prepareAndSaveTaskOptions(params, functionToRun);
       this.hamstersWork(task).then(function(results) {
         onSuccess(results);
       }).catch(function(error) {
@@ -445,8 +466,7 @@
         }
         this.trainHamster(threadId, task, hamster, resolve, reject);
         this.trackThread(task, threadId);
-        hamsterFood.array = inputArray;
-        this.feedHamster(hamster, hamsterFood);
+        this.feedHamster(hamster, task.inputParams, inputArray);
         task.count += 1; //Increment count, thread is running
         if(this.debug === 'verbose') {
           console.info('Spawning Hamster #' + thread_id + ' @ ' + new Date().getTime());
@@ -454,26 +474,42 @@
       }
     }
 
+    feedHamster(hamster, task) {
+      if(this.habitat.worker) {
+        return hamster.port.postMessage(food);
+      }
+      if(this.habitat.ie10) {
+        return hamster.postMessage(food);
+      }
+      let buffers = [], key;
+      for(key in task.food) {
+        if(task.food.hasOwnProperty(key) && task.food[key] && task.food[key].buffer) {
+          buffers.push(task.food[key].buffer);
+        }
+      }
+      return hamster.postMessage(task.food,  buffers);
+    } 
+
     trainHamster(threadId, task, hamster, resolve, reject) {
-      var libraryScope = this;
+      var scope = this;
       // Handle successful response from a thread
       var onThreadResponse = function(e, results) {
         let threadResponse = e.data.results;
-        libraryScope.chewThread(task, threadId);
+        scope.chewThread(task, threadId);
         results = e.data.results;
-        task.output[id] = results.data;
+        task.output[threadId] = results.data;
         if(task.workers.length === 0 && task.count === task.threads) {
-          var output = libraryScope.getOutput(task.output, task.aggregateThreadOutputs, task.dataType);
+          var output = scope.getOutput(task.output, task.aggregateThreadOutputs, task.dataType);
           if(task.order) {
             resolve(sort(output, task.order));
           } else {
             resolve(output);
           }
-          libraryScope.pool.tasks[task.id] = null; //Clean up our task, not needed any longer
+          scope.pool.tasks[task.id] = null; //Clean up our task, not needed any longer
         }
-        if(libraryContext.pool.pending.length !== 0) {
-          libraryContext.processQueue(hamster, libraryContext.pool.pending.shift());
-        } else if(!libraryContext.persistence && !libraryContext.habitat.worker) {
+        if(scope.pool.pending.length !== 0) {
+          scope.processQueue(hamster, scope.pool.pending.shift());
+        } else if(!scope.persistence && !scope.habitat.worker) {
           hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
         }
       };
@@ -657,22 +693,6 @@
       return buffer;
     }
 
-    feedHamster(hamster, food) {
-      if(this.habitat.worker) {
-        return hamster.port.postMessage(food);
-      }
-      if(this.habitat.ie10) {
-        return hamster.postMessage(food);
-      }
-      let buffers = [], key;
-      for(key in food) {
-        if(food.hasOwnProperty(key) && food[key] && food[key].buffer) {
-          buffers.push(food[key].buffer);
-        }
-      }
-      return hamster.postMessage(food,  buffers);
-    } 
-
   }
-
-  module.exports = new hamsters();
+  var hamsters.js = new hamsters();
+  module.exports = hamsters.js;
