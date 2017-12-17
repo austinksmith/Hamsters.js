@@ -11,7 +11,8 @@
 
 'use strict';
 
-import hamstersHabitat from './core/habitat';
+import hamsterHabitat from './core/habitat';
+import hamsterTools from './core/tools';
 
 class hamstersjs {
    constructor() {
@@ -22,12 +23,8 @@ class hamstersjs {
     this.memoize = false;
     this.atomics = false;
     this.legacy = false;
-    this.tools = {
-      randomArray: this.randomArray,
-      aggregateArrays: this.aggregateThreadOutputs,
-      splitArrays: this.splitArrayIntoSubArrays
-    };
-    this.habitat = hamstersHabitat;
+    this.tools = hamsterTools;
+    this.habitat = hamsterHabitat;
     this.pool = {
       uri: null,
       tasks: [],
@@ -88,7 +85,6 @@ class hamstersjs {
     // Got it
     return max;
   }
-
 
   setupBrowserSupport() {
     if(typeof Worker === 'undefined' || ['Kindle/3.0', 'Mobile/8F190', 'IEMobile'].indexOf(navigator.userAgent) !== -1 || this.isIE(10)) {
@@ -241,23 +237,6 @@ class hamstersjs {
   chewGarbage(startOptions) {
     delete this.init;
     startOptions = null;
-  }
-
-
-  splitArrayIntoSubArrays(array, n) {
-    let i = 0;
-    let threadArrays = [];
-    let size = Math.ceil(array.length/n);
-    if(array.slice) {
-      while(i < array.length) {
-        threadArrays.push(array.slice(i, i += size));
-      }
-    } else {
-      while (i < array.length) {
-        threadArrays.push(array.subarray(i, i += size));
-      }
-    }
-    return threadArrays;
   }
 
   determineSubArrayIndexes(array, n) {
@@ -486,36 +465,6 @@ class hamstersjs {
       hamster.onmessage = onThreadResponse;
       hamster.onerror = onThreadError;
     }   
-  }
-
-  randomArray(count, onSuccess) {
-    var randomArray = [];
-    while(count > 0) {
-      randomArray.push(Math.round(Math.random() * (100 - 1) + 1));
-      count -= 1;
-    }
-    onSuccess(randomArray);
-  }
-
-  aggregateThreadOutputs(input, dataType) {
-    if(!dataType || !this.habitat.transferrable) {
-      return input.reduce(function(a, b) {
-        return a.concat(b);
-      });
-    }
-    let i = 0;
-    let len = input.length;
-    let bufferLength = 0;
-    for (i; i < len; i += 1) {
-      bufferLength += input[i].length;
-    }
-    let output = this.processDataType(dataType, bufferLength);
-    let offset = 0;
-    for (i = 0; i < len; i += 1) {
-      output.set(input[i], offset);
-      offset += input[i].length;
-    }
-    return output;
   }
 
   checkCache(fn, input, dataType) {

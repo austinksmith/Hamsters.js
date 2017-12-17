@@ -65,8 +65,8 @@ class habitat {
   }
 }
 
-var hamstersHabitat = new habitat();
+var hamsterHabitat = new habitat();
 
 if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamstersHabitat;
+  module.exports = hamsterHabitat;
 }
