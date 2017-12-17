@@ -476,10 +476,10 @@
 
     feedHamster(hamster, task) {
       if(this.habitat.worker) {
-        return hamster.port.postMessage(food);
+        return hamster.port.postMessage(task.food);
       }
       if(this.habitat.ie10) {
-        return hamster.postMessage(food);
+        return hamster.postMessage(task.food);
       }
       let buffers = [], key;
       for(key in task.food) {
@@ -694,5 +694,5 @@
     }
 
   }
-  var hamsters.js = new hamsters();
-  module.exports = hamsters.js;
+
+  module.exports = new hamsters();

@@ -7,7 +7,7 @@
 * License: Artistic License 2.0
 */
 
-var hamsters = require('hamsters.js');
+import hamsters from '../src/hamsters';
 
 
 hamsters.init({
