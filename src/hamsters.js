@@ -369,7 +369,8 @@ class hamstersjs {
     this.hamstersWork(task).then(function(results) {
       onSuccess(results);
     }).catch(function(error) {
-      console.error(error.message, error);
+      let errorMessage = `Hamsters.js Error @ ${error.timeStamp} : ${error.message}`;
+      console.error(errorMessage, error);
     });
   }
 
@@ -406,9 +407,14 @@ class hamstersjs {
   }
 
   prepareHamsterFood(task, threadId) {
-    let hamsterFood = Object.create(task.params);
+    let hamsterFood = {};
+    for(var key in task.params) {
+      if(task.params.hasOwnProperty(key) && key !== 'array') {
+        hamsterFood[key] = task.params[key];
+      }
+    }
     if(task.indexes) {
-      hamsterFood.array = this.subArrayFromIndex(hamsterFood.array, task.indexes[threadId]);
+      hamsterFood.array = this.subArrayFromIndex(task.params.array, task.indexes[threadId]);
     }
     return hamsterFood;
   }
@@ -455,15 +461,15 @@ class hamstersjs {
 
     // Handle error response from a thread
     var onThreadError = function(e) {
-      if(!libraryScope.habitat.worker) {
+      if(!scope.habitat.worker) {
         hamster.terminate(); //Kill the thread
       }
       var error = {
         timeStamp: Date.now(),
         threadId: threadId,
-        message: `Error Hamster #${id}: Line ${e.lineno} in ${e.filename}: ${e.message}`
+        message: `Line ${e.lineno} in ${e.filename}: ${e.message}`
       };
-      libraryScope.pool.errors.push(error);
+      scope.pool.errors.push(error);
       reject(error);
     };
 
@@ -551,7 +557,7 @@ class hamstersjs {
       params.array = array;
       params.fn();
       if(params.dataType && params.dataType != "na") {
-        rtn.data = this.processDataType(params.dataType, rtn.data);
+        rtn.data = tfhis.processDataType(params.dataType, rtn.data);
         rtn.dataType = params.dataType;
       }
       resolve(rtn);
