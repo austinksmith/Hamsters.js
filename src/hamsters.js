@@ -383,41 +383,50 @@ class hamstersjs {
     });
   }
 
-  hamsterWheel(inputArray, task, resolve, reject) {
-    let threadId = this.pool.running.length;
+  hamsterWheel(threadId, task, resolve, reject) {
+    // let threadId = this.pool.running.length;
     var hamster = {};
     if(this.maxThreads === threadId) {
-      this.poolThread(inputArray, task, threadId, resolve, reject);
+      this.poolThread(task, threadId, resolve, reject);
     } else {
       if(this.persistence) {
         hamster = this.pool.threads[threadId];
       } else {
         hamster = spawnHamster();
       }
+      let hamsterFood = this.prepareHamsterFood(task, threadId);
       this.trainHamster(threadId, task, hamster, resolve, reject);
       this.trackThread(task, threadId);
-      this.feedHamster(hamster, task.inputParams, inputArray);
+      this.feedHamster(hamster, hamsterFood);
       task.count += 1; //Increment count, thread is running
-      if(this.debug === 'verbose') {
-        console.info('Spawning Hamster #' + thread_id + ' @ ' + new Date().getTime());
-      }
+      // if(this.debug === 'verbose') {
+      //   console.info('Spawning Hamster #' + thread_id + ' @ ' + new Date().getTime());
+      // }
     }
   }
 
-  feedHamster(hamster, task) {
+  prepareHamsterFood(task, threadId) {
+    let hamsterFood = Object.create(task.params);
+    if(task.indexes) {
+      hamsterFood.array = this.subArrayFromIndex(hamsterFood.array, task.indexes[threadId]);
+    }
+    return hamsterFood;
+  }
+
+  feedHamster(hamster, hamsterFood) {
     if(this.habitat.worker) {
-      return hamster.port.postMessage(task.food);
+      return hamster.port.postMessage(hamsterFood);
     }
     if(this.habitat.ie10) {
-      return hamster.postMessage(task.food);
+      return hamster.postMessage(hamsterFood);
     }
     let buffers = [], key;
-    for(key in task.food) {
-      if(task.food.hasOwnProperty(key) && task.food[key] && task.food[key].buffer) {
-        buffers.push(task.food[key].buffer);
+    for(key in hamsterFood) {
+      if(hamsterFood.hasOwnProperty(key) && hamsterFood[key] && hamsterFood[key].buffer) {
+        buffers.push(hamsterFood[key].buffer);
       }
     }
-    return hamster.postMessage(task.food,  buffers);
+    return hamster.postMessage(hamsterFood,  buffers);
   } 
 
   trainHamster(threadId, task, hamster, resolve, reject) {
