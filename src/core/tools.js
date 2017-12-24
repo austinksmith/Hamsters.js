@@ -17,9 +17,8 @@ class tools {
     this.stringifyJson = this.stringifyJsonOnThread;
   }
 
-
   parseJsonOnThread(string, onSuccess) {
-    runHamsters({input: string}, function() {
+    this.runHamsters({input: string}, function() {
       rtn.data = JSON.parse(params.input);
     }, function(output) {
       onSuccess(output[0]);
@@ -27,7 +26,7 @@ class tools {
   }
 
   stringifyJsonOnThread(json, onSuccess) {
-    runHamsters({input: json}, function() {
+    this.runHamsters({input: json}, function() {
       rtn.data = JSON.stringify(params.input);
     }, function(output) {
       onSuccess(output[0]);

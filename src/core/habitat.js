@@ -14,7 +14,7 @@
 class habitat {
   constructor() {
     this.browser = this.isBrowser();
-    this.worker = this.isWorker();
+    this.webWorker = this.isWebWorker();
     this.node = this.isNode();
     this.reactNative = this.isReactNative();
     this.shell = this.isShell();
@@ -24,6 +24,8 @@ class habitat {
     this.proxies = this.supportsProxies();
     this.isIE = this.isInternetExplorer;
     this.logicalThreads = this.determineGlobalThreads();
+    this.Worker = this.locateWorkerObject();
+    this.sharedWorker = this.locateSharedWorkerObject();
   }
 
   determineGlobalThreads() {
@@ -43,6 +45,14 @@ class habitat {
     return max;
   }
 
+  locateWorkerObject() {
+    return Worker || null;
+  }
+
+  locateSharedWorkerObject() {
+    return SharedWorker || null;
+  }
+
   isBrowser() {
     return typeof window === "object";
   }
@@ -55,7 +65,7 @@ class habitat {
     return typeof process === "object" && typeof require === "function" && !this.isBrowser() && !this.isWorker();
   }
 
-  isWorker() {
+  isWebWorker() {
     return typeof importScripts === "function";
   }
 
@@ -72,7 +82,7 @@ class habitat {
   }
 
   isLegacyEnvironment() {
-    return (this.isShell() || typeof Worker === 'undefined');
+    return this.isShell() || ;
   }
 
   supportsAtomicOperations() {
