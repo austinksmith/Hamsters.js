@@ -12,12 +12,14 @@
 'use strict';
 
 import hamsterHabitat from './core/habitat';
+import hamsterPool from './core/pool';
+import hamsterData from './core/data';
 import hamsterTools from './core/tools';
 
 class hamstersjs {
    constructor() {
     this.version = '4.2.2';
-    this.maxThreads = this.determineGlobalMaxThreads();
+    this.maxThreads = hamsterHabitat.logicalThreads;
     this.debug = false;
     this.persistence = true;
     this.memoize = false;
@@ -25,19 +27,11 @@ class hamstersjs {
     this.legacy = false;
     this.tools = hamsterTools;
     this.habitat = hamsterHabitat;
-    this.pool = {
-      uri: null,
-      tasks: [],
-      errors: [],
-      threads: [],
-      running: [],
-      pending: []
-    };
+    this.data = hamsterData;
+    this.pool = hamsterPool;
     this.run = this.runHamsters;
     this.promise = this.hamstersPromise;  
     this.loop = this.hamstersLoop;
-    this.parseJson = this.parseJsonOnThread;
-    this.stringifyJson = this.stringifyJsonOnThread;
     this.init = this.initializeLibrary;
   }
 
@@ -65,29 +59,8 @@ class hamstersjs {
     this.chewGarbage(startOptions);
   }
 
-  isIE(version) {
-    return (new RegExp('msie' + (!isNaN(version) ? ('\\s'+version) : ''), 'i').test(navigator.userAgent));
-  }
-
-  determineGlobalMaxThreads() {
-    // Default to global thread count of 4
-    let max = 4;
-    // Detect logical core count on machine
-    if(typeof navigator !== 'undefined') {
-      if(typeof navigator.hardwareConcurrency !== 'undefined') {
-        max = navigator.hardwareConcurrency;
-      }
-      // Firefox per origin limit is 20
-      if(navigator.userAgent.toLowerCase().indexOf('firefox') !== -1 && max > 20) {
-        max = 20;
-      }
-    }
-    // Got it
-    return max;
-  }
-
   setupBrowserSupport() {
-    if(typeof Worker === 'undefined' || ['Kindle/3.0', 'Mobile/8F190', 'IEMobile'].indexOf(navigator.userAgent) !== -1 || this.isIE(10)) {
+    if(typeof Worker === 'undefined' || ['Kindle/3.0', 'Mobile/8F190', 'IEMobile'].indexOf(navigator.userAgent) !== -1 || this.habitat.isIE(10)) {
       this.habitat.legacy = true;
     }
   }
@@ -111,7 +84,7 @@ class hamstersjs {
   }
 
   generateWorkerBlob() {
-    return URL.createObjectURL(this.createBlob('(' + String(this.giveHamsterWork()) + ')();'));
+    return URL.createObjectURL(this.data.createBlob('(' + String(this.giveHamsterWork()) + ')();'));
   }
 
   spawnHamsters() {
@@ -145,19 +118,6 @@ class hamstersjs {
     return this.worker;
   }
 
-  createBlob(textContent) {
-    if(!Blob) {
-      let BlobMaker = (BlobBuilder || WebKitBlobBuilder || MozBlobBuilder || MSBlobBuilder);
-      let blob = new BlobMaker();
-      blob.append([textContent], {
-        type: 'application/javascript'
-      });
-      return blob.getBlob();
-    } 
-    return new Blob([textContent], {
-      type: 'application/javascript'
-    });
-  }
 
   workerWorker() {
     self.addEventListener("connect", function(e) {
@@ -229,7 +189,7 @@ class hamstersjs {
 
   legacyHamsterWheel(thread_id, task, resolve, reject) {
     // this.trackThread(task, thread_id);
-    var dataArray = this.subArrayFromIndex(task.params.array, task.indexes[thread_id]);
+    var dataArray = this.data.arrayFromIndex(task.params.array, task.indexes[thread_id]);
     this.legacyProcessor(task, dataArray, resolve, reject);
     task.count += 1; //Thread finished
   }
@@ -237,27 +197,6 @@ class hamstersjs {
   chewGarbage(startOptions) {
     delete this.init;
     startOptions = null;
-  }
-
-  determineSubArrayIndexes(array, n) {
-    var i = 0;
-    let size = Math.ceil(array.length/n);
-    var indexes = [];
-    while(i < array.length) {
-      indexes.push({
-        start: i, 
-        end: ((i += size) - 1)
-      });
-    }
-    return indexes;
-  }
-
-  subArrayFromIndex(array, index) {
-    if(array.slice) {
-      return array.slice(index.start, index.end);
-    } else {
-      return array.subarray(index.start, index.end);
-    }
   }
 
   hamstersLoop(input, onSuccess) {
@@ -303,22 +242,6 @@ class hamstersjs {
     return functionBody;
   }
 
-  parseJsonOnThread(string, onSuccess) {
-    this.runHamsters({input: string}, function() {
-      rtn.data = JSON.parse(params.input);
-    }, function(output) {
-      onSuccess(output[0]);
-    }, 1);
-  }
-
-  stringifyJsonOnThread(json, onSuccess) {
-    this.runHamsters({input: json}, function() {
-      rtn.data = JSON.stringify(params.input);
-    }, function(output) {
-      onSuccess(output[0]);
-    }, 1);
-  }
-
   hamstersPromise(params, functionToRun) {
     return new Promise((resolve, reject) => {
        let task = this.newTask(params);
@@ -357,7 +280,7 @@ class hamstersjs {
       onSuccess: onSuccess
     };
     if(params.array) {
-      task.indexes = this.determineSubArrayIndexes(params.array, task.threads);
+      task.indexes = this.data.determineSubArrays(params.array, task.threads);
     }
     return this.newTask(task);
   }
@@ -413,8 +336,11 @@ class hamstersjs {
         hamsterFood[key] = task.params[key];
       }
     }
-    if(task.indexes) {
-      hamsterFood.array = this.subArrayFromIndex(task.params.array, task.indexes[threadId]);
+    if(task.indexes && task.threads !== 0) {
+      hamsterFood.array = this.data.arrayFromIndex(task.params.array, task.indexes[threadId]);
+    }
+    if(task.operator && !hamsterFood.fn) {
+      hamsterFood.fn = task.operator;
     }
     return hamsterFood;
   }
@@ -444,9 +370,9 @@ class hamstersjs {
       results = e.data.results;
       task.output[threadId] = results.data;
       if(task.workers.length === 0 && task.count === task.threads) {
-        var output = scope.getOutput(task.output, task.aggregateThreadOutputs, task.dataType);
+        var output = scope.data.getOutput(task.output, task.aggregateThreadOutputs, task.dataType);
         if(task.order) {
-          resolve(sort(output, task.order));
+          resolve(scope.data.sortOutput(output, task.order));
         } else {
           resolve(output);
         }
@@ -495,22 +421,6 @@ class hamstersjs {
     this.cache[fn] = [inputArray, output, dataType];
   }
 
-  sort(arr, order) {
-    switch(order) {
-      case 'desc':
-      case 'asc':
-        return Array.prototype.sort.call(arr, function(a, b) {
-          return (order === 'asc' ? (a - b) : (b - a)); 
-        });
-      case 'ascAlpha':
-        return arr.sort();
-      case 'descAlpha':
-        return arr.reverse();
-      default:
-        return arr;
-    }
-  }
-
 
   assignOutput(task, inputArray) {
     if(!task || !inputArray || !this.habitat.atomics) {
@@ -557,18 +467,11 @@ class hamstersjs {
       params.array = array;
       params.fn();
       if(params.dataType && params.dataType != "na") {
-        rtn.data = tfhis.processDataType(params.dataType, rtn.data);
+        rtn.data = this.data.processDataType(params.dataType, rtn.data);
         rtn.dataType = params.dataType;
       }
       resolve(rtn);
     }, 4); //4ms delay (HTML5 spec minimum), simulate threading
-  }
-
-  getOutput(output, aggregate, dataType) {
-    if(aggregate && output.length <= 20) {
-      return this.aggregateThreadOutputs(output, dataType);
-    }
-    return output;
   }
 
   processQueue(hamster, item) {
@@ -581,31 +484,6 @@ class hamstersjs {
   chewThread(task, id) {
     this.pool.running.splice(this.pool.running.indexOf(id), 1); //Remove thread from running pool
     task.workers.splice(task.workers.indexOf(id), 1); //Remove thread from task running pool
-  }
-
-  processData(dataType, buffer) {
-    const types = {
-      'uint32': Uint32Array,
-      'uint16': Uint16Array,
-      'uint8': Uint8Array,
-      'uint8clamped': Uint8ClampedArray,
-      'int32': Int32Array,
-      'int16': Int16Array,
-      'int8': Int8Array,
-      'float32': Float32Array,
-      'float64': Float64Array
-    };
-    if(!types[dataType]) {
-      return dataType;
-    }
-    return new types[dataType](buffer);
-  }
-
-  processDataType(dataType, buffer) {
-    if(this.habitat.transferrable) {
-      return this.processData(dataType, buffer);
-    }
-    return buffer;
   }
 
 }

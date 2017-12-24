@@ -13,22 +13,41 @@
 
 class habitat {
   constructor() {
-    this.browser = this.isBrowser(),
-    this.worker = this.isWorker(),
-    this.node = this.isNode(),
-    this.reactNative = this.isReactNative(),
-    this.shell = this.isShell(),
-    this.transferrable = this.supportsTransferrableObjects(),
-    this.legacy = this.isLegacyEnvironment(),
-    this.atomics = this.supportsAtomicOperations(),
-    this.proxies = this.supportsProxies()
+    this.browser = this.isBrowser();
+    this.worker = this.isWorker();
+    this.node = this.isNode();
+    this.reactNative = this.isReactNative();
+    this.shell = this.isShell();
+    this.transferrable = this.supportsTransferrableObjects();
+    this.legacy = this.isLegacyEnvironment();
+    this.atomics = this.supportsAtomicOperations();
+    this.proxies = this.supportsProxies();
+    this.isIE = this.isInternetExplorer;
+    this.logicalThreads = this.determineGlobalThreads();
+  }
+
+  determineGlobalThreads() {
+    // Default to global thread count of 4
+    let max = 4;
+    // Detect logical core count on machine
+    if(typeof navigator !== 'undefined') {
+      if(typeof navigator.hardwareConcurrency !== 'undefined') {
+        max = navigator.hardwareConcurrency;
+      }
+      // Firefox per origin limit is 20
+      if(navigator.userAgent.toLowerCase().indexOf('firefox') !== -1 && max > 20) {
+        max = 20;
+      }
+    }
+    // Got it
+    return max;
   }
 
   isBrowser() {
     return typeof window === "object";
   }
 
-  isIE(version) {
+  isInternetExplorer(version) {
     return (new RegExp('msie' + (!isNaN(version) ? ('\\s'+version) : ''), 'i').test(navigator.userAgent));
   }
 
