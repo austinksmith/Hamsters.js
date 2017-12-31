@@ -138,9 +138,9 @@ Hamsters.js attempts to mimic exactly how you would normally make functions in J
 
 6. This optional argument will inform the library that our data array is one of JavaScript's [Typed Arrays](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Typed_arrays), when making use of this argument the library can make use of transferable objects which can provide a dramatic performance improvement compared to serialization. This value is `null` by default and should only be used when needed.
 
-7. This optional argument is intended to be used in conjunction with [memoization mode](http://www.hamsters.io/wiki/#memoization), when memoization mode is enabled this argument allows one to control on an individual function level whether or not the results from that function are cached, this has a default value of `false`.
+7. This optional argument is intended to be used in conjunction with [memoization mode](http://www.hamsters.io/wiki#memoization), when memoization mode is enabled this argument allows one to control on an individual function level whether or not the results from that function are cached, this has a default value of `false`.
 
-8. This optional argument will tell the library to automatically sort our final output either alphabetically or numerically, this argument has a default value of `null` and can be configured using the [sorting options](http://www.hamsters.io/wiki/#sorting).
+8. This optional argument will tell the library to automatically sort our final output either alphabetically or numerically, this argument has a default value of `null` and can be configured using the [sorting options](http://www.hamsters.io/wiki#sorting).
 
 
 # How the library manages your data
@@ -251,23 +251,23 @@ We can even define a function to split across all available threads like so
 You can find more information on how to make use of the library on the wiki links below.
 
 
-[Limitations](http://www.hamsters.io/wiki/#limitations)
+[Limitations](http://www.hamsters.io/wiki#limitations)
 
-[Performance Considerations](http://www.hamsters.io/wiki/#performance-considerations)
+[Performance Considerations](http://www.hamsters.io/wiki#performance-considerations)
 
-[Tested Devices & Browsers](http://www.hamsters.io/wiki/#tested-devices-amp-browsers)
+[Tested Devices & Browsers](http://www.hamsters.io/wiki#tested-devices-amp-browsers)
 
-[Debugging](http://www.hamsters.io/wiki/#debugging)
+[Debugging](http://www.hamsters.io/wiki#debugging)
 
-[Tools](http://www.hamsters.io/wiki/#tools)
+[Tools](http://www.hamsters.io/wiki#tools)
 
-[Sorting](http://www.hamsters.io/wiki/#sorting)
+[Sorting](http://www.hamsters.io/wiki#sorting)
 
-[Persistence](http://www.hamsters.io/wiki/#persistence)
+[Persistence](http://www.hamsters.io/wiki#persistence)
 
-[Memoization](http://www.hamsters.io/wiki/#memoization)
+[Memoization](http://www.hamsters.io/wiki#memoization)
 
-[Transferable  Objects](http://www.hamsters.io/wiki/#transferable-objects)
+[Transferable  Objects](http://www.hamsters.io/wiki#transferable-objects)
 
 
 # Support Hamsters.js
