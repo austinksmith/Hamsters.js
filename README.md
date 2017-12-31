@@ -181,83 +181,9 @@ In order to enable the library to automatically manage your data and execution a
   });
 ```
 
-# Restructuring standard functions
-
-Imagine we have a sequential function that loops through several items and performs operations on them, traditionally this would be written like below.
-
-```js
-  function() {
-    var array = [0,1,2,3,4,5,6,7,8,9];
-    var output = new Array(array.length);
-    array.forEach(function(item) {
-      output.push((item * 120)/10);
-    });
-    return output;
-  }
-```
-
-Now we can put this task onto its own thread like so
-
-```js
-  //1 thread and do not aggregate thread results (only one thread output)
-  function() {
-    var params = {
-      'array':[0,1,2,3,4,5,6,7,8,9]
-    };
-    hamsters.run(params, function() {
-      var arr = params.array;
-      arr.forEach(function(item) {
-        rtn.data.push((item * 120)/10);
-      });
-    }, function(output) {
-      //Do something with output
-    }, 1, false);
-  }
-```
-
-Alternatively we can split this task among 2 threads for parallel execution like so
-
-```js
-  //2 threads and let's aggregate our individual thread results into one final output
-  function() {
-    var params = {'array':[0,1,2,3,4,5,6,7,8,9]};
-    hamsters.run(params, function() {
-        var arr = params.array;
-        arr.forEach(function(item) {
-          rtn.data.push((item * 120)/10);
-        });
-    }, function(output) {
-      //Do something with output
-    }, 2, true);
-  }
-```
-We can even define a function to split across all available threads like so
-
-```js
-  //All threads and let's aggregate our individual thread results into one final output
-  function() {
-    var params = {'array':[0,1,2,3,4,5,6,7,8,9]};
-    hamsters.run(params, function() {
-      var arr = params.array;
-      arr.forEach(function(item) {
-        rtn.data.push((item * 120)/10);
-      });
-    }, function(output) {
-      //Do something with output
-    }, hamsters.maxThreads, true);
-  }
-```
-
 You can find more information on how to make use of the library on the wiki links below.
 
-
-[Limitations](http://www.hamsters.io/wiki#limitations)
-
-[Performance Considerations](http://www.hamsters.io/wiki#performance-considerations)
-
-[Tested Devices & Browsers](http://www.hamsters.io/wiki#tested-devices-amp-browsers)
-
-[Debugging](http://www.hamsters.io/wiki#debugging)
+[Restructoring Standard Functions](http://www.hamsters.io/wiki#restructuring-standard-functions)
 
 [Tools](http://www.hamsters.io/wiki#tools)
 
@@ -268,6 +194,14 @@ You can find more information on how to make use of the library on the wiki link
 [Memoization](http://www.hamsters.io/wiki#memoization)
 
 [Transferable  Objects](http://www.hamsters.io/wiki#transferable-objects)
+
+[Limitations](http://www.hamsters.io/wiki#limitations)
+
+[Performance Considerations](http://www.hamsters.io/wiki#performance-considerations)
+
+[Debugging](http://www.hamsters.io/wiki#debugging)
+
+[Tested Devices & Browsers](http://www.hamsters.io/wiki#tested-devices-amp-browsers)
 
 
 # Support Hamsters.js
