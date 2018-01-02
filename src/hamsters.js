@@ -1,15 +1,17 @@
+/* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
+
 /*
  * Title: Hamsters.js
- * Description: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
+ * Description: 100% Vanilla Javascript Multithreading & Parallel Execution Library
  * Author: Austin K. Smith
  * Contact: austin@asmithdev.com
  * Copyright: 2015 Austin K. Smith - austin@asmithdev.com
  * License: Artistic License 2.0
  */
-/* jshint esversion: 6 */
+
 'use strict';
 
-import hamstersVersion = from './core/version';
+import hamstersVersion from './core/version';
 import hamsterHabitat from './core/habitat';
 import hamsterPool from './core/pool';
 import hamsterData from './core/data';
@@ -58,11 +60,11 @@ class hamstersjs {
   }
 
   setupBrowserSupport() {
-    let ie10 = this.habitat.isIE(10);
+    let isIE10 = this.habitat.isIE(10);
     let userAgent = navigator.userAgent;
     let lacksWorkerSupport = typeof this.habitat.Worker === 'undefined';
     let legacyAgents = ['Kindle/3.0', 'Mobile/8F190', 'IEMobile'];
-    if (lacksWorkerSupport || legacyAgents.indexOf(userAgent) !== -1 || ie10) {
+    if (lacksWorkerSupport || legacyAgents.indexOf(userAgent) !== -1 || isIE10) {
       this.habitat.legacy = true;
     }
   }
@@ -78,9 +80,10 @@ class hamstersjs {
   }
 
   processStartOptions(startOptions) {
+    let habitatKeys = ['worker', 'sharedWorker', 'legacy'];
     for (var key in startOptions) {
       if (startOptions.hasOwnProperty(key)) {
-        if (key === 'Worker' || key === 'SharedWorker' || key == 'legacy') {
+        if (habitatKeys.indexOf(key.toLowerCase()) !== -1) {
           hamsters.habitat[key] = startOptions[key];
         } else {
           hamsters[key] = startOptions[key];
@@ -175,22 +178,30 @@ class hamstersjs {
       self.params = e.data;
       self.rtn = {
         data: [],
-        dataType: params.dataType
+        dataType: params.dataType.toLowerCase()
       };
       let fn = new Function(params.fn);
       if (fn) {
         fn();
       }
-      if (params.dataType) {
-        rtn.data = self.typedArrayFromBuffer(params.dataType, rtn.data);
-        postMessage({
-          results: rtn
-        }, [rtn.data.buffer]);
-      } else {
-        postMessage({
-          results: rtn
-        });
+      let buffers = [];
+      let bufferInstance = null;
+      if(typeof ArrayBuffer !== 'undefined') {
+        bufferInstance = new ArrayBuffer().constructor.prototype.__proto__.constructor;
       }
+      for (var key in rtn) {
+        if (rtn.hasOwnProperty(key)) {
+          if(rtn[key].buffer) {
+            buffers.push(rtn[key].buffer);
+          }
+        }
+      }
+      if (params.dataType) {
+        rtn.data = self.typedArrayFromBuffer(rtn.dataType, rtn.data);
+      }
+      postMessage({
+        results: rtn
+      }, buffers);
     };
   }
 
@@ -215,7 +226,7 @@ class hamstersjs {
     let params = {
       run: this.prepareFunction(input.operator),
       init: input.startIndex || 0,
-      limit: input.limit,
+      limit: input.limit || null,
       array: input.array,
       incrementBy: input.incrementBy || 1,
       dataType: input.dataType || null,
@@ -313,32 +324,23 @@ class hamstersjs {
     return new Promise((resolve, reject) => {
       let i = 0;
       while (i < task.threads) {
-        this.wheel(i, task, resolve, reject);
+        this.wheel(task, resolve, reject);
         i += 1;
       }
     });
   }
 
-  hamsterWheel(threadId, task, resolve, reject) {
-    // let threadId = this.pool.running.length;
-    var hamster = {};
-    if (this.maxThreads === threadId) {
-      this.poolThread(task, threadId, resolve, reject);
-    } else {
-      if (this.persistence) {
-        hamster = this.pool.threads[threadId];
-      } else {
-        hamster = spawnHamster();
-      }
-      let hamsterFood = this.prepareHamsterFood(task, threadId);
-      this.trainHamster(threadId, task, hamster, resolve, reject);
-      this.trackThread(task, threadId);
-      this.feedHamster(hamster, hamsterFood);
-      task.count += 1; //Increment count, thread is running
-      // if(this.debug === 'verbose') {
-      //   console.info('Spawning Hamster #' + thread_id + ' @ ' + new Date().getTime());
-      // }
+  hamsterWheel(task, resolve, reject) {
+    let threadId = this.pool.running.length;
+    if(this.maxThreads === threadId) {
+      return this.poolThread(task, threadId, resolve, reject);
     }
+    let hamster = this.persistence ? this.pool.threads[threadId] : spawnHamster();
+    let hamsterFood = this.prepareHamsterFood(task, threadId);
+    this.trainHamster(threadId, task, hamster, resolve, reject);
+    this.trackThread(task, threadId);
+    this.feedHamster(hamster, hamsterFood);
+    task.count += 1; //Increment count, thread is running
   }
 
   prepareHamsterFood(task, threadId) {
@@ -383,7 +385,7 @@ class hamstersjs {
       results = e.data.results;
       task.output[threadId] = results.data;
       if (task.workers.length === 0 && task.count === task.threads) {
-        var output = scope.data.getOutput(task.output, task.aggregateThreadOutputs, task.dataType);
+        var output = scope.data.getOutput(task.output, task.aggregateThreadOutputs, task.dataType, scope.habitat.transferrable);
         if (task.order) {
           resolve(scope.data.sortOutput(output, task.order));
         } else {
@@ -480,7 +482,7 @@ class hamstersjs {
       params.array = array;
       params.fn();
       if (params.dataType && params.dataType != "na") {
-        rtn.data = this.data.processDataType(params.dataType, rtn.data);
+        rtn.data = this.data.processDataType(params.dataType, rtn.data, this.habitat.transferable);
         rtn.dataType = params.dataType;
       }
       resolve(rtn);

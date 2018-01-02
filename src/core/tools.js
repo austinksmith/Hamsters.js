@@ -13,8 +13,19 @@
 
 class tools {
   constructor() {
+    this.randomArray = this.randomArray;
     this.parseJson = this.parseJsonOnThread;
     this.stringifyJson = this.stringifyJsonOnThread;
+  }
+
+
+  randomArray(inputAmount, onSuccess) {
+    let array = [];
+    while(inputAmount > 0) {
+      array[inputAmount] = Math.round(Math.random() * (100 - 1) + 1);
+      inputAmount -= 1;
+    }
+    onSuccess(array);
   }
 
   parseJsonOnThread(string, onSuccess) {

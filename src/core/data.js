@@ -24,16 +24,16 @@ class data {
     this.getOutput = this.prepareOutput;
   }
 
-  processDataType(dataType, buffer) {
-    if(this.habitat.transferrable) {
+  processDataType(dataType, buffer, transferrable) {
+    if(transferrable) {
       return this.typedArrayFromBuffer(dataType, buffer);
     }
     return buffer;
   }
 
-  prepareOutput(output, aggregate, dataType) {
-    if(aggregate && output.length <= 20) {
-      return this.aggregateThreadOutputs(output, dataType);
+  prepareOutput(output, aggregate, dataType, transferrable) {
+    if(aggregate && output.length > 1 && output.length <= 20) {
+      return this.aggregateThreadOutputs(output, dataType, transferrable);
     }
     return output;
   }
@@ -116,8 +116,8 @@ class data {
     onSuccess(randomArray);
   }
 
-  aggregateThreadOutputs(input, dataType) {
-    if(!dataType || !this.habitat.transferrable) {
+  aggregateThreadOutputs(input, dataType, transferrable) {
+    if(!dataType || !transferrable) {
       return input.reduce(function(a, b) {
         return a.concat(b);
       });
@@ -128,7 +128,7 @@ class data {
     for (i; i < len; i += 1) {
       bufferLength += input[i].length;
     }
-    let output = this.processDataType(dataType, bufferLength);
+    let output = this.processDataType(dataType, bufferLength, transferrable);
     let offset = 0;
     for (i = 0; i < len; i += 1) {
       output.set(input[i], offset);
