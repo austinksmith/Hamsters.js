@@ -29,19 +29,18 @@ class habitat {
   }
 
   determineGlobalThreads() {
-    // Default to global thread count of 4
     let max = 4;
-    // Detect logical core count on machine
     if(typeof navigator !== 'undefined') {
       if(typeof navigator.hardwareConcurrency !== 'undefined') {
         max = navigator.hardwareConcurrency;
       }
-      // Firefox per origin limit is 20
-      if(navigator.userAgent.toLowerCase().indexOf('firefox') !== -1 && max > 20) {
+      if(max > 20 && navigator.userAgent.toLowerCase().indexOf('firefox') !== -1) {
         max = 20;
       }
     }
-    // Got it
+    if(this.isNode() && typeof os !== 'undefined') {
+      max = os.cpus().length;
+    }
     return max;
   }
 
@@ -62,7 +61,7 @@ class habitat {
   }
 
   isNode() {
-    return typeof process === "object" && typeof require === "function" && !this.isBrowser() && !this.isWorker();
+    return typeof process === "object" && typeof require === "function" && !this.isBrowser() && !this.isWebWorker();
   }
 
   isWebWorker() {
@@ -74,7 +73,7 @@ class habitat {
   }
 
   isShell() {
-    return this.isBrowser() && !this.isNode() && !this.isWorker() && !this.isReactNative();
+    return this.isBrowser() && !this.isNode() && !this.isWebWorker() && !this.isReactNative();
   }
 
   supportsTransferrableObjects() {
@@ -82,7 +81,7 @@ class habitat {
   }
 
   isLegacyEnvironment() {
-    return this.isShell() || ;
+    return this.isShell() || !this.locateWorkerObject();
   }
 
   supportsAtomicOperations() {
