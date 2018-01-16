@@ -31,11 +31,11 @@ class data {
     return buffer;
   }
 
-  prepareOutput(output, aggregate, dataType, transferrable) {
-    if(aggregate && output.length > 1 && output.length <= 20) {
-      return this.aggregateThreadOutputs(output, dataType, transferrable);
+  prepareOutput(task, transferrable) {
+    if(task.aggregate && task.threads !== 1) {
+      return this.aggregateThreadOutputs(task.output, task.dataType, transferrable);
     }
-    return output;
+    return task.output;
   }
 
   sortArray(arr, order) {
@@ -73,15 +73,23 @@ class data {
   }
 
   determineSubArrayIndexes(array, n) {
+    if(n === 1) {
+      return 
+    }
     var i = 0;
-    let size = Math.ceil(array.length/n);
+    var size = Math.ceil(array.length/n);
     var indexes = [];
     while(i < array.length) {
-      indexes.push({
-        start: i, 
-        end: ((i += size) - 1)
-      });
+      var start = i;
+      var end = ((i += size) - 1);
+      if(end > array.length -1) {
+        end = array.length;
+      }
+      var index = { start: start, end: end };
+      console.log(start, i, end);
+      indexes.push(index);
     }
+    console.log(indexes);
     return indexes;
   }
 

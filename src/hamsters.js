@@ -16,6 +16,8 @@ import hamsterHabitat from './core/habitat';
 import hamsterPool from './core/pool';
 import hamsterData from './core/data';
 import hamsterTools from './core/tools';
+import hamsterLogger from './core/logger';
+import hamsterMemoizer from './core/memoizer';
 
 class hamstersjs {
 
@@ -30,6 +32,8 @@ class hamstersjs {
     this.habitat = hamsterHabitat;
     this.data = hamsterData;
     this.pool = hamsterPool;
+    this.logger = hamsterLogger;
+    this.memoizer = hamsterMemoizer;
     this.run = this.runHamsters;
     this.promise = this.hamstersPromise;
     this.loop = this.hamstersLoop;
@@ -37,6 +41,7 @@ class hamstersjs {
   }
 
   initializeLibrary(startOptions) {
+    this.logger.info(`Preparing the hamster wheels & readying hamsters`);
     if (typeof startOptions !== 'undefined') {
       this.processStartOptions(startOptions);
     }
@@ -49,6 +54,7 @@ class hamstersjs {
     this.greaseHamsterWheel();
     this.spawnHamsters();
     this.chewGarbage(startOptions);
+    this.logger.info(`${this.maxThreads} hamsters ready and awaiting instructions`);
   }
 
   greaseHamsterWheel() {
@@ -107,6 +113,7 @@ class hamstersjs {
     }
     if (this.persistence) {
       let i = this.maxThreads;
+      this.logger.info(`${i} Logical Threads Detected, Spawning ${i} Hamsters`);
       for (i; i > 0; i--) {
         this.pool.threads.push(this.spawnHamster());
       }
@@ -174,34 +181,35 @@ class hamstersjs {
       return new types[dataType](buffer);
     };
 
+    self.prepareTransferBuffers = function(hamsterFood) {
+      let buffers = [];
+      let key = null;
+      for (key in hamsterFood) {
+        if (hamsterFood.hasOwnProperty(key) && hamsterFood[key]) {
+          if(hamsterFood[key].buffer) {
+            buffers.push(hamsterFood[key].buffer);
+          } else if(Array.isArray(hamsterFood[key]) && typeof ArrayBuffer !== 'undefined') {
+            buffers.push(new ArrayBuffer(hamsterFood[key]));
+          }
+        }
+      }
+      return buffers;
+    }
+
     self.onmessage = function(e) {
       self.params = e.data;
       self.rtn = {
         data: [],
-        dataType: params.dataType.toLowerCase()
+        dataType: params.dataType ? params.dataType.toLowerCase() : null
       };
       let fn = new Function(params.fn);
       if (fn) {
         fn();
       }
-      let buffers = [];
-      let bufferInstance = null;
-      if(typeof ArrayBuffer !== 'undefined') {
-        bufferInstance = new ArrayBuffer().constructor.prototype.__proto__.constructor;
-      }
-      for (var key in rtn) {
-        if (rtn.hasOwnProperty(key)) {
-          if(rtn[key].buffer) {
-            buffers.push(rtn[key].buffer);
-          }
-        }
-      }
       if (params.dataType) {
         rtn.data = self.typedArrayFromBuffer(rtn.dataType, rtn.data);
       }
-      postMessage({
-        results: rtn
-      }, buffers);
+      postMessage(rtn, self.prepareTransferBuffers(rtn));
     };
   }
 
@@ -212,7 +220,7 @@ class hamstersjs {
 
   legacyHamsterWheel(thread_id, task, resolve, reject) {
     // this.trackThread(task, thread_id);
-    var dataArray = this.data.arrayFromIndex(task.params.array, task.indexes[thread_id]);
+    var dataArray = this.data.arrayFromIndex(task.input.array, task.indexes[thread_id]);
     this.legacyProcessor(task, dataArray, resolve, reject);
     task.count += 1; //Thread finished
   }
@@ -265,58 +273,49 @@ class hamstersjs {
     return functionBody;
   }
 
+  hamstersTask(params, functionToRun, scope) {
+    this.id = scope.pool.tasks.length;
+    this.threads = params.threads || 1;
+    this.count = 0;
+    this.input = params;
+    this.aggregate = params.aggregate || true;
+    this.output = [];
+    this.workers = [];
+    this.operator = scope.prepareFunction(functionToRun);
+    this.memoize = params.memoize || false;
+    this.dataType = params.dataType ? params.dataType.toLowerCase() : null;
+    if(params.array) {
+      this.indexes = scope.data.determineSubArrays(params.array, this.threads);
+    }
+  }
+
   hamstersPromise(params, functionToRun) {
     return new Promise((resolve, reject) => {
-      let task = this.newTask(params);
-      let results = this.work(task, functionToRun);
-      if (results) {
+      var task = new this.hamstersTask(params, functionToRun, this);
+      var logger = this.logger;
+      this.hamstersWork(task).then(function(results) {
         resolve(results);
-      } else {
-        reject('Error processing');
-      }
+      }).catch(function(error) {
+        logger.error(error.messsage);
+        reject(error);
+      });
     });
   }
 
-  // Converts old run params into new format
-  prepareAndSaveTaskOptions(params, functionToRun, onSuccess, numberOfWorkers, aggregateThreadOutputs, dataType, memoize, sortOrder) {
-    var arrayType = 'na';
-    if (params.dataType) {
-      arrayType = params.dataType.toLowerCase();
-    }
-    if (dataType) {
-      arrayType = dataType.toLowerCase();
-    }
-    var task = {
-      params: params,
-      id: this.pool.tasks.length,
-      count: 0,
-      performance: [],
-      workers: [],
-      input: [],
-      output: [],
-      threads: params.threads || numberOfWorkers || 1,
-      operator: this.prepareFunction(functionToRun),
-      sortOrder: params.sortOrder || sortOrder,
-      cacheResults: params.memoize || memoize || false,
-      aggregateThreadOutputs: aggregateThreadOutputs || false,
-      dataType: arrayType,
-      onSuccess: onSuccess
-    };
-    if (params.array) {
-      task.indexes = this.data.determineSubArrays(params.array, task.threads);
-    }
-    return this.newTask(task);
-  }
-
-  runHamsters(params, functionToRun, onSuccess, numberOfWorkers, aggregateThreadOutputs, dataType, memoize, sortOrder) {
-    // Legacy processing use only 1 simulated thread, avoid doing extra work splitting & aggregating
-    let workerCount = (this.habitat.legacy ? 1 : (numberOfWorkers || 1));
-    let task = this.prepareAndSaveTaskOptions(params, functionToRun, onSuccess, workerCount, aggregateThreadOutputs, dataType, memoize, sortOrder);
+  runHamsters(params, functionToRun, onSuccess, numberOfWorkers, aggregate, dataType, memoize, sortOrder) {
+    // Convert old arguments into new params object
+    params.threads = params.threads || numberOfWorkers;
+    params.aggregate = params.aggregate || aggregate || true;
+    params.dataType = params.dataType || dataType;
+    params.memoize = params.memoize || memoize || false;
+    params.sort = params.sort || sortOrder;
+    // Create new task and execute
+    var task = new this.hamstersTask(params, functionToRun, this);
+    var logger = this.logger;
     this.hamstersWork(task).then(function(results) {
       onSuccess(results);
     }).catch(function(error) {
-      let errorMessage = `Hamsters.js Error @ ${error.timeStamp} : ${error.message}`;
-      console.error(errorMessage, error);
+      logger.error(error.messsage);
     });
   }
 
@@ -345,13 +344,15 @@ class hamstersjs {
 
   prepareHamsterFood(task, threadId) {
     let hamsterFood = {};
-    for (var key in task.params) {
-      if (task.params.hasOwnProperty(key) && key !== 'array') {
-        hamsterFood[key] = task.params[key];
+    for (var key in task.input) {
+      if (task.input.hasOwnProperty(key) && key !== 'array') {
+        hamsterFood[key] = task.input[key];
       }
     }
-    if (task.indexes && task.threads !== 0) {
-      hamsterFood.array = this.data.arrayFromIndex(task.params.array, task.indexes[threadId]);
+    if (task.indexes && task.threads !== 1) {
+      hamsterFood.array = this.data.arrayFromIndex(task.input.array, task.indexes[threadId]);
+    } else {
+      hamsterFood.array = task.input.array;
     }
     if (task.operator && !hamsterFood.fn) {
       hamsterFood.fn = task.operator;
@@ -366,31 +367,39 @@ class hamstersjs {
     if (this.habitat.ie10) {
       return hamster.postMessage(hamsterFood);
     }
-    let buffers = [],
-      key;
-    for (key in hamsterFood) {
-      if (hamsterFood.hasOwnProperty(key) && hamsterFood[key] && hamsterFood[key].buffer) {
-        buffers.push(hamsterFood[key].buffer);
+    return hamster.postMessage(hamsterFood, this.prepareTransferBuffers(hamsterFood));
+  }
+
+  prepareTransferBuffers(hamsterFood) {
+    let buffers = [];
+    let key = null;
+    if(this.habitat.transferrable) {
+      for (key in hamsterFood) {
+        if (hamsterFood.hasOwnProperty(key) && hamsterFood[key]) {
+          if(hamsterFood[key].buffer) {
+            buffers.push(hamsterFood[key].buffer);
+          } else if(Array.isArray(hamsterFood[key]) && typeof ArrayBuffer !== 'undefined') {
+            buffers.push(new ArrayBuffer(hamsterFood[key]));
+          }
+        }
       }
     }
-    return hamster.postMessage(hamsterFood, buffers);
+    return buffers;
   }
 
   trainHamster(threadId, task, hamster, resolve, reject) {
     var scope = this;
     // Handle successful response from a thread
-    var onThreadResponse = function(e, results) {
-      let threadResponse = e.data.results;
+    let onThreadResponse = function(e) {
+      var results = e.data;
       scope.chewThread(task, threadId);
-      results = e.data.results;
       task.output[threadId] = results.data;
       if (task.workers.length === 0 && task.count === task.threads) {
-        var output = scope.data.getOutput(task.output, task.aggregateThreadOutputs, task.dataType, scope.habitat.transferrable);
-        if (task.order) {
-          resolve(scope.data.sortOutput(output, task.order));
-        } else {
-          resolve(output);
+        var output = scope.data.getOutput(task, scope.habitat.transferrable);
+        if (task.sort) {
+          output = scope.data.sortOutput(output, task.sort);
         }
+        resolve(output);
         scope.pool.tasks[task.id] = null; //Clean up our task, not needed any longer
       }
       if (scope.pool.pending.length !== 0) {
@@ -401,7 +410,7 @@ class hamstersjs {
     };
 
     // Handle error response from a thread
-    var onThreadError = function(e) {
+    let onThreadError = function(e) {
       if (!scope.habitat.webWorker) {
         hamster.terminate(); //Kill the thread
       }
@@ -478,10 +487,10 @@ class hamstersjs {
         success: true,
         data: []
       };
-      var params = task.params;
+      var params = task.input;
       params.array = array;
       params.fn();
-      if (params.dataType && params.dataType != "na") {
+      if (params.dataType) {
         rtn.data = this.data.processDataType(params.dataType, rtn.data, this.habitat.transferable);
         rtn.dataType = params.dataType;
       }
