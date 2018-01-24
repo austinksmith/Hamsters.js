@@ -11,27 +11,15 @@
 
 'use strict';
 
-class pool {
+class thread {
   constructor() {
-    this.tasks = [];
-	  this.threads = [];
-    this.running = [];
-    this.pending = [];
-    this.queueWork = this.addWorkToPending;
+    this.randomArray = this.randomArray;
   }
 
-  addWorkToPending(task, id, resolve, reject) {
-  	this.pending.push({
-  		item: task,
-  		threadId: id,
-  		promiseResolve: resolve,
-  		promiseReject: reject
-  	});
-  }
 }
 
-var hamsterPool = new pool();
+var hamsterThread = new thread();
 
 if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamsterPool;
+  module.exports = hamsterThread;
 }
