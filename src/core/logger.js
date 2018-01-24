@@ -14,9 +14,9 @@
 class logger {
   constructor() {
     this.logBook = {
-      'error': [], 
-      'warning': [], 
-      'info': []
+      error: [], 
+      warning: [], 
+      info: []
     };
     this.info = this.infoLog;
     this.warning = this.warningLog;

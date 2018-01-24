@@ -21,7 +21,7 @@ class memoizer {
   }
 
   isItemCached(input, method) {
-  	return this.fetchItem({fn: method, data: input}) || false;
+  	return !!(this.fetchItem({fn: method, data: input})) || false;
   }
 
   fetchItemFromCache(cacheItem) {

@@ -15,6 +15,7 @@ import hamstersVersion from './core/version';
 import hamsterHabitat from './core/habitat';
 import hamsterPool from './core/pool';
 import hamsterData from './core/data';
+import hamsterWheel from './core/wheel';
 import hamsterTools from './core/tools';
 import hamsterLogger from './core/logger';
 import hamsterMemoizer from './core/memoizer';
@@ -36,7 +37,7 @@ class hamstersjs {
     this.memoizer = hamsterMemoizer;
     this.run = this.runHamsters;
     this.promise = this.hamstersPromise;
-    this.loop = this.hamstersLoop;
+    this.ball = this.hamstersLoop;
     this.init = this.initializeLibrary;
   }
 
@@ -53,36 +54,7 @@ class hamstersjs {
     }
     this.greaseHamsterWheel();
     this.spawnHamsters();
-    this.chewGarbage(startOptions);
     this.logger.info(`${this.maxThreads} hamsters ready and awaiting instructions`);
-  }
-
-  greaseHamsterWheel() {
-    if (this.habitat.legacy) {
-      this.wheel = this.legacyHamsterWheel;
-    } else {
-      this.wheel = this.hamsterWheel;
-    }
-  }
-
-  setupBrowserSupport() {
-    let isIE10 = this.habitat.isIE(10);
-    let userAgent = navigator.userAgent;
-    let lacksWorkerSupport = typeof this.habitat.Worker === 'undefined';
-    let legacyAgents = ['Kindle/3.0', 'Mobile/8F190', 'IEMobile'];
-    if (lacksWorkerSupport || legacyAgents.indexOf(userAgent) !== -1 || isIE10) {
-      this.habitat.legacy = true;
-    }
-  }
-
-  setupWorkerSupport() {
-    try {
-      let workerBlob = this.generateWorkerBlob();
-      let SharedHamster = new this.habitat.SharedWorker(workerBlob, 'SharedHamsterWheel');
-      this.pool.uri = workerBlob;
-    } catch (e) {
-      this.habitat.legacy = true;
-    }
   }
 
   processStartOptions(startOptions) {
@@ -98,10 +70,34 @@ class hamstersjs {
     }
   }
 
-  generateWorkerBlob(workerLogic) {
-    let functionString = '(' + String(workerLogic) + ')();';
-    let hamsterBlob = this.data.createBlob(functionString);
-    return URL.createObjectURL(hamsterBlob);
+  greaseHamsterWheel() {
+    if (this.habitat.legacy) {
+      this.wheel = hamsterWheel.legacy;
+    } else if(this.habitat.webWorker) {
+      this.wheel = hamsterWheel.worker;
+    } else {
+      this.wheel = hamsterWheel.regular;
+    }
+  }
+
+  setupBrowserSupport() {
+    let isIE10 = this.habitat.isIE(10);
+    let userAgent = navigator.userAgent;
+    let lacksWorkerSupport = typeof this.habitat.Worker === 'undefined';
+    let legacyAgents = ['Kindle/3.0', 'Mobile/8F190', 'IEMobile'];
+    if (lacksWorkerSupport || legacyAgents.indexOf(userAgent) !== -1 || isIE10) {
+      this.habitat.legacy = true;
+    }
+  }
+
+  setupWorkerSupport() {
+    try {
+      let workerBlob = this.data.generateBlob();
+      let SharedHamster = new this.habitat.SharedWorker(workerBlob, 'SharedHamsterWheel');
+      this.data.workerURI = workerBlob;
+    } catch (e) {
+      this.habitat.legacy = true;
+    }
   }
 
   spawnHamsters() {
@@ -109,7 +105,7 @@ class hamstersjs {
       return;
     }
     if (this.habitat.browser) {
-      this.pool.uri = this.generateWorkerBlob(this.giveHamsterWork());
+      this.data.workerURI = this.data.generateBlob(this.worker);
     }
     if (this.persistence) {
       let i = this.maxThreads;
@@ -122,95 +118,18 @@ class hamstersjs {
 
   spawnHamster() {
     if (this.habitat.ie10) {
-      return new this.habitat.Worker('src/common/wheel.min.js');
+      return new this.habitat.Worker(this.worker);
+    }
+    if (this.habitat.reactNative) {
+      return new this.habitat.Worker(this.worker);
     }
     if (this.habitat.webWorker) {
-      return new this.habitat.SharedWorker(this.pool.uri, 'SharedHamsterWheel');
+      return new this.habitat.SharedWorker(this.data.workerURI, 'SharedHamsterWheel');
     }
-    if (this.habitat.node) {
-      return new this.habitat.Worker(this.giveHamsterWork());
+    if (this.habitat.node || this.habitat.reactNative) {
+      return new this.habitat.Worker(this.worker);
     }
-    return new this.habitat.Worker(this.pool.uri);
-  }
-
-  giveHamsterWork() {
-    if (this.habitat.webWorker) {
-      return this.workerWorker;
-    }
-    return this.worker;
-  }
-
-
-  workerWorker() {
-    self.addEventListener("connect", function(e) {
-      const port = e.ports[0];
-      port.start();
-      port.addEventListener("message", function(e) {
-        self.params = e.data;
-        self.rtn = {
-          data: [],
-          dataType: params.dataType
-        };
-        let fn = eval("(" + params.fn + ")");
-        if (fn) {
-          fn();
-        }
-        port.postMessage({
-          results: rtn
-        });
-      }, false);
-    }, false);
-  }
-
-  worker() {
-    self.typedArrayFromBuffer = function(dataType, buffer) {
-      const types = {
-        'uint32': Uint32Array,
-        'uint16': Uint16Array,
-        'uint8': Uint8Array,
-        'uint8clamped': Uint8ClampedArray,
-        'int32': Int32Array,
-        'int16': Int16Array,
-        'int8': Int8Array,
-        'float32': Float32Array,
-        'float64': Float64Array
-      };
-      if (!types[dataType]) {
-        return buffer;
-      }
-      return new types[dataType](buffer);
-    };
-
-    self.prepareTransferBuffers = function(hamsterFood) {
-      let buffers = [];
-      let key = null;
-      for (key in hamsterFood) {
-        if (hamsterFood.hasOwnProperty(key) && hamsterFood[key]) {
-          if(hamsterFood[key].buffer) {
-            buffers.push(hamsterFood[key].buffer);
-          } else if(Array.isArray(hamsterFood[key]) && typeof ArrayBuffer !== 'undefined') {
-            buffers.push(new ArrayBuffer(hamsterFood[key]));
-          }
-        }
-      }
-      return buffers;
-    }
-
-    self.onmessage = function(e) {
-      self.params = e.data;
-      self.rtn = {
-        data: [],
-        dataType: params.dataType ? params.dataType.toLowerCase() : null
-      };
-      let fn = new Function(params.fn);
-      if (fn) {
-        fn();
-      }
-      if (params.dataType) {
-        rtn.data = self.typedArrayFromBuffer(rtn.dataType, rtn.data);
-      }
-      postMessage(rtn, self.prepareTransferBuffers(rtn));
-    };
+    return new this.habitat.Worker(this.data.workerURI);
   }
 
   newTask(taskOptions) {
@@ -221,18 +140,12 @@ class hamstersjs {
   legacyHamsterWheel(thread_id, task, resolve, reject) {
     // this.trackThread(task, thread_id);
     var dataArray = this.data.arrayFromIndex(task.input.array, task.indexes[thread_id]);
-    this.legacyProcessor(task, dataArray, resolve, reject);
+    hamsterWheel.legacy(task, dataArray, resolve, reject);
     task.count += 1; //Thread finished
-  }
-
-  chewGarbage(startOptions) {
-    delete this.init;
-    startOptions = null;
   }
 
   hamstersLoop(input, onSuccess) {
     let params = {
-      run: this.prepareFunction(input.operator),
       init: input.startIndex || 0,
       limit: input.limit || null,
       array: input.array,
@@ -261,18 +174,6 @@ class hamstersjs {
     }, input.threads, 1, input.dataType);
   }
 
-  prepareFunction(functionBody) {
-    if (!this.habitat.legacy) {
-      functionBody = String(functionBody);
-      if (!this.habitat.webWorker) {
-        let startingIndex = (functionBody.indexOf("{") + 1);
-        let endingIndex = (functionBody.length - 1);
-        return functionBody.substring(startingIndex, endingIndex);
-      }
-    }
-    return functionBody;
-  }
-
   hamstersTask(params, functionToRun, scope) {
     this.id = scope.pool.tasks.length;
     this.threads = params.threads || 1;
@@ -281,7 +182,7 @@ class hamstersjs {
     this.aggregate = params.aggregate || true;
     this.output = [];
     this.workers = [];
-    this.operator = scope.prepareFunction(functionToRun);
+    this.operator = scope.data.prepareJob(functionToRun);
     this.memoize = params.memoize || false;
     this.dataType = params.dataType ? params.dataType.toLowerCase() : null;
     if(params.array) {
@@ -332,60 +233,17 @@ class hamstersjs {
   hamsterWheel(task, resolve, reject) {
     let threadId = this.pool.running.length;
     if(this.maxThreads === threadId) {
-      return this.poolThread(task, threadId, resolve, reject);
+      return this.pool.queueWork(task, threadId, resolve, reject);
     }
     let hamster = this.persistence ? this.pool.threads[threadId] : spawnHamster();
-    let hamsterFood = this.prepareHamsterFood(task, threadId);
+    let hamsterFood = this.data.prepareMeal(task, threadId);
     this.trainHamster(threadId, task, hamster, resolve, reject);
     this.trackThread(task, threadId);
-    this.feedHamster(hamster, hamsterFood);
+    this.data.feedHamster(hamster, hamsterFood);
     task.count += 1; //Increment count, thread is running
   }
 
-  prepareHamsterFood(task, threadId) {
-    let hamsterFood = {};
-    for (var key in task.input) {
-      if (task.input.hasOwnProperty(key) && key !== 'array') {
-        hamsterFood[key] = task.input[key];
-      }
-    }
-    if (task.indexes && task.threads !== 1) {
-      hamsterFood.array = this.data.arrayFromIndex(task.input.array, task.indexes[threadId]);
-    } else {
-      hamsterFood.array = task.input.array;
-    }
-    if (task.operator && !hamsterFood.fn) {
-      hamsterFood.fn = task.operator;
-    }
-    return hamsterFood;
-  }
 
-  feedHamster(hamster, hamsterFood) {
-    if (this.habitat.webWorker) {
-      return hamster.port.postMessage(hamsterFood);
-    }
-    if (this.habitat.ie10) {
-      return hamster.postMessage(hamsterFood);
-    }
-    return hamster.postMessage(hamsterFood, this.prepareTransferBuffers(hamsterFood));
-  }
-
-  prepareTransferBuffers(hamsterFood) {
-    let buffers = [];
-    let key = null;
-    if(this.habitat.transferrable) {
-      for (key in hamsterFood) {
-        if (hamsterFood.hasOwnProperty(key) && hamsterFood[key]) {
-          if(hamsterFood[key].buffer) {
-            buffers.push(hamsterFood[key].buffer);
-          } else if(Array.isArray(hamsterFood[key]) && typeof ArrayBuffer !== 'undefined') {
-            buffers.push(new ArrayBuffer(hamsterFood[key]));
-          }
-        }
-      }
-    }
-    return buffers;
-  }
 
   trainHamster(threadId, task, hamster, resolve, reject) {
     var scope = this;
@@ -432,27 +290,6 @@ class hamstersjs {
     }
   }
 
-  checkCache(fn, input, dataType) {
-    let cachedResult = this.cache[fn];
-    if (cachedResult) {
-      if (cachedResult[0] === input && cachedResult[2] === dataType) {
-        return cachedResult;
-      }
-    }
-  }
-
-  memoize(fn, inputArray, output, dataType) {
-    this.cache[fn] = [inputArray, output, dataType];
-  }
-
-
-  assignOutput(task, inputArray) {
-    if (!task || !inputArray || !this.habitat.atomics) {
-      return;
-    }
-    task.output = new SharedArrayBuffer(inputArray.length);
-  }
-
   trackInput(inputArray, thread_id, task, hamsterFood) {
     task.input.push({
       input: inputArray,
@@ -467,42 +304,6 @@ class hamstersjs {
     task.startTime = Date.now();
     task.workers.push(id); //Keep track of threads scoped to current task
     this.pool.running.push(id); //Keep track of all currently running threads
-  }
-
-  poolThread(inputArray, hamsterFood, thread_id, cb, task, agg, memoize) {
-    this.pool.pending.push({
-      memoize: memoize,
-      input: inputArray,
-      params: hamsterFood,
-      workerid: thread_id,
-      onSuccess: cb,
-      task: task,
-      aggregate: agg
-    });
-  }
-
-  legacyProcessor(task, array, resolve, reject) {
-    setTimeout(function() {
-      var rtn = {
-        success: true,
-        data: []
-      };
-      var params = task.input;
-      params.array = array;
-      params.fn();
-      if (params.dataType) {
-        rtn.data = this.data.processDataType(params.dataType, rtn.data, this.habitat.transferable);
-        rtn.dataType = params.dataType;
-      }
-      resolve(rtn);
-    }, 4); //4ms delay (HTML5 spec minimum), simulate threading
-  }
-
-  processQueue(hamster, item) {
-    if (!item) {
-      return;
-    }
-    this.wheel(item.input, item.params, item.aggregate, item.onSuccess, item.task, item.workerid, hamster, item.memoize); //Assign most recently finished thread to queue item
   }
 
   chewThread(task, id) {

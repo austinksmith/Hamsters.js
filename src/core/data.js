@@ -17,11 +17,81 @@ class data {
     this.aggregateArrays = this.aggregateThreadOutputs;
     this.splitArrays = this.splitArrayIntoSubArrays;
     this.createBlob = this.createDataBlob;
+    this.generateBlob = this.generateWorkerBlob;
     this.determineSubArrays = this.determineSubArrayIndexes;
     this.arrayFromIndex = this.subArrayFromIndex;
     this.processDataType = this.processDataType;
     this.sortOutput = this.sortArray;
     this.getOutput = this.prepareOutput;
+    this.prepareJob = this.prepareFunction;
+    this.feedHamster = this.messageWorker;
+    this.prepareMeal = this.prepareHamsterFood;
+    this.workerURI = null;
+  }
+
+
+  prepareHamsterFood(task, threadId) {
+    let hamsterFood = {};
+    for (var key in task.input) {
+      if (task.input.hasOwnProperty(key) && key !== 'array') {
+        hamsterFood[key] = task.input[key];
+      }
+    }
+    if (task.indexes && task.threads !== 1) {
+      hamsterFood.array = this.data.arrayFromIndex(task.input.array, task.indexes[threadId]);
+    } else {
+      hamsterFood.array = task.input.array;
+    }
+    if (task.operator && !hamsterFood.fn) {
+      hamsterFood.fn = task.operator;
+    }
+    return hamsterFood;
+  }
+
+  messageWorker(hamster, hamsterFood) {
+    if (this.habitat.webWorker) {
+      return hamster.port.postMessage(hamsterFood);
+    }
+    if (this.habitat.ie10) {
+      return hamster.postMessage(hamsterFood);
+    }
+    return hamster.postMessage(hamsterFood, this.prepareTransferBuffers(hamsterFood));
+  }
+
+  prepareTransferBuffers(hamsterFood) {
+    let buffers = [];
+    let key = null;
+    if(this.habitat.transferrable) {
+      for (key in hamsterFood) {
+        if (hamsterFood.hasOwnProperty(key) && hamsterFood[key]) {
+          if(hamsterFood[key].buffer) {
+            buffers.push(hamsterFood[key].buffer);
+          } else if(Array.isArray(hamsterFood[key]) && typeof ArrayBuffer !== 'undefined') {
+            buffers.push(new ArrayBuffer(hamsterFood[key]));
+          }
+        }
+      }
+    }
+    return buffers;
+  }
+
+
+  prepareFunction(functionBody) {
+    if (!this.habitat.legacy) {
+      functionBody = String(functionBody);
+      if (!this.habitat.webWorker) {
+        let startingIndex = (functionBody.indexOf("{") + 1);
+        let endingIndex = (functionBody.length - 1);
+        return functionBody.substring(startingIndex, endingIndex);
+      }
+    }
+    return functionBody;
+  }
+
+  generateWorkerBlob(workerLogic) {
+    let functionString = '(' + String(workerLogic) + ')();';
+    let hamsterBlob = this.createBlob(functionString);
+    return URL.createObjectURL(hamsterBlob);
   }
 
   processDataType(dataType, buffer, transferrable) {
@@ -73,23 +143,18 @@ class data {
   }
 
   determineSubArrayIndexes(array, n) {
-    if(n === 1) {
-      return 
-    }
     var i = 0;
-    var size = Math.ceil(array.length/n);
+    let size = Math.ceil(array.length/n);
     var indexes = [];
     while(i < array.length) {
       var start = i;
-      var end = ((i += size) - 1);
-      if(end > array.length -1) {
-        end = array.length;
-      }
-      var index = { start: start, end: end };
-      console.log(start, i, end);
-      indexes.push(index);
+      var end = ((i + size) - 1);
+      indexes.push({
+        start: start, 
+        end: end
+      });
+      (i += size);
     }
-    console.log(indexes);
     return indexes;
   }
 
