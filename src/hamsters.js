@@ -38,6 +38,7 @@ class hamstersjs {
     this.run = this.runHamsters;
     this.promise = this.hamstersPromise;
     this.ball = this.hamstersLoop;
+    this.wheel = hamsterPool.selectWheel();
     this.init = this.initializeLibrary;
   }
 
@@ -53,7 +54,7 @@ class hamstersjs {
       this.setupWorkerSupport();
     }
     this.greaseHamsterWheel();
-    this.spawnHamsters();
+    this.pool.spawnHamsters(this.habitat, this);
     this.logger.info(`${this.maxThreads} hamsters ready and awaiting instructions`);
   }
 
@@ -67,16 +68,6 @@ class hamstersjs {
           hamsters[key] = startOptions[key];
         }
       }
-    }
-  }
-
-  greaseHamsterWheel() {
-    if (this.habitat.legacy) {
-      this.wheel = hamsterWheel.legacy;
-    } else if(this.habitat.webWorker) {
-      this.wheel = hamsterWheel.worker;
-    } else {
-      this.wheel = hamsterWheel.regular;
     }
   }
 
@@ -98,38 +89,6 @@ class hamstersjs {
     } catch (e) {
       this.habitat.legacy = true;
     }
-  }
-
-  spawnHamsters() {
-    if (this.habitat.legacy) {
-      return;
-    }
-    if (this.habitat.browser) {
-      this.data.workerURI = this.data.generateBlob(this.worker);
-    }
-    if (this.persistence) {
-      let i = this.maxThreads;
-      this.logger.info(`${i} Logical Threads Detected, Spawning ${i} Hamsters`);
-      for (i; i > 0; i--) {
-        this.pool.threads.push(this.spawnHamster());
-      }
-    }
-  }
-
-  spawnHamster() {
-    if (this.habitat.ie10) {
-      return new this.habitat.Worker(this.worker);
-    }
-    if (this.habitat.reactNative) {
-      return new this.habitat.Worker(this.worker);
-    }
-    if (this.habitat.webWorker) {
-      return new this.habitat.SharedWorker(this.data.workerURI, 'SharedHamsterWheel');
-    }
-    if (this.habitat.node || this.habitat.reactNative) {
-      return new this.habitat.Worker(this.worker);
-    }
-    return new this.habitat.Worker(this.data.workerURI);
   }
 
   newTask(taskOptions) {
@@ -194,11 +153,10 @@ class hamstersjs {
     return new Promise((resolve, reject) => {
       var task = new this.hamstersTask(params, functionToRun, this);
       var logger = this.logger;
-      this.hamstersWork(task).then(function(results) {
+      this.pool.scheduleTask(task, this.wheel, this.maxThreads).then(function(results) {
         resolve(results);
       }).catch(function(error) {
-        logger.error(error.messsage);
-        reject(error);
+        logger.error(error.messsage, reject);
       });
     });
   }
@@ -213,21 +171,15 @@ class hamstersjs {
     // Create new task and execute
     var task = new this.hamstersTask(params, functionToRun, this);
     var logger = this.logger;
-    this.hamstersWork(task).then(function(results) {
+    this.pool.scheduleTask(task, this.wheel, this.maxThreads).then(function(results) {
       onSuccess(results);
     }).catch(function(error) {
       logger.error(error.messsage);
     });
   }
 
-  hamstersWork(task) {
-    return new Promise((resolve, reject) => {
-      let i = 0;
-      while (i < task.threads) {
-        this.wheel(task, resolve, reject);
-        i += 1;
-      }
-    });
+  startTask(task, resolve, reject) {
+    return this.wheel(task, startTime, resolve, reject);
   }
 
   hamsterWheel(task, resolve, reject) {
@@ -235,15 +187,18 @@ class hamstersjs {
     if(this.maxThreads === threadId) {
       return this.pool.queueWork(task, threadId, resolve, reject);
     }
-    let hamster = this.persistence ? this.pool.threads[threadId] : this.spawnHamster();
     let hamsterFood = this.data.prepareMeal(task, threadId);
+    let hamster;
+    if(this.persistence) {
+      hamster = this.pool.threads[threadId];
+    } else {
+      hamster = this.pool.spawnHamster(this.habitat, this.worker, this.data.workerURI);
+    }
     this.trainHamster(threadId, task, hamster, resolve, reject);
     this.trackThread(task, threadId);
     this.data.feedHamster(hamster, hamsterFood);
     task.count += 1; //Increment count, thread is running
   }
-
-
 
   trainHamster(threadId, task, hamster, resolve, reject) {
     var scope = this;
@@ -261,7 +216,7 @@ class hamstersjs {
         scope.pool.tasks[task.id] = null; //Clean up our task, not needed any longer
       }
       if (scope.pool.pending.length !== 0) {
-        scope.processQueue(hamster, scope.pool.pending.shift());
+        scope.pool.processQueue(hamster, scope.pool.pending.shift());
       } else if (!scope.persistence && !scope.habitat.webWorker) {
         hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
       }
@@ -304,13 +259,6 @@ class hamstersjs {
     task.startTime = Date.now();
     task.workers.push(id); //Keep track of threads scoped to current task
     this.pool.running.push(id); //Keep track of all currently running threads
-  }
-
-  processQueue(hamster, item) {
-    if (!item) {
-      return;
-    }
-    this.wheel(item.input, item.params, item.aggregate, item.onSuccess, item.task, item.workerid, hamster, item.memoize); //Assign most recently finished thread to queue item
   }
 
   chewThread(task, id) {

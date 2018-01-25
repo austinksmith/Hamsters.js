@@ -12,6 +12,7 @@
 'use strict';
 
 class data {
+
   constructor() {
     this.randomArray = this.randomArray;
     this.aggregateArrays = this.aggregateThreadOutputs;
