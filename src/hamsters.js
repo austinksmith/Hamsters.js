@@ -235,7 +235,7 @@ class hamstersjs {
     if(this.maxThreads === threadId) {
       return this.pool.queueWork(task, threadId, resolve, reject);
     }
-    let hamster = this.persistence ? this.pool.threads[threadId] : spawnHamster();
+    let hamster = this.persistence ? this.pool.threads[threadId] : this.spawnHamster();
     let hamsterFood = this.data.prepareMeal(task, threadId);
     this.trainHamster(threadId, task, hamster, resolve, reject);
     this.trackThread(task, threadId);
@@ -304,6 +304,13 @@ class hamstersjs {
     task.startTime = Date.now();
     task.workers.push(id); //Keep track of threads scoped to current task
     this.pool.running.push(id); //Keep track of all currently running threads
+  }
+
+  processQueue(hamster, item) {
+    if (!item) {
+      return;
+    }
+    this.wheel(item.input, item.params, item.aggregate, item.onSuccess, item.task, item.workerid, hamster, item.memoize); //Assign most recently finished thread to queue item
   }
 
   chewThread(task, id) {
