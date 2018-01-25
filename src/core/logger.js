@@ -40,11 +40,12 @@ class logger {
     console.warning(timeStampedMessage);
   }
 
-  errorLog(message) {
+  errorLog(message, reject) {
     let timeStamp = Date.now();
     let timeStampedMessage = `Hamsters.js Error: ${message} @ ${timeStamp}`;
     this.saveLogEntry('error', timeStampedMessage);
     console.error(timeStampedMessage);
+    reject(timeStampedMessage);
   }
 
   saveToLogBook(eventType, message) {
