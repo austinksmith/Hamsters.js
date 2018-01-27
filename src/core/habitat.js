@@ -1,3 +1,5 @@
+/* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
+
 /*
 * Title: Hamsters.js
 * Description: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
@@ -7,7 +9,7 @@
 * License: Artistic License 2.0
 */
 
-/* jshint esversion: 6 */
+import hamstersData from './data';
 
 'use strict';
 
@@ -81,7 +83,30 @@ class habitat {
   }
 
   isLegacyEnvironment() {
-    return this.isShell() || !this.locateWorkerObject();
+    // Force legacy mode for known devices that don't support threading
+    if (this.isBrowser() && !this.isReactNative()) {
+      let isIE10 = this.habitat.isIE(10);
+      let userAgent = navigator.userAgent;
+      let lacksWorkerSupport = (typeof this.Worker === 'undefined');
+      let legacyAgents = ['Kindle/3.0', 'Mobile/8F190', 'IEMobile'];
+      if (lacksWorkerSupport || legacyAgents.indexOf(userAgent) !== -1 || isIE10) {
+        this.legacy = true;
+      }
+    }
+    // Detect sharedWorker support for use within webworkers
+    if (this.webWorker && typeof this.SharedWorker !== 'undefined') {
+      try {
+        let workerBlob = hamstersData.generateBlob();
+        let SharedHamster = new this.SharedWorker(workerBlob, 'SharedHamsterWheel');
+        hamstersData.workerURI = workerBlob;
+      } catch (e) {
+        this.legacy = true;
+      }
+    }
+    // Final check, if we're in a shell environment or we have no worker object use legacy mode
+    if(!this.legacy) {
+      return this.isShell() || !this.locateWorkerObject();
+    }
   }
 
   supportsAtomicOperations() {
@@ -93,8 +118,8 @@ class habitat {
   }
 }
 
-var hamsterHabitat = new habitat();
+var hamstersHabitat = new habitat();
 
 if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamsterHabitat;
+  module.exports = hamstersHabitat;
 }

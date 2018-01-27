@@ -9,8 +9,8 @@
 * License: Artistic License 2.0
 */
 
-import hamsterData from './core/data';
-import hamsterHabitat from './core/habitat';
+import hamstersData from './data';
+import hamstersHabitat from './habitat';
 
 'use strict';
 
@@ -34,7 +34,7 @@ class wheel {
         data: [],
         dataType: params.dataType
       };
-    };
+    }
 
     addEventListener('connect', function(incomingConnection) {
       const port = incomingConnection.ports[0];
@@ -59,9 +59,9 @@ class wheel {
       params = incomingMessage.data;
       rtn = {
         data: [],
-        dataType: params.dataType ? params.dataType.toLowerCase() : null
+        dataType: (params.dataType ? params.dataType.toLowerCase() : null)
       };
-    };
+    }
 
     function prepareReturn(returnObject) {
       var dataType = returnObject.dataType;
@@ -69,7 +69,7 @@ class wheel {
         returnObject.data = typedArrayFromBuffer(dataType, returnObject.data);
       }
       return returnObject;
-    };
+    }
 
     function typedArrayFromBuffer(dataType, buffer) {
       const types = {
@@ -87,7 +87,7 @@ class wheel {
         return buffer;
       }
       return new types[dataType](buffer);
-    };
+    }
 
     function prepareTransferBuffers(hamsterFood) {
       let buffers = [];
@@ -102,33 +102,33 @@ class wheel {
         }
       }
       return buffers;
-    };
+    }
 
     function onmessage(incomingMessage) {
       setDefaults(incomingMessage);
       new Function(params.fn)();
       postMessage(prepareReturn(rtn), prepareTransferBuffers(rtn));
     };
-  };
+  }
 
   legacyScaffold(params, resolve, reject) {
     setTimeout(function() {
       var rtn = {
         data: [],
-        dataType: params.dataType ? params.dataType.toLowerCase() : null;
+        dataType: (params.dataType ? params.dataType.toLowerCase() : null)
       };
       params.fn();
       if (params.dataType) {
-        rtn.data = hamsterData.processDataType(params.dataType, rtn.data, hamsterHabitat.transferable);
+        rtn.data = hamstersData.processDataType(params.dataType, rtn.data, hamstersHabitat.transferable);
         rtn.dataType = params.dataType;
       }
       resolve(rtn);
     }, 4); //4ms delay (HTML5 spec minimum), simulate threading
-  };
+  }
 };
 
-var hamsterWheel = new wheel();
+var hamstersWheel = new wheel();
 
 if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamsterWheel;
+  module.exports = hamstersWheel;
 }

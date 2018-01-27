@@ -1,3 +1,5 @@
+/* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
+
 /*
 * Title: Hamsters.js
 * Description: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
@@ -6,8 +8,6 @@
 * Copyright: 2015 Austin K. Smith - austin@asmithdev.com
 * License: Artistic License 2.0
 */
-
-/* jshint esversion: 6 */
 
 'use strict';
 

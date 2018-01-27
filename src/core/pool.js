@@ -1,3 +1,5 @@
+/* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
+
 /*
 * Title: Hamsters.js
 * Description: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
@@ -7,7 +9,10 @@
 * License: Artistic License 2.0
 */
 
-/* jshint esversion: 6 */
+import hamstersData from './data';
+import hamstersHabitat from './habitat';
+import hamstersWheel from './wheel';
+import hamstersLogger from './logger';
 
 'use strict';
 
@@ -18,8 +23,11 @@ class pool {
     this.running = [];
     this.pending = [];
     this.queueWork = this.addWorkToPending;
-    this.selectWheel = this.selectHamsterWheel;
-    this.destroyThread = this.destroyThread;
+    this.beginWork = this.startTask;
+    this.fetchHamster = this.grabHamster;
+    this.selectHamsterWheel = this.selectHamsterWheel;
+    this.markThreadReady = this.removeThreadFromRunning;
+    this.trackThread = this.keepTrackOfThread;
   }
 
   addWorkToPending(task, id, resolve, reject) {
@@ -31,8 +39,20 @@ class pool {
   	});
   }
 
-  destroyThread(task, id) {
-    this.pool.running.splice(this.pool.running.indexOf(id), 1); //Remove thread from running pool
+  grabHamster(threadId, persistence, worker) {
+    if(persistence) {
+      return this.threads[threadId];
+    }
+    return this.spawnHamster(hamstersHabitat, worker, hamstersData.workerURI);
+  }
+
+  newTask(taskOptions) {
+    let index = this.pool.tasks.push(taskOptions);
+    return this.pool.tasks[(index - 1)];
+  }
+
+  removeThreadFromRunning(task, id) {
+    this.running.splice(this.running.indexOf(id), 1); //Remove thread from running pool
     task.workers.splice(task.workers.indexOf(id), 1); //Remove thread from task running pool
   }
 
@@ -47,51 +67,49 @@ class pool {
     return this.wheel(task, resolve, reject);
   }
 
-  spawnHamsters(core) {
-    if (core.habitat.legacy) {
+  spawnHamsters(persistence, wheel, maxThreads) {
+  	let workerURI = null;
+    if(hamstersHabitat.legacy) {
       return;
     }
-    if (core.habitat.browser) {
-      core.data.workerURI = core.data.generateBlob(core.worker);
+    if(hamstersHabitat.browser) {
+      workerURI = hamstersData.generateBlob(wheel);
     }
-    if (core.persistence) {
-      let i = core.maxThreads;
-      core.logger.info(`${i} Logical Threads Detected, Spawning ${i} Hamsters`);
-      for (i; i > 0; i--) {
-        core.pool.threads.push(this.spawnHamster());
+    if (persistence) {
+      hamstersLogger.info(`${maxThreads} Logical Threads Detected, Spawning ${maxThreads} Hamsters`);
+      for (maxThreads; maxThreads > 0; maxThreads--) {
+        this.threads.push(this.spawnHamster(wheel, workerURI));
       }
+      hamstersLogger.info(`${this.threads.length} hamsters ready and awaiting instructions`);
     }
   }
 
-  spawnHamster(habitat, worker, workerURI) {
-    if (this.habitat.ie10) {
-      return new this.habitat.Worker(this.worker);
+  spawnHamster(wheel, workerURI) {
+    if (hamstersHabitat.ie10) {
+      return new hamstersHabitat.Worker(wheel);
     }
-    if (this.habitat.reactNative) {
-      return new this.habitat.Worker(this.worker);
+    if (hamstersHabitat.webWorker) {
+      return new hamstersHabitat.SharedWorker(workerURI, 'SharedHamsterWheel');
     }
-    if (this.habitat.webWorker) {
-      return new this.habitat.SharedWorker(this.data.workerURI, 'SharedHamsterWheel');
+    if ((hamstersHabitat.node || hamstersHabitat.reactNative) && !hamstersHabitat.browser) {
+      return new hamstersHabitat.Worker(wheel);
     }
-    if (this.habitat.node || this.habitat.reactNative) {
-      return new this.habitat.Worker(this.worker);
-    }
-    return new this.habitat.Worker(this.data.workerURI);
+    return new hamstersHabitat.Worker(workerURI);
   }
 
-  selectHamsterWheel(habitat, hamsterWheel) {
-    if (habitat.legacy) {
-      return hamsterWheel.legacy;
+  selectHamsterWheel() {
+    if (hamstersHabitat.legacy) {
+      return hamstersWheel.legacy;
     }
-    if(habitat.webWorker) {
-      return hamsterWheel.worker;
+    if(hamstersHabitat.webWorker) {
+      return hamstersWheel.worker;
     }
-    return hamsterWheel.regular;
+    return hamstersWheel.regular;
   }
 
   scheduleTask(task, wheel, maxThreads) {
   	if(this.running.length === maxThreads) {
-  		return this.addWorkToPending()
+  		return this.addWorkToPending();
   	}
   	return new Promise((resolve, reject) => {
       let i = 0;
@@ -102,10 +120,9 @@ class pool {
     });
   }
   
-  trackThread(task, id) {
-    task.startTime = Date.now();
+  keepTrackOfThread(task, id) {
     task.workers.push(id); //Keep track of threads scoped to current task
-    this.pool.running.push(id); //Keep track of all currently running threads
+    this.running.push(id); //Keep track of all currently running threads
   }
 }
 

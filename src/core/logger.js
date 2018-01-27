@@ -1,3 +1,5 @@
+/* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
+
 /*
 * Title: Hamsters.js
 * Description: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
@@ -7,9 +9,7 @@
 * License: Artistic License 2.0
 */
 
-/* jshint esversion: 6 */
-
-import hamstersVersion from './core/version';
+import hamstersVersion from './version';
 
 'use strict';
 
@@ -23,6 +23,7 @@ class logger {
     this.info = this.infoLog;
     this.warning = this.warningLog;
     this.error = this.errorLog;
+    this.errorFromThread = this.errorFromThread;
     this.saveLogEntry = this.saveToLogBook;
     this.getLogEntries = this.fetchLogBook;
     this.searchLogEntries = this.searchLogBook;
@@ -48,6 +49,11 @@ class logger {
     this.saveLogEntry('error', timeStampedMessage);
     console.error(timeStampedMessage);
     reject(timeStampedMessage);
+  }
+
+  errorFromThread(error, reject) {
+    let errorMessage = `#${error.lineno} in ${error.filename}: ${error.message}`;
+    this.errorLog(errorMessage, reject);
   }
 
   saveToLogBook(eventType, message) {
@@ -105,8 +111,8 @@ class logger {
   }   
 }
 
-var hamsterLogger = new logger();
+var hamstersLogger = new logger();
 
 if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamsterLogger;
+  module.exports = hamstersLogger;
 }
