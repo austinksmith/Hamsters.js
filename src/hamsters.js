@@ -44,9 +44,11 @@ class hamstersjs {
     this.pool = hamstersPool;
     this.logger = hamstersLogger;
     this.memoizer = hamstersMemoizer;
-    this.run = this.runHamsters;
-    this.promise = this.hamstersPromise;
-    this.loop = this.loopAbstraction;
+    this.run = hamstersRun;
+    this.promise = hamstersPromise;
+    this.loop = hamstersLoop;
+    this.await = hamstersAwait;
+    this.reduce = hamstersReduce;
     this.wheel = hamstersPool.selectHamsterWheel();
     this.init = this.initializeLibrary;
   }
