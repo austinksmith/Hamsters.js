@@ -9,10 +9,29 @@
  * License: Artistic License 2.0
  */
 
-'use strict';
-
 (function)() {
-  self.typedArrayFromBuffer = function(dataType, buffer) {
+  'use strict';
+
+  var params = {};
+  var rtn = {};
+
+  function setDefaults(incomingMessage) {
+    params = incomingMessage.data;
+    rtn = {
+      data: [],
+      dataType: params.dataType ? params.dataType.toLowerCase() : null
+    };
+  };
+
+  function prepareReturn(returnObject) {
+    var dataType = returnObject.dataType;
+    if(dataType) {
+      returnObject.data = typedArrayFromBuffer(dataType, returnObject.data);
+    }
+    return returnObject;
+  };
+
+  function typedArrayFromBuffer(dataType, buffer) {
     const types = {
       'uint32': Uint32Array,
       'uint16': Uint16Array,
@@ -30,7 +49,7 @@
     return new types[dataType](buffer);
   };
 
-  self.prepareTransferBuffers = function(hamsterFood) {
+  function prepareTransferBuffers(hamsterFood) {
     let buffers = [];
     let key = null;
     for (key in hamsterFood) {
@@ -45,19 +64,9 @@
     return buffers;
   };
 
-  self.onmessage = function(e) {
-    self.params = e.data;
-    self.rtn = {
-      data: [],
-      dataType: params.dataType ? params.dataType.toLowerCase() : null
-    };
-    let fn = new Function(params.fn);
-    if (fn) {
-      fn();
-    }
-    if (params.dataType) {
-      rtn.data = self.typedArrayFromBuffer(rtn.dataType, rtn.data);
-    }
-    postMessage(rtn, self.prepareTransferBuffers(rtn));
+  function onmessage(incomingMessage) {
+    setDefaults(incomingMessage);
+    new Function(params.fn)();
+    postMessage(prepareReturn(rtn), prepareTransferBuffers(rtn));
   };
 })();
