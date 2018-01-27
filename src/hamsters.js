@@ -11,6 +11,7 @@
 
 'use strict';
 
+// Import core functionality
 import hamstersVersion from './core/version';
 import hamstersHabitat from './core/habitat';
 import hamstersPool from './core/pool';
@@ -19,6 +20,14 @@ import hamstersWheel from './core/wheel';
 import hamstersTools from './core/tools';
 import hamstersLogger from './core/logger';
 import hamstersMemoizer from './core/memoizer';
+
+// Import library methods
+import hamstersRun from './methods/run';
+import hamstersLoop from './methods/loop';
+import hamstersPromise from './methods/promise';
+import hamstersAwait from './methods/await';
+import hamstersReduce from './methods/reduce';
+
 
 class hamstersjs {
 
