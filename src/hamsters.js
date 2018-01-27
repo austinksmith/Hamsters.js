@@ -37,7 +37,7 @@ class hamstersjs {
     this.memoizer = hamsterMemoizer;
     this.run = this.runHamsters;
     this.promise = this.hamstersPromise;
-    this.ball = this.hamstersLoop;
+    this.loop = this.hamstersLoop;
     this.wheel = hamsterPool.selectWheel();
     this.init = this.initializeLibrary;
   }
@@ -96,41 +96,22 @@ class hamstersjs {
     return this.pool.tasks[taskOptions.id];
   }
 
+
+  loopAbstraction(input, onSuccess) {
+    let params = new this.loopMethod.options(input, this.habitat.webWorker);
+    this.runHamsters(params, function() {
+
+
+    }, function(rtn) {
+      onSuccess(rtn);
+    }, input.threads, 1, input.dataType);
+  }
+
   legacyHamsterWheel(thread_id, task, resolve, reject) {
     // this.trackThread(task, thread_id);
     var dataArray = this.data.arrayFromIndex(task.input.array, task.indexes[thread_id]);
     hamsterWheel.legacy(task, dataArray, resolve, reject);
     task.count += 1; //Thread finished
-  }
-
-  hamstersLoop(input, onSuccess) {
-    let params = {
-      init: input.startIndex || 0,
-      limit: input.limit || null,
-      array: input.array,
-      incrementBy: input.incrementBy || 1,
-      dataType: input.dataType || null,
-      worker: this.habitat.webWorker
-    };
-    this.runHamsters(params, function() {
-      let operator = params.run;
-      if (typeof operator === "string") {
-        if (params.worker) {
-          operator = eval("(" + operator + ")");
-        } else {
-          operator = new Function(operator);
-        }
-      }
-      if (!params.limit) {
-        params.limit = params.array.length;
-      }
-      var i = params.init;
-      for (i; i < params.limit; i += params.incrementBy) {
-        rtn.data[i] = operator(params.array[i]);
-      }
-    }, function(rtn) {
-      onSuccess(rtn);
-    }, input.threads, 1, input.dataType);
   }
 
   hamstersTask(params, functionToRun, scope) {
@@ -203,9 +184,9 @@ class hamstersjs {
   trainHamster(threadId, task, hamster, resolve, reject) {
     var scope = this;
     // Handle successful response from a thread
-    let onThreadResponse = function(e) {
-      var results = e.data;
-      scope.chewThread(task, threadId);
+    let onThreadResponse = function(incomingMessage) {
+      var results = incomingMessage.data;
+      scope.pool.destroyThread(task, threadId);
       task.output[threadId] = results.data;
       if (task.workers.length === 0 && task.count === task.threads) {
         var output = scope.data.getOutput(task, scope.habitat.transferrable);
@@ -223,14 +204,15 @@ class hamstersjs {
     };
 
     // Handle error response from a thread
-    let onThreadError = function(e) {
+    let onThreadError = function(incomingError) {
       if (!scope.habitat.webWorker) {
         hamster.terminate(); //Kill the thread
       }
+      this.logger.error(`Line ${incomingError.lineno} in ${incomingError.filename}: ${incomingError.message}`);
       var error = {
         timeStamp: Date.now(),
         threadId: threadId,
-        message: `Line ${e.lineno} in ${e.filename}: ${e.message}`
+        message: 
       };
       scope.pool.errors.push(error);
       reject(error);
@@ -243,27 +225,6 @@ class hamstersjs {
       hamster.onmessage = onThreadResponse;
       hamster.onerror = onThreadError;
     }
-  }
-
-  trackInput(inputArray, thread_id, task, hamsterFood) {
-    task.input.push({
-      input: inputArray,
-      workerid: thread_id,
-      taskid: task.id,
-      params: hamsterFood,
-      start: Date.now()
-    });
-  }
-
-  trackThread(task, id) {
-    task.startTime = Date.now();
-    task.workers.push(id); //Keep track of threads scoped to current task
-    this.pool.running.push(id); //Keep track of all currently running threads
-  }
-
-  chewThread(task, id) {
-    this.pool.running.splice(this.pool.running.indexOf(id), 1); //Remove thread from running pool
-    task.workers.splice(task.workers.indexOf(id), 1); //Remove thread from task running pool
   }
 
 }

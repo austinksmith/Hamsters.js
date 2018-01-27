@@ -1,3 +1,5 @@
+/* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
+
 /*
 * Title: Hamsters.js
 * Description: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
@@ -7,11 +9,8 @@
 * License: Artistic License 2.0
 */
 
-/* jshint esversion: 6 */
-
 import hamsterData from './core/data';
 import hamsterHabitat from './core/habitat';
-
 
 'use strict';
 
@@ -24,19 +23,25 @@ class wheel {
   }
 
   workerScaffold() {
-    self.addEventListener("connect", function(e) {
-      const port = e.ports[0];
+    'use strict';
+
+    var params = {};
+    var rtn = {};
+
+    function setDefaults(incomingMessage) {
+      params = incomingMessage.data;
+      rtn = {
+        data: [],
+        dataType: params.dataType
+      };
+    };
+
+    addEventListener('connect', function(incomingConnection) {
+      const port = incomingConnection.ports[0];
       port.start();
-      port.addEventListener("message", function(e) {
-        self.params = e.data;
-        self.rtn = {
-          data: [],
-          dataType: params.dataType
-        };
-        let fn = eval("(" + params.fn + ")");
-        if (fn) {
-          fn();
-        }
+      port.addEventListener('message', function(incomingMessage) {
+        setDefaults(incomingMessage);
+        eval("(" + params.fn + ")")();
         port.postMessage({
           results: rtn
         });
@@ -45,7 +50,28 @@ class wheel {
   }
 
   regularScaffold() {
-    self.typedArrayFromBuffer = function(dataType, buffer) {
+    'use strict';
+
+    var params = {};
+    var rtn = {};
+
+    function setDefaults(incomingMessage) {
+      params = incomingMessage.data;
+      rtn = {
+        data: [],
+        dataType: params.dataType ? params.dataType.toLowerCase() : null
+      };
+    };
+
+    function prepareReturn(returnObject) {
+      var dataType = returnObject.dataType;
+      if(dataType) {
+        returnObject.data = typedArrayFromBuffer(dataType, returnObject.data);
+      }
+      return returnObject;
+    };
+
+    function typedArrayFromBuffer(dataType, buffer) {
       const types = {
         'uint32': Uint32Array,
         'uint16': Uint16Array,
@@ -63,7 +89,7 @@ class wheel {
       return new types[dataType](buffer);
     };
 
-    self.prepareTransferBuffers = function(hamsterFood) {
+    function prepareTransferBuffers(hamsterFood) {
       let buffers = [];
       let key = null;
       for (key in hamsterFood) {
@@ -78,31 +104,19 @@ class wheel {
       return buffers;
     };
 
-    self.onmessage = function(e) {
-      self.params = e.data;
-      self.rtn = {
-        data: [],
-        dataType: params.dataType ? params.dataType.toLowerCase() : null
-      };
-      let fn = new Function(params.fn);
-      if (fn) {
-        fn();
-      }
-      if (params.dataType) {
-        rtn.data = self.typedArrayFromBuffer(rtn.dataType, rtn.data);
-      }
-      postMessage(rtn, self.prepareTransferBuffers(rtn));
+    function onmessage(incomingMessage) {
+      setDefaults(incomingMessage);
+      new Function(params.fn)();
+      postMessage(prepareReturn(rtn), prepareTransferBuffers(rtn));
     };
-  }
+  };
 
-  legacyScaffold(task, array, resolve, reject) {
+  legacyScaffold(params, resolve, reject) {
     setTimeout(function() {
       var rtn = {
-        success: true,
-        data: []
+        data: [],
+        dataType: params.dataType ? params.dataType.toLowerCase() : null;
       };
-      var params = task.input;
-      params.array = array;
       params.fn();
       if (params.dataType) {
         rtn.data = hamsterData.processDataType(params.dataType, rtn.data, hamsterHabitat.transferable);
@@ -110,8 +124,8 @@ class wheel {
       }
       resolve(rtn);
     }, 4); //4ms delay (HTML5 spec minimum), simulate threading
-  }
-}
+  };
+};
 
 var hamsterWheel = new wheel();
 

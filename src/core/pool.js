@@ -19,6 +19,7 @@ class pool {
     this.pending = [];
     this.queueWork = this.addWorkToPending;
     this.selectWheel = this.selectHamsterWheel;
+    this.destroyThread = this.destroyThread;
   }
 
   addWorkToPending(task, id, resolve, reject) {
@@ -28,6 +29,11 @@ class pool {
   		promiseResolve: resolve,
   		promiseReject: reject
   	});
+  }
+
+  destroyThread(task, id) {
+    this.pool.running.splice(this.pool.running.indexOf(id), 1); //Remove thread from running pool
+    task.workers.splice(task.workers.indexOf(id), 1); //Remove thread from task running pool
   }
 
   processQueue(hamster, item) {
