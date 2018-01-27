@@ -7,7 +7,8 @@
   "main": "build/hamsters.min.js",
   "scripts": {
     "build": "rm -rf ./build && webpack --config ./hamsters.webpack.config.js",
-    "test": "karma start --reporters html"
+    "test": "karma start --reporters html",
+    "postinstall": "opencollective postinstall"
   },
   "license": "Artistic-2.0",
   "repository": {
@@ -51,5 +52,12 @@
   "directories": {
     "test": "spec"
   },
-  "dependencies": {}
+  "dependencies": {
+    "opencollective": "^1.0.3"
+  },
+  "collective": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/hamstersjs",
+    "logo": "https://opencollective.com/hamstersjs/logo.txt"
+  }
 }
