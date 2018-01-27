@@ -12,13 +12,13 @@
 'use strict';
 
 import hamstersVersion from './core/version';
-import hamsterHabitat from './core/habitat';
-import hamsterPool from './core/pool';
-import hamsterData from './core/data';
-import hamsterWheel from './core/wheel';
-import hamsterTools from './core/tools';
-import hamsterLogger from './core/logger';
-import hamsterMemoizer from './core/memoizer';
+import hamstersHabitat from './core/habitat';
+import hamstersPool from './core/pool';
+import hamstersData from './core/data';
+import hamstersWheel from './core/wheel';
+import hamstersTools from './core/tools';
+import hamstersLogger from './core/logger';
+import hamstersMemoizer from './core/memoizer';
 
 class hamstersjs {
 
@@ -28,17 +28,17 @@ class hamstersjs {
     this.atomics = false;
     this.debug = false;
     this.version = hamstersVersion;
-    this.maxThreads = hamsterHabitat.logicalThreads;
-    this.tools = hamsterTools;
-    this.habitat = hamsterHabitat;
-    this.data = hamsterData;
-    this.pool = hamsterPool;
-    this.logger = hamsterLogger;
-    this.memoizer = hamsterMemoizer;
+    this.maxThreads = hamstersHabitat.logicalThreads;
+    this.tools = hamstersTools;
+    this.habitat = hamstersHabitat;
+    this.data = hamstersData;
+    this.pool = hamstersPool;
+    this.logger = hamstersLogger;
+    this.memoizer = hamstersMemoizer;
     this.run = this.runHamsters;
     this.promise = this.hamstersPromise;
-    this.loop = this.hamstersLoop;
-    this.wheel = hamsterPool.selectWheel();
+    this.loop = this.loopAbstraction;
+    this.wheel = hamstersPool.selectHamsterWheel();
     this.init = this.initializeLibrary;
   }
 
@@ -47,15 +47,7 @@ class hamstersjs {
     if (typeof startOptions !== 'undefined') {
       this.processStartOptions(startOptions);
     }
-    if (this.habitat.browser && !this.habitat.reactNative) {
-      this.setupBrowserSupport();
-    }
-    if (this.habitat.webWorker && typeof this.habitat.SharedWorker !== 'undefined') {
-      this.setupWorkerSupport();
-    }
-    this.greaseHamsterWheel();
-    this.pool.spawnHamsters(this.habitat, this);
-    this.logger.info(`${this.maxThreads} hamsters ready and awaiting instructions`);
+    this.pool.spawnHamsters(this.persistence, this.wheel, this.maxThreads);
   }
 
   processStartOptions(startOptions) {
@@ -71,45 +63,21 @@ class hamstersjs {
     }
   }
 
-  setupBrowserSupport() {
-    let isIE10 = this.habitat.isIE(10);
-    let userAgent = navigator.userAgent;
-    let lacksWorkerSupport = typeof this.habitat.Worker === 'undefined';
-    let legacyAgents = ['Kindle/3.0', 'Mobile/8F190', 'IEMobile'];
-    if (lacksWorkerSupport || legacyAgents.indexOf(userAgent) !== -1 || isIE10) {
-      this.habitat.legacy = true;
-    }
-  }
-
-  setupWorkerSupport() {
-    try {
-      let workerBlob = this.data.generateBlob();
-      let SharedHamster = new this.habitat.SharedWorker(workerBlob, 'SharedHamsterWheel');
-      this.data.workerURI = workerBlob;
-    } catch (e) {
-      this.habitat.legacy = true;
-    }
-  }
-
   newTask(taskOptions) {
-    this.pool.tasks.push(taskOptions);
-    return this.pool.tasks[taskOptions.id];
+    let index = this.pool.tasks.push(taskOptions);
+    return this.pool.tasks[(index - 1)];
   }
-
 
   loopAbstraction(input, onSuccess) {
-    let params = new this.loopMethod.options(input, this.habitat.webWorker);
-    this.runHamsters(params, function() {
-
-
-    }, function(rtn) {
+    let params = new hamstersLoop.options(input, this.habitat.webWorker);
+    this.runHamsters(params, function(rtn) {
       onSuccess(rtn);
-    }, input.threads, 1, input.dataType);
+    }, input.threads, true, input.dataType);
   }
 
-  legacyHamsterWheel(thread_id, task, resolve, reject) {
-    // this.trackThread(task, thread_id);
-    var dataArray = this.data.arrayFromIndex(task.input.array, task.indexes[thread_id]);
+  legacyHamsterWheel(threadId, task, resolve, reject) {
+    this.pool.trackThread(task, threadId);
+    let dataArray = this.data.arrayFromIndex(task.input.array, task.indexes[threadId]);
     hamsterWheel.legacy(task, dataArray, resolve, reject);
     task.count += 1; //Thread finished
   }
@@ -142,14 +110,7 @@ class hamstersjs {
     });
   }
 
-  runHamsters(params, functionToRun, onSuccess, numberOfWorkers, aggregate, dataType, memoize, sortOrder) {
-    // Convert old arguments into new params object
-    params.threads = params.threads || numberOfWorkers;
-    params.aggregate = params.aggregate || aggregate || true;
-    params.dataType = params.dataType || dataType;
-    params.memoize = params.memoize || memoize || false;
-    params.sort = params.sort || sortOrder;
-    // Create new task and execute
+  runHamsters(params, functionToRun, onSuccess) {
     var task = new this.hamstersTask(params, functionToRun, this);
     var logger = this.logger;
     this.pool.scheduleTask(task, this.wheel, this.maxThreads).then(function(results) {
@@ -159,65 +120,50 @@ class hamstersjs {
     });
   }
 
-  startTask(task, resolve, reject) {
-    return this.wheel(task, startTime, resolve, reject);
-  }
-
   hamsterWheel(task, resolve, reject) {
     let threadId = this.pool.running.length;
     if(this.maxThreads === threadId) {
       return this.pool.queueWork(task, threadId, resolve, reject);
     }
     let hamsterFood = this.data.prepareMeal(task, threadId);
-    let hamster;
-    if(this.persistence) {
-      hamster = this.pool.threads[threadId];
-    } else {
-      hamster = this.pool.spawnHamster(this.habitat, this.worker, this.data.workerURI);
-    }
+    let hamster = taskhis.pool.grabHamster(threadId, this.persistence, this.habitat, this.worker, this.data);
     this.trainHamster(threadId, task, hamster, resolve, reject);
-    this.trackThread(task, threadId);
+    this.pool.trackThread(task, threadId);
     this.data.feedHamster(hamster, hamsterFood);
     task.count += 1; //Increment count, thread is running
   }
 
+  returnOutput(task, resolve) {
+    let output = this.data.getOutput(task, this.habitat.transferrable);
+    if (task.sort) {
+      output = this.data.sortOutput(output, task.sort);
+    }
+    this.pool.tasks[task.id] = null; //Clean up our task, not needed any longer
+    resolve(output);
+  }
+
   trainHamster(threadId, task, hamster, resolve, reject) {
-    var scope = this;
+    let scope = this;
     // Handle successful response from a thread
-    let onThreadResponse = function(incomingMessage) {
-      var results = incomingMessage.data;
+    function onThreadResponse(messsage) {
+      let results = message.data;
       scope.pool.destroyThread(task, threadId);
       task.output[threadId] = results.data;
       if (task.workers.length === 0 && task.count === task.threads) {
-        var output = scope.data.getOutput(task, scope.habitat.transferrable);
-        if (task.sort) {
-          output = scope.data.sortOutput(output, task.sort);
-        }
-        resolve(output);
-        scope.pool.tasks[task.id] = null; //Clean up our task, not needed any longer
+        scope.returnOutput(task, resolve);
       }
       if (scope.pool.pending.length !== 0) {
-        scope.pool.processQueue(hamster, scope.pool.pending.shift());
-      } else if (!scope.persistence && !scope.habitat.webWorker) {
+        scope.pool.processQueue(scope.pool.pending.shift());
+      }
+      if (!scope.persistence && !scope.habitat.webWorker) {
         hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
       }
-    };
-
+    }
     // Handle error response from a thread
-    let onThreadError = function(incomingError) {
-      if (!scope.habitat.webWorker) {
-        hamster.terminate(); //Kill the thread
-      }
-      this.logger.error(`Line ${incomingError.lineno} in ${incomingError.filename}: ${incomingError.message}`);
-      var error = {
-        timeStamp: Date.now(),
-        threadId: threadId,
-        message: 
-      };
-      scope.pool.errors.push(error);
-      reject(error);
-    };
-
+    function onThreadError(error) {
+      this.logger.errorFromThread(error, reject);
+    }
+    // Register on message/error handlers
     if (this.habitat.webWorker) {
       hamster.port.onmessage = onThreadResponse;
       hamster.port.onerror = onThreadError;
@@ -226,7 +172,6 @@ class hamstersjs {
       hamster.onerror = onThreadError;
     }
   }
-
 }
 
 var hamsters = new hamstersjs();

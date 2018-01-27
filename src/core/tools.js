@@ -1,3 +1,5 @@
+/* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
+
 /*
 * Title: Hamsters.js
 * Description: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
@@ -7,8 +9,6 @@
 * License: Artistic License 2.0
 */
 
-/* jshint esversion: 6 */
-
 'use strict';
 
 class tools {
@@ -17,7 +17,6 @@ class tools {
     this.parseJson = this.parseJsonOnThread;
     this.stringifyJson = this.stringifyJsonOnThread;
   }
-
 
   randomArray(inputAmount, onSuccess) {
     let array = [];
@@ -45,8 +44,8 @@ class tools {
   }
 }
 
-var hamsterTools = new tools();
+var hamstersTools = new tools();
 
 if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamsterTools;
+  module.exports = hamstersTools;
 }
