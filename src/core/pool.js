@@ -101,6 +101,12 @@ class pool {
       }
     });
   }
+  
+  trackThread(task, id) {
+    task.startTime = Date.now();
+    task.workers.push(id); //Keep track of threads scoped to current task
+    this.pool.running.push(id); //Keep track of all currently running threads
+  }
 }
 
 var hamsterPool = new pool();

@@ -9,6 +9,8 @@
 
 /* jshint esversion: 6 */
 
+import hamstersVersion from './core/version';
+
 'use strict';
 
 class logger {
@@ -28,21 +30,21 @@ class logger {
 
   infoLog(message) {
     let timeStamp = Date.now();
-    let timeStampedMessage = `Hamsters.js Info: ${message} @ ${timeStamp}`;
+    let timeStampedMessage = `Hamsters.js v${hamstersVersion} Info: ${message} @ ${timeStamp}`;
     this.saveLogEntry('info', timeStampedMessage);
     console.info(timeStampedMessage);
   }
 
   warningLog(message) {
     let timeStamp = Date.now();
-    let timeStampedMessage = `Hamsters.js Warning: ${message} @ ${timeStamp}`;
+    let timeStampedMessage = `Hamsters.js v${hamstersVersion} Warning: ${message} @ ${timeStamp}`;
     this.saveLogEntry('warning', timeStampedMessage);
     console.warning(timeStampedMessage);
   }
 
   errorLog(message, reject) {
     let timeStamp = Date.now();
-    let timeStampedMessage = `Hamsters.js Error: ${message} @ ${timeStamp}`;
+    let timeStampedMessage = `Hamsters.js v${hamstersVersion} Error: ${message} @ ${timeStamp}`;
     this.saveLogEntry('error', timeStampedMessage);
     console.error(timeStampedMessage);
     reject(timeStampedMessage);
@@ -59,34 +61,41 @@ class logger {
     return this.logBook;
   }
 
-  findStringInArray(array, string) {
-    let results = [];
-    for (var i = 0; i < array.length; i++) {
-      if(array[i].indexOf(string) !== -1) {
-        results.push(array[i]);
+  findStringInLogBook(logBookEntries, string) {
+    let searchResults = [];
+    let i = 0;
+    for (i; i < logBookEntries.length; i++) {
+      if(logBookEntries[i].indexOf(string) !== -1) {
+        searchResults.push(logBookEntries[i]);
       }
     }
-    return results;
+    return searchResults;
   }
 
-  searchLogBook(string, eventType) {
+  findStringInLogBookAllTypes(logBook, searchString) {
+    let searchResults = [];
+    let key, eventTypeResults, tmpEntries = null;
+    for(key in logBook) {
+      if(logBook.hasOwnProperty(key)) {
+        tmpEntries = logBook[key];
+        eventTypeResults = this.findStringInLogBook(tmpEntries, searchString);
+      }
+    }
+    return searchResults;
+  }
+
+  searchLogBook(searchString, eventType) {
     let finalResults = [];
-    let tmpEntries;
     let eventTypeResults;
     if(eventType) {
       tmpEntries = this.logBook[eventType];
-      finalResults = this.findStringInArray(tmpEntries, string);
+      finalResults = this.findStringInLogBook(tmpEntries, string);
     } else {
-      for(var key in this.logBook) {
-        if(this.logBook.hasOwnProperty(key)) {
-          tmpEntries = this.logBook[key];
-          eventTypeResults = this.findStringInArray(tmpEntries, string);
-          if(eventTypeResults.length !== 0) {
-            finalResults = [finalResults, eventTypeResults].reduce(function(a, b) {
-              return a.concat(b);
-            });
-          }
-        }
+      let allResults = this.findStringInLogBookAllTypes(this.logBook);
+      if(all.length !== 0) {
+        finalResults = [finalResults, eventTypeResults].reduce(function(a, b) {
+          return a.concat(b);
+        });
       }
     }
     return {
