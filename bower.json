@@ -1,13 +1,13 @@
 {
   "name": "Hamsters.js",
-  "version": "3.9.5",
+  "version": "4.2.2",
   "authors": [
     "Austin K Smith <austin@asmithdev.com>"
   ],
   "description": "100% Vanilla Javascript Multithreading & Parallel Execution Library",
-  "main": "hamsters.js",
+  "main": "build/hamsters.min.js",
   "moduleType": [
-    "es6"
+    "es5"
   ],
   "keywords": [
     "multithreading",
@@ -18,18 +18,18 @@
     "workers",
     "threads",
     "threading",
-    "web workers",
     "mpi",
+    "web workers",
     "parallel",
-    "promises"
+    "task runner",
+    "thread pool"
   ],
   "license": "Artistic License 2.0",
-  "homepage": "http://hamsters.io",
+  "homepage": "http://www.hamsters.io",
   "ignore": [
     "node_modules",
     "bower_components",
-    "test",
-    "tests",
-    "**/.*"
+    "spec",
+    "specReport",
   ]
 }
