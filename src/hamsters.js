@@ -47,7 +47,7 @@ class hamstersjs {
     if (typeof startOptions !== 'undefined') {
       this.processStartOptions(startOptions);
     }
-    this.pool.spawnHamsters(this.persistence, this.wheel, this.maxThreads);
+    hamstersPool.spawnHamsters(this.persistence, this.wheel, this.maxThreads);
   }
 
   processStartOptions(startOptions) {
@@ -64,8 +64,8 @@ class hamstersjs {
   }
 
   newTask(taskOptions) {
-    let index = this.pool.tasks.push(taskOptions);
-    return this.pool.tasks[(index - 1)];
+    let index = hamstersPool.tasks.push(taskOptions);
+    return hamstersPool.tasks[(index - 1)];
   }
 
   loopAbstraction(input, onSuccess) {
@@ -76,8 +76,8 @@ class hamstersjs {
   }
 
   legacyHamsterWheel(threadId, task, resolve, reject) {
-    this.pool.trackThread(task, threadId);
-    let dataArray = this.data.arrayFromIndex(task.input.array, task.indexes[threadId]);
+    hamstersPool.trackThread(task, threadId);
+    let dataArray = hamstersData.arrayFromIndex(task.input.array, task.indexes[threadId]);
     hamsterWheel.legacy(task, dataArray, resolve, reject);
     task.count += 1; //Thread finished
   }
@@ -92,7 +92,7 @@ class hamstersjs {
     this.workers = [];
     this.operator = scope.data.prepareJob(functionToRun);
     this.memoize = params.memoize || false;
-    this.dataType = params.dataType ? params.dataType.toLowerCase() : null;
+    hamstersDataType = params.dataType ? params.dataType.toLowerCase() : null;
     if(params.array) {
       this.indexes = scope.data.determineSubArrays(params.array, this.threads);
     }
@@ -102,7 +102,7 @@ class hamstersjs {
     return new Promise((resolve, reject) => {
       var task = new this.hamstersTask(params, functionToRun, this);
       var logger = this.logger;
-      this.pool.scheduleTask(task, this.wheel, this.maxThreads).then(function(results) {
+      hamstersPool.scheduleTask(task, this.wheel, this.maxThreads).then(function(results) {
         resolve(results);
       }).catch(function(error) {
         logger.error(error.messsage, reject);
@@ -113,7 +113,7 @@ class hamstersjs {
   runHamsters(params, functionToRun, onSuccess) {
     var task = new this.hamstersTask(params, functionToRun, this);
     var logger = this.logger;
-    this.pool.scheduleTask(task, this.wheel, this.maxThreads).then(function(results) {
+    hamstersPool.scheduleTask(task, this.wheel, this.maxThreads).then(function(results) {
       onSuccess(results);
     }).catch(function(error) {
       logger.error(error.messsage);
@@ -121,24 +121,24 @@ class hamstersjs {
   }
 
   hamsterWheel(task, resolve, reject) {
-    let threadId = this.pool.running.length;
+    let threadId = hamstersPool.running.length;
     if(this.maxThreads === threadId) {
-      return this.pool.queueWork(task, threadId, resolve, reject);
+      return hamstersPool.queueWork(task, threadId, resolve, reject);
     }
-    let hamsterFood = this.data.prepareMeal(task, threadId);
-    let hamster = taskhis.pool.grabHamster(threadId, this.persistence, this.habitat, this.worker, this.data);
+    let hamsterFood = hamstersData.prepareMeal(task, threadId);
+    let hamster = taskhis.pool.grabHamster(threadId, this.persistence, this.habitat, this.worker, hamstersData);
     this.trainHamster(threadId, task, hamster, resolve, reject);
-    this.pool.trackThread(task, threadId);
-    this.data.feedHamster(hamster, hamsterFood);
+    hamstersPool.trackThread(task, threadId);
+    hamstersData.feedHamster(hamster, hamsterFood);
     task.count += 1; //Increment count, thread is running
   }
 
   returnOutput(task, resolve) {
-    let output = this.data.getOutput(task, this.habitat.transferrable);
+    let output = hamstersData.getOutput(task, this.habitat.transferrable);
     if (task.sort) {
-      output = this.data.sortOutput(output, task.sort);
+      output = hamstersData.sortOutput(output, task.sort);
     }
-    this.pool.tasks[task.id] = null; //Clean up our task, not needed any longer
+    hamstersPool.tasks[task.id] = null; //Clean up our task, not needed any longer
     resolve(output);
   }
 

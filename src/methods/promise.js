@@ -11,7 +11,7 @@
 
 'use strict';
 
-class hamsterLoop {
+class hamsterPromise {
   constructor() {
     this.options = this.prepareOptions;
     this.scaffold = this.loopScaffold;
@@ -26,7 +26,7 @@ class hamsterLoop {
     this.worker = worker;
   }
 
-  loopScaffold() {
+  promiseScaffold() {
     let operator = prepareOperator(params.run);
 
     function prepareOperator(method) {
@@ -54,8 +54,8 @@ class hamsterLoop {
   }
 }
 
-var hamstersLoop = new hamsterLoop();
+var hamstersPromise = new hamsterPromise();
 
 if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamstersLoop;
+  module.exports = hamstersPromise;
 }
