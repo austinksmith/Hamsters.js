@@ -43,8 +43,8 @@ class data {
     } else {
       hamsterFood.array = task.input.array;
     }
-    if (task.operator && !hamsterFood.fn) {
-      hamsterFood.fn = task.operator;
+    if (task.hamstersJob && !hamsterFood.hamstersJob) {
+      hamsterFood.hamstersJob = hamstersJob;
     }
     return hamsterFood;
   }
@@ -77,10 +77,10 @@ class data {
   }
 
 
-  prepareFunction(functionBody) {
-    if (!this.habitat.legacy) {
+  prepareFunction(functionBody, habitat) {
+    if (!habitat.legacy) {
       functionBody = String(functionBody);
-      if (!this.habitat.webWorker) {
+      if (!habitat.webWorker) {
         let startingIndex = (functionBody.indexOf("{") + 1);
         let endingIndex = (functionBody.length - 1);
         return functionBody.substring(startingIndex, endingIndex);
