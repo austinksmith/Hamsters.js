@@ -48,7 +48,11 @@ class logger {
     let timeStampedMessage = `Hamsters.js v${hamstersVersion} Error: ${message} @ ${timeStamp}`;
     this.saveLogEntry('error', timeStampedMessage);
     console.error(timeStampedMessage);
-    reject(timeStampedMessage);
+    if(reject) {
+      reject(timeStampedMessage);
+    } else {
+      return timeStampedMessage;
+    }
   }
 
   errorFromThread(error, reject) {

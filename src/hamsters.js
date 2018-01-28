@@ -21,14 +21,6 @@ import hamstersTools from './core/tools';
 import hamstersLogger from './core/logger';
 import hamstersMemoizer from './core/memoizer';
 
-// Import library methods
-import hamstersRun from './methods/run';
-import hamstersLoop from './methods/loop';
-import hamstersPromise from './methods/promise';
-import hamstersAwait from './methods/await';
-import hamstersReduce from './methods/reduce';
-
-
 class hamstersjs {
 
   constructor() {
@@ -44,11 +36,9 @@ class hamstersjs {
     this.pool = hamstersPool;
     this.logger = hamstersLogger;
     this.memoizer = hamstersMemoizer;
-    this.run = hamstersRun;
-    this.promise = hamstersPromise;
-    this.loop = hamstersLoop;
-    this.await = hamstersAwait;
-    this.reduce = hamstersReduce;
+    this.run = this.hamstersRun;
+    this.promise = this.hamstersPromise;
+    this.await = this.hamstersAwait;
     this.wheel = hamstersPool.selectHamsterWheel();
     this.init = this.initializeLibrary;
   }
@@ -59,6 +49,7 @@ class hamstersjs {
       this.processStartOptions(startOptions);
     }
     hamstersPool.spawnHamsters(this.persistence, this.wheel, this.maxThreads);
+    delete this.init;
   }
 
   processStartOptions(startOptions) {
@@ -79,13 +70,6 @@ class hamstersjs {
     return hamstersPool.tasks[(index - 1)];
   }
 
-  loopAbstraction(input, onSuccess) {
-    let params = new hamstersLoop.options(input, this.habitat.webWorker);
-    this.runHamsters(params, function(rtn) {
-      onSuccess(rtn);
-    }, input.threads, true, input.dataType);
-  }
-
   legacyHamsterWheel(threadId, task, resolve, reject) {
     hamstersPool.trackThread(task, threadId);
     let dataArray = hamstersData.arrayFromIndex(task.input.array, task.indexes[threadId]);
@@ -101,18 +85,29 @@ class hamstersjs {
     this.aggregate = params.aggregate || true;
     this.output = [];
     this.workers = [];
-    this.operator = scope.data.prepareJob(functionToRun);
+    this.operator = scope.data.prepareJob(functionToRun, scope.habitat);
     this.memoize = params.memoize || false;
-    hamstersDataType = params.dataType ? params.dataType.toLowerCase() : null;
-    if(params.array) {
+    this.dataType = params.dataType ? params.dataType.toLowerCase() : null;
+    if(params.array && this.threads !== 1) {
       this.indexes = scope.data.determineSubArrays(params.array, this.threads);
+    }
+  }
+
+  hamstersAwait(params, functionToRun) {
+    let task = new this.hamstersTask(params, functionToRun, this);
+    let results = null;
+    try {
+      results = await hamstersPool.scheduleTask(task, this.wheel, this.maxThreads);
+      return results;
+    } catch (error) {
+      return this.logger.error(error.messsage);
     }
   }
 
   hamstersPromise(params, functionToRun) {
     return new Promise((resolve, reject) => {
-      var task = new this.hamstersTask(params, functionToRun, this);
-      var logger = this.logger;
+      let task = new this.hamstersTask(params, functionToRun, this);
+      let logger = this.logger;
       hamstersPool.scheduleTask(task, this.wheel, this.maxThreads).then(function(results) {
         resolve(results);
       }).catch(function(error) {
@@ -121,13 +116,13 @@ class hamstersjs {
     });
   }
 
-  runHamsters(params, functionToRun, onSuccess) {
-    var task = new this.hamstersTask(params, functionToRun, this);
-    var logger = this.logger;
+  hamstersRun(params, functionToRun, onSuccess, onError) {
+    let task = new this.hamstersTask(params, functionToRun, this);
+    let logger = this.logger;
     hamstersPool.scheduleTask(task, this.wheel, this.maxThreads).then(function(results) {
       onSuccess(results);
     }).catch(function(error) {
-      logger.error(error.messsage);
+      logger.error(error.messsage, onError);
     });
   }
 
@@ -144,7 +139,7 @@ class hamstersjs {
     task.count += 1; //Increment count, thread is running
   }
 
-  returnOutput(task, resolve) {
+  returnOutputAndRemoveTask(task, resolve) {
     let output = hamstersData.getOutput(task, this.habitat.transferrable);
     if (task.sort) {
       output = hamstersData.sortOutput(output, task.sort);
@@ -161,7 +156,7 @@ class hamstersjs {
       scope.pool.destroyThread(task, threadId);
       task.output[threadId] = results.data;
       if (task.workers.length === 0 && task.count === task.threads) {
-        scope.returnOutput(task, resolve);
+        scope.returnOutputAndRemoveTask(task, resolve);
       }
       if (scope.pool.pending.length !== 0) {
         scope.pool.processQueue(scope.pool.pending.shift());

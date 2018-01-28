@@ -28,20 +28,16 @@ class wheel {
     var params = {};
     var rtn = {};
 
-    function setDefaults(incomingMessage) {
-      params = incomingMessage.data;
-      rtn = {
-        data: [],
-        dataType: params.dataType
-      };
-    }
-
     addEventListener('connect', function(incomingConnection) {
       const port = incomingConnection.ports[0];
       port.start();
       port.addEventListener('message', function(incomingMessage) {
-        setDefaults(incomingMessage);
-        eval("(" + params.fn + ")")();
+        params = incomingMessage.data;
+        rtn = {
+          data: [],
+          dataType: params.dataType
+        };
+        eval("(" + params.hamstersJob + ")")();
         port.postMessage({
           results: rtn
         });
@@ -54,14 +50,6 @@ class wheel {
 
     var params = {};
     var rtn = {};
-
-    function setDefaults(incomingMessage) {
-      params = incomingMessage.data;
-      rtn = {
-        data: [],
-        dataType: (params.dataType ? params.dataType.toLowerCase() : null)
-      };
-    }
 
     function prepareReturn(returnObject) {
       var dataType = returnObject.dataType;
@@ -104,9 +92,13 @@ class wheel {
       return buffers;
     }
 
-    function onmessage(incomingMessage) {
-      setDefaults(incomingMessage);
-      new Function(params.fn)();
+    self.onmessage = function(incomingMessage) {
+      params = incomingMessage.data;
+      rtn = {
+        data: [],
+        dataType: (params.dataType ? params.dataType.toLowerCase() : null)
+      };
+      new Function(params.hamstersJob)();
       postMessage(prepareReturn(rtn), prepareTransferBuffers(rtn));
     };
   }
@@ -117,7 +109,7 @@ class wheel {
         data: [],
         dataType: (params.dataType ? params.dataType.toLowerCase() : null)
       };
-      params.fn();
+      params.hamstersJob();
       if (params.dataType) {
         rtn.data = hamstersData.processDataType(params.dataType, rtn.data, hamstersHabitat.transferable);
         rtn.dataType = params.dataType;
