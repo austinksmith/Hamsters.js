@@ -39,7 +39,7 @@ class hamstersjs {
     this.run = this.hamstersRun;
     this.promise = this.hamstersPromise;
     this.await = this.hamstersAwait;
-    this.wheel = hamstersPool.selectHamsterWheel();
+    this.wheel = this.pool.selectHamsterWheel();
     this.init = this.initializeLibrary;
   }
 
@@ -48,7 +48,7 @@ class hamstersjs {
     if (typeof startOptions !== 'undefined') {
       this.processStartOptions(startOptions);
     }
-    hamstersPool.spawnHamsters(this.persistence, this.wheel, this.maxThreads);
+    this.pool.spawnHamsters(this.persistence, this.wheel, this.maxThreads);
     delete this.init;
   }
 
@@ -66,12 +66,12 @@ class hamstersjs {
   }
 
   newTask(taskOptions) {
-    let index = hamstersPool.tasks.push(taskOptions);
-    return hamstersPool.tasks[(index - 1)];
+    let index = this.pool.tasks.push(taskOptions);
+    return this.pool.tasks[(index - 1)];
   }
 
   legacyHamsterWheel(threadId, task, resolve, reject) {
-    hamstersPool.trackThread(task, threadId);
+    this.pool.trackThread(task, threadId);
     let dataArray = hamstersData.arrayFromIndex(task.input.array, task.indexes[threadId]);
     hamsterWheel.legacy(task, dataArray, resolve, reject);
     task.count += 1; //Thread finished
@@ -93,90 +93,35 @@ class hamstersjs {
     }
   }
 
-  hamstersAwait(params, functionToRun) {
-    let task = new this.hamstersTask(params, functionToRun, this);
-    let results = null;
-    try {
-      results = await hamstersPool.scheduleTask(task, this.wheel, this.maxThreads);
-      return results;
-    } catch (error) {
-      return this.logger.error(error.messsage);
-    }
-  }
+  // async hamstersAwait(params, functionToRun) {
+  //   let task = new this.hamstersTask(params, functionToRun, this);
+  //   let results = null;
+  //   try {
+  //     results = await this.pool.scheduleTask(task, this.wheel, this.maxThreads);
+  //     return results;
+  //   } catch (error) {
+  //     return this.logger.error(error.messsage);
+  //   }
+  // }
 
   hamstersPromise(params, functionToRun) {
     return new Promise((resolve, reject) => {
       let task = new this.hamstersTask(params, functionToRun, this);
-      let logger = this.logger;
-      hamstersPool.scheduleTask(task, this.wheel, this.maxThreads).then(function(results) {
+      this.pool.scheduleTask(newTask, this.persistence, this.wheel, this.maxThreads).then(function(results) {
         resolve(results);
       }).catch(function(error) {
-        logger.error(error.messsage, reject);
+        hamstersLogger.error(error.messsage, reject);
       });
     });
   }
 
   hamstersRun(params, functionToRun, onSuccess, onError) {
-    let task = new this.hamstersTask(params, functionToRun, this);
-    let logger = this.logger;
-    hamstersPool.scheduleTask(task, this.wheel, this.maxThreads).then(function(results) {
+    let newTask = new this.hamstersTask(params, functionToRun, this);
+    this.pool.scheduleTask(newTask, this.persistence, this.wheel, this.maxThreads).then(function(results) {
       onSuccess(results);
     }).catch(function(error) {
-      logger.error(error.messsage, onError);
+      hamstersLogger.error(error.messsage, onError);
     });
-  }
-
-  hamsterWheel(task, resolve, reject) {
-    let threadId = hamstersPool.running.length;
-    if(this.maxThreads === threadId) {
-      return hamstersPool.queueWork(task, threadId, resolve, reject);
-    }
-    let hamsterFood = hamstersData.prepareMeal(task, threadId);
-    let hamster = taskhis.pool.grabHamster(threadId, this.persistence, this.habitat, this.worker, hamstersData);
-    this.trainHamster(threadId, task, hamster, resolve, reject);
-    hamstersPool.trackThread(task, threadId);
-    hamstersData.feedHamster(hamster, hamsterFood);
-    task.count += 1; //Increment count, thread is running
-  }
-
-  returnOutputAndRemoveTask(task, resolve) {
-    let output = hamstersData.getOutput(task, this.habitat.transferrable);
-    if (task.sort) {
-      output = hamstersData.sortOutput(output, task.sort);
-    }
-    hamstersPool.tasks[task.id] = null; //Clean up our task, not needed any longer
-    resolve(output);
-  }
-
-  trainHamster(threadId, task, hamster, resolve, reject) {
-    let scope = this;
-    // Handle successful response from a thread
-    function onThreadResponse(messsage) {
-      let results = message.data;
-      scope.pool.destroyThread(task, threadId);
-      task.output[threadId] = results.data;
-      if (task.workers.length === 0 && task.count === task.threads) {
-        scope.returnOutputAndRemoveTask(task, resolve);
-      }
-      if (scope.pool.pending.length !== 0) {
-        scope.pool.processQueue(scope.pool.pending.shift());
-      }
-      if (!scope.persistence && !scope.habitat.webWorker) {
-        hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
-      }
-    }
-    // Handle error response from a thread
-    function onThreadError(error) {
-      this.logger.errorFromThread(error, reject);
-    }
-    // Register on message/error handlers
-    if (this.habitat.webWorker) {
-      hamster.port.onmessage = onThreadResponse;
-      hamster.port.onerror = onThreadError;
-    } else {
-      hamster.onmessage = onThreadResponse;
-      hamster.onerror = onThreadError;
-    }
   }
 }
 

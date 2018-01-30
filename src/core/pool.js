@@ -39,16 +39,20 @@ class pool {
   	});
   }
 
-  grabHamster(threadId, persistence, worker) {
+  grabHamster(threadId, persistence, wheel) {
     if(persistence) {
       return this.threads[threadId];
     }
-    return this.spawnHamster(hamstersHabitat, worker, hamstersData.workerURI);
+    return this.spawnHamster(hamstersHabitat, wheel, hamstersData.workerURI);
   }
 
   newTask(taskOptions) {
     let index = this.pool.tasks.push(taskOptions);
     return this.pool.tasks[(index - 1)];
+  }
+
+  startTask(task, resolve, reject) {
+    return this.wheel(task, resolve, reject);
   }
 
   removeThreadFromRunning(task, id) {
@@ -61,10 +65,6 @@ class pool {
       return;
     }
     this.wheel(item.input, item.params, item.aggregate, item.onSuccess, item.task, item.workerid, hamster, item.memoize); //Assign most recently finished thread to queue item
-  }
-
-  startTask(task, resolve, reject) {
-    return this.wheel(task, resolve, reject);
   }
 
   spawnHamsters(persistence, wheel, maxThreads) {
@@ -97,6 +97,60 @@ class pool {
     return new hamstersHabitat.Worker(workerURI);
   }
 
+  hamsterWheel(task, persistence, wheel, resolve, reject) {
+    let threadId = this.running.length;
+    if(this.maxThreads === threadId) {
+      return this.queueWork(task, threadId, resolve, reject);
+    }
+    let hamsterFood = hamstersData.prepareMeal(task, threadId);
+    let hamster = this.grabHamster(threadId, persistence, wheel);
+    this.trainHamster(threadId, task, hamster, persistence, resolve, reject);
+    this.trackThread(task, threadId);
+    hamstersData.feedHamster(hamster, hamsterFood);
+    task.count += 1; //Increment count, thread is running
+  }
+
+  returnOutputAndRemoveTask(task, resolve) {
+    let output = hamstersData.getOutput(task, hamstersHabitat.transferrable);
+    if (task.sort) {
+      output = hamstersData.sortOutput(output, task.sort);
+    }
+    this.tasks[task.id] = null; //Clean up our task, not needed any longer
+    resolve(output);
+  }
+
+  trainHamster(threadId, task, hamster, persistence, resolve, reject) {
+    let pool = this;
+    // Handle successful response from a thread
+    function onThreadResponse(message) {
+      let results = message.data;
+      pool.running.splice(pool.running.indexOf(threadId), 1); //Remove thread from running pool
+    	task.workers.splice(task.workers.indexOf(threadId), 1); //Remove thread from task running pool
+      task.output[threadId] = results.data; // Save results data to output
+      if (task.workers.length === 0 && task.count === task.threads) {
+        pool.returnOutputAndRemoveTask(task, resolve);
+      }
+      if (pool.pending.length !== 0) {
+        pool.processQueue(pool.pending.shift());
+      }
+      if (!persistence && !hamstersHabitat.webWorker) {
+        hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
+      }
+    }
+    // Handle error response from a thread
+    function onThreadError(error) {
+      hamstersLogger.errorFromThread(error, reject);
+    }
+    // Register on message/error handlers
+    if (hamstersHabitat.webWorker) {
+      hamster.port.onmessage = onThreadResponse;
+      hamster.port.onerror = onThreadError;
+    } else {
+      hamster.onmessage = onThreadResponse;
+      hamster.onerror = onThreadError;
+    }
+  }
+
   selectHamsterWheel() {
     if (hamstersHabitat.legacy) {
       return hamstersWheel.legacy;
@@ -107,21 +161,21 @@ class pool {
     return hamstersWheel.regular;
   }
 
-  scheduleTask(task, wheel, maxThreads) {
+  scheduleTask(task, persistence, wheel, maxThreads) {
   	if(this.running.length === maxThreads) {
-  		return this.addWorkToPending();
+  		return this.addWorkToPending(task);
   	}
   	return new Promise((resolve, reject) => {
       let i = 0;
       while (i < task.threads) {
-        wheel(task, resolve, reject);
+        this.hamsterWheel(task, persistence, wheel, resolve, reject);
         i += 1;
       }
     });
   }
   
   keepTrackOfThread(task, id) {
-    task.workers.push(id); //Keep track of threads scoped to current task
+    task.workers.push(id); //Keep track of threads poold to current task
     this.running.push(id); //Keep track of all currently running threads
   }
 }
