@@ -9,6 +9,8 @@
 * License: Artistic License 2.0
 */
 
+import hamstersHabitat from './habitat';
+
 'use strict';
 
 class data {
@@ -50,10 +52,10 @@ class data {
   }
 
   messageWorker(hamster, hamsterFood) {
-    if (this.habitat.webWorker) {
+    if (hamstersHabitat.webWorker) {
       return hamster.port.postMessage(hamsterFood);
     }
-    if (this.habitat.ie10) {
+    if (hamstersHabitat.ie10) {
       return hamster.postMessage(hamsterFood);
     }
     return hamster.postMessage(hamsterFood, this.prepareTransferBuffers(hamsterFood));
@@ -62,7 +64,7 @@ class data {
   prepareTransferBuffers(hamsterFood) {
     let buffers = [];
     let key = null;
-    if(this.habitat.transferrable) {
+    if(hamstersHabitat.transferrable) {
       for (key in hamsterFood) {
         if (hamsterFood.hasOwnProperty(key) && hamsterFood[key]) {
           if(hamsterFood[key].buffer) {
@@ -95,16 +97,16 @@ class data {
     return URL.createObjectURL(hamsterBlob);
   }
 
-  processDataType(dataType, buffer, transferrable) {
-    if(transferrable) {
+  processDataType(dataType, buffer) {
+    if(hamstersHabitat.transferrable) {
       return this.typedArrayFromBuffer(dataType, buffer);
     }
     return buffer;
   }
 
-  prepareOutput(task, transferrable) {
+  prepareOutput(task) {
     if(task.aggregate && task.threads !== 1) {
-      return this.aggregateThreadOutputs(task.output, task.dataType, transferrable);
+      return this.aggregateThreadOutputs(task.output, task.dataType);
     }
     return task.output;
   }
@@ -190,8 +192,8 @@ class data {
     onSuccess(randomArray);
   }
 
-  aggregateThreadOutputs(input, dataType, transferrable) {
-    if(!dataType || !transferrable) {
+  aggregateThreadOutputs(input, dataType) {
+    if(!dataType || !hamstersHabitat.transferrable) {
       return input.reduce(function(a, b) {
         return a.concat(b);
       });
@@ -202,7 +204,7 @@ class data {
     for (i; i < len; i += 1) {
       bufferLength += input[i].length;
     }
-    let output = this.processDataType(dataType, bufferLength, transferrable);
+    let output = this.processDataType(dataType, bufferLength);
     let offset = 0;
     for (i = 0; i < len; i += 1) {
       output.set(input[i], offset);
