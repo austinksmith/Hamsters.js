@@ -11,11 +11,13 @@
 
 import hamsters from '../src/hamsters';
 
-hamsters.init({
-  maxThreads: 1,
-  persistence: false,
-  cache: false
-});
+if(hamsters.init) {
+  hamsters.init({
+    maxThreads: 1,
+    persistence: false,
+    cache: false
+  });
+}
 
 describe("Hamsters Data", () => {
 

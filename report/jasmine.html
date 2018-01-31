@@ -12,15 +12,15 @@
         <td colspan="3" title="Mozilla/5.0 (Unknown; Linux x86_64) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.1.1 Safari/538.1">Browser: PhantomJS 2.1.1 (Linux 0.0.0)</td>
       </tr>
       <tr class="overview">
-        <td colspan="3">Timestamp: 2018-1-30 23:31:41</td>
+        <td colspan="3">Timestamp: 2018-1-30 23:38:11</td>
       </tr>
       <tr>
         <td colspan="3">
-          0 tests / 
-          1 errors / 
-          0 failures / 
+          31 tests / 
+          0 errors / 
+          21 failures / 
           0 skipped / 
-          runtime: 0s
+          runtime: 5.037s
         </td>
       </tr>
       <tr class="header">
@@ -28,17 +28,312 @@
         <td>Spec</td>
         <td>Suite / Results</td>
       </tr>
-      <tr class="system-out">
-        <td colspan="3"><strong>System output:</strong><br />PhantomJS 2.1.1 (Linux 0.0.0) INFO: 'Hamsters.js v4.2.2 Info: Preparing the hamster wheels & readying hamsters @ 1517373101559'
-</td>
+      <tr class="pass">
+        <td>Passed in 0.003s</td>
+        <td>Should aggregate array of subarrays</td>
+        <td>Hamsters Data</td>
       </tr>
-      <tr class="system-errors">
-        <td colspan="3"><strong>Errors:</strong><br />TypeError: undefined is not a function (evaluating '_hamsters2.default.init({
-	  maxThreads: 1,
-	  persistence: false,
-	  cache: false
-	})')
-at tests.webpack.js:1572
+      <tr class="pass">
+        <td>Passed in 0.001s</td>
+        <td>Should split array into subarrays</td>
+        <td>Hamsters Data</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0.001s</td>
+        <td>Habitat Node Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0.001s</td>
+        <td>Habitat Browser Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0.001s</td>
+        <td>Habitat Atomics Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0s</td>
+        <td>Habitat Legacy Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0.001s</td>
+        <td>Habitat WebWorker Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0s</td>
+        <td>Habitat Shell Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0.002s</td>
+        <td>Habitat Atomics Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0s</td>
+        <td>Habitat Proxies Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (null)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Uint8)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: resolve in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:72
+hamstersRun@tests.webpack.js:299:30
+tests.webpack.js:1664:30
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Uint32)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: resolve in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:72
+hamstersRun@tests.webpack.js:299:30
+tests.webpack.js:1664:30
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Uint16)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: resolve in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:72
+hamstersRun@tests.webpack.js:299:30
+tests.webpack.js:1664:30
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Float64)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: resolve in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:72
+hamstersRun@tests.webpack.js:299:30
+tests.webpack.js:1664:30
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Float32)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: resolve in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:72
+hamstersRun@tests.webpack.js:299:30
+tests.webpack.js:1664:30
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Int32)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: resolve in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:72
+hamstersRun@tests.webpack.js:299:30
+tests.webpack.js:1664:30
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Int16)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: resolve in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:72
+hamstersRun@tests.webpack.js:299:30
+tests.webpack.js:1664:30
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Int8)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: resolve in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:72
+hamstersRun@tests.webpack.js:299:30
+tests.webpack.js:1664:30
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (null)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: resolve in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:72
+hamstersRun@tests.webpack.js:299:30
+tests.webpack.js:1683:30
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Uint8)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: resolve in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:72
+hamstersRun@tests.webpack.js:299:30
+tests.webpack.js:1683:30
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Uint32)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: resolve in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:72
+hamstersRun@tests.webpack.js:299:30
+tests.webpack.js:1683:30
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Uint16)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: resolve in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:72
+hamstersRun@tests.webpack.js:299:30
+tests.webpack.js:1683:30
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Float64)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: resolve in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:72
+hamstersRun@tests.webpack.js:299:30
+tests.webpack.js:1683:30
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Float32)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: resolve in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:72
+hamstersRun@tests.webpack.js:299:30
+tests.webpack.js:1683:30
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Int32)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: resolve in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:72
+hamstersRun@tests.webpack.js:299:30
+tests.webpack.js:1683:30
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Int16)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: resolve in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:72
+hamstersRun@tests.webpack.js:299:30
+tests.webpack.js:1683:30
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Int8)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: Can't find variable: resolve in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:72
+hamstersRun@tests.webpack.js:299:30
+tests.webpack.js:1683:30
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Should stringify json to string</td>
+        <td>
+          Hamsters running asynchronously
+          <br />TypeError: undefined is not a function (evaluating '_hamsters2.default.stringifyJson') in tests.webpack.js (line 1695)
+tests.webpack.js:1695:38
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Should parse string to json</td>
+        <td>
+          Hamsters running asynchronously
+          <br />TypeError: undefined is not a function (evaluating '_hamsters2.default.parseJson') in tests.webpack.js (line 1703)
+tests.webpack.js:1703:34
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Hamsters.loop should abstract for loop usage</td>
+        <td>
+          Hamsters running asynchronously
+          <br />TypeError: undefined is not a function (evaluating '_hamsters2.default.loop') in tests.webpack.js (line 1713)
+tests.webpack.js:1713:29
+
+        </td>
+      </tr>
+      <tr class="system-out">
+        <td colspan="3"><strong>System output:</strong><br />PhantomJS 2.1.1 (Linux 0.0.0) INFO: 'Hamsters.js v4.2.2 Info: Preparing the hamster wheels & readying hamsters @ 1517373491285'
+<br />PhantomJS 2.1.1 (Linux 0.0.0) ERROR: 'Hamsters.js v4.2.2 Error: #undefined in undefined: undefined @ 1517373491348'
+<br />PhantomJS 2.1.1 (Linux 0.0.0) ERROR: 'Hamsters.js v4.2.2 Error: undefined @ 1517373491349'
+<br />PhantomJS 2.1.1 (Linux 0.0.0) ERROR: 'Unhandled promise rejection', TypeError{line: 1408, sourceURL: 'http://localhost:9876/base/tests.webpack.js?18eb72de0eb6cdd1bf5ac8fbeec44d5846cafcdc', stack: 'errorLog@http://localhost:9876/base/tests.webpack.js?18eb72de0eb6cdd1bf5ac8fbeec44d5846cafcdc:1408:16
+http://localhost:9876/base/tests.webpack.js?18eb72de0eb6cdd1bf5ac8fbeec44d5846cafcdc:302:32
+run@http://localhost:9876/base/node_modules/babel-polyfill/dist/polyfill.js?a53df70d879dcf83b4f9965f1f6bd9d3006f895d:4295:29
+http://localhost:9876/base/node_modules/babel-polyfill/dist/polyfill.js?a53df70d879dcf83b4f9965f1f6bd9d3006f895d:4308:33
+flush@http://localhost:9876/base/node_modules/babel-polyfill/dist/polyfill.js?a53df70d879dcf83b4f9965f1f6bd9d3006f895d:1398:11'}
+<br />Chrome 64.0.3282 (Linux 0.0.0) INFO: 'Hamsters.js v4.2.2 Info: Preparing the hamster wheels & readying hamsters @ 1517373491830'
+<br />Chrome 64.0.3282 (Linux 0.0.0) ERROR: 'Hamsters.js v4.2.2 Error: #undefined in undefined: undefined @ 1517373491891'
+<br />Chrome 64.0.3282 (Linux 0.0.0) ERROR: 'Hamsters.js v4.2.2 Error: undefined @ 1517373491891'
+<br />Firefox 58.0.0 (Ubuntu 0.0.0) INFO: 'Hamsters.js v4.2.2 Info: Preparing the hamster wheels & readying hamsters @ 1517373493137'
 </td>
       </tr>
     </table>
@@ -48,15 +343,15 @@ at tests.webpack.js:1572
         <td colspan="3" title="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.119 Safari/537.36">Browser: Chrome 64.0.3282 (Linux 0.0.0)</td>
       </tr>
       <tr class="overview">
-        <td colspan="3">Timestamp: 2018-1-30 23:31:42</td>
+        <td colspan="3">Timestamp: 2018-1-30 23:38:11</td>
       </tr>
       <tr>
         <td colspan="3">
-          0 tests / 
-          1 errors / 
-          0 failures / 
+          31 tests / 
+          0 errors / 
+          21 failures / 
           0 skipped / 
-          runtime: 0s
+          runtime: 5.035s
         </td>
       </tr>
       <tr class="header">
@@ -64,14 +359,298 @@ at tests.webpack.js:1572
         <td>Spec</td>
         <td>Suite / Results</td>
       </tr>
-      <tr class="system-out">
-        <td colspan="3"><strong>System output:</strong><br />Chrome 64.0.3282 (Linux 0.0.0) INFO: 'Hamsters.js v4.2.2 Info: Preparing the hamster wheels & readying hamsters @ 1517373102039'
-</td>
+      <tr class="pass">
+        <td>Passed in 0.003s</td>
+        <td>Should aggregate array of subarrays</td>
+        <td>Hamsters Data</td>
       </tr>
-      <tr class="system-errors">
-        <td colspan="3"><strong>Errors:</strong><br />Uncaught TypeError: _hamsters2.default.init is not a function
-at tests.webpack.js:1572
-</td>
+      <tr class="pass">
+        <td>Passed in 0.001s</td>
+        <td>Should split array into subarrays</td>
+        <td>Hamsters Data</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0s</td>
+        <td>Habitat Node Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0s</td>
+        <td>Habitat Browser Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0s</td>
+        <td>Habitat Atomics Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0s</td>
+        <td>Habitat Legacy Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0s</td>
+        <td>Habitat WebWorker Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0s</td>
+        <td>Habitat Shell Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0.002s</td>
+        <td>Habitat Atomics Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0s</td>
+        <td>Habitat Proxies Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (null)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Uint8)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined
+    at pool.scheduleTask (tests.webpack.js:1137:65)
+    at hamstersjs.hamstersRun (tests.webpack.js:299:18)
+    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1664:27)
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Uint32)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined
+    at pool.scheduleTask (tests.webpack.js:1137:65)
+    at hamstersjs.hamstersRun (tests.webpack.js:299:18)
+    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1664:27)
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Uint16)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined
+    at pool.scheduleTask (tests.webpack.js:1137:65)
+    at hamstersjs.hamstersRun (tests.webpack.js:299:18)
+    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1664:27)
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Float64)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined
+    at pool.scheduleTask (tests.webpack.js:1137:65)
+    at hamstersjs.hamstersRun (tests.webpack.js:299:18)
+    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1664:27)
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Float32)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined
+    at pool.scheduleTask (tests.webpack.js:1137:65)
+    at hamstersjs.hamstersRun (tests.webpack.js:299:18)
+    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1664:27)
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Int32)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined
+    at pool.scheduleTask (tests.webpack.js:1137:65)
+    at hamstersjs.hamstersRun (tests.webpack.js:299:18)
+    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1664:27)
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Int16)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined
+    at pool.scheduleTask (tests.webpack.js:1137:65)
+    at hamstersjs.hamstersRun (tests.webpack.js:299:18)
+    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1664:27)
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Int8)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined
+    at pool.scheduleTask (tests.webpack.js:1137:65)
+    at hamstersjs.hamstersRun (tests.webpack.js:299:18)
+    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1664:27)
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (null)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined
+    at pool.scheduleTask (tests.webpack.js:1137:65)
+    at hamstersjs.hamstersRun (tests.webpack.js:299:18)
+    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1683:27)
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Uint8)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined
+    at pool.scheduleTask (tests.webpack.js:1137:65)
+    at hamstersjs.hamstersRun (tests.webpack.js:299:18)
+    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1683:27)
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Uint32)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined
+    at pool.scheduleTask (tests.webpack.js:1137:65)
+    at hamstersjs.hamstersRun (tests.webpack.js:299:18)
+    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1683:27)
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Uint16)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined
+    at pool.scheduleTask (tests.webpack.js:1137:65)
+    at hamstersjs.hamstersRun (tests.webpack.js:299:18)
+    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1683:27)
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Float64)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined
+    at pool.scheduleTask (tests.webpack.js:1137:65)
+    at hamstersjs.hamstersRun (tests.webpack.js:299:18)
+    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1683:27)
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Float32)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined
+    at pool.scheduleTask (tests.webpack.js:1137:65)
+    at hamstersjs.hamstersRun (tests.webpack.js:299:18)
+    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1683:27)
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Int32)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined
+    at pool.scheduleTask (tests.webpack.js:1137:65)
+    at hamstersjs.hamstersRun (tests.webpack.js:299:18)
+    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1683:27)
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Int16)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined
+    at pool.scheduleTask (tests.webpack.js:1137:65)
+    at hamstersjs.hamstersRun (tests.webpack.js:299:18)
+    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1683:27)
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Int8)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined
+    at pool.scheduleTask (tests.webpack.js:1137:65)
+    at hamstersjs.hamstersRun (tests.webpack.js:299:18)
+    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1683:27)
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Should stringify json to string</td>
+        <td>
+          Hamsters running asynchronously
+          <br />TypeError: _hamsters2.default.stringifyJson is not a function
+    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1695:25)
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Should parse string to json</td>
+        <td>
+          Hamsters running asynchronously
+          <br />TypeError: _hamsters2.default.parseJson is not a function
+    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1703:25)
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Hamsters.loop should abstract for loop usage</td>
+        <td>
+          Hamsters running asynchronously
+          <br />TypeError: _hamsters2.default.loop is not a function
+    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1713:25)
+
+        </td>
       </tr>
     </table>
     <hr/>
@@ -80,15 +659,15 @@ at tests.webpack.js:1572
         <td colspan="3" title="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:58.0) Gecko/20100101 Firefox/58.0">Browser: Firefox 58.0.0 (Ubuntu 0.0.0)</td>
       </tr>
       <tr class="overview">
-        <td colspan="3">Timestamp: 2018-1-30 23:31:45</td>
+        <td colspan="3">Timestamp: 2018-1-30 23:38:15</td>
       </tr>
       <tr>
         <td colspan="3">
-          0 tests / 
-          1 errors / 
-          0 failures / 
+          31 tests / 
+          0 errors / 
+          21 failures / 
           0 skipped / 
-          runtime: 0s
+          runtime: 5.092s
         </td>
       </tr>
       <tr class="header">
@@ -96,13 +675,304 @@ at tests.webpack.js:1572
         <td>Spec</td>
         <td>Suite / Results</td>
       </tr>
-      <tr class="system-out">
-        <td colspan="3"><strong>System output:</strong><br />Firefox 58.0.0 (Ubuntu 0.0.0) INFO: 'Hamsters.js v4.2.2 Info: Preparing the hamster wheels & readying hamsters @ 1517373103330'
-</td>
+      <tr class="pass">
+        <td>Passed in 0.058s</td>
+        <td>Should aggregate array of subarrays</td>
+        <td>Hamsters Data</td>
       </tr>
-      <tr class="system-errors">
-        <td colspan="3"><strong>Errors:</strong><br />TypeError: _hamsters2.default.init is not a function
-at tests.webpack.js:1572
+      <tr class="pass">
+        <td>Passed in 0.016s</td>
+        <td>Should split array into subarrays</td>
+        <td>Hamsters Data</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0s</td>
+        <td>Habitat Node Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0s</td>
+        <td>Habitat Browser Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0.001s</td>
+        <td>Habitat Atomics Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0s</td>
+        <td>Habitat Legacy Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0s</td>
+        <td>Habitat WebWorker Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0s</td>
+        <td>Habitat Shell Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0.001s</td>
+        <td>Habitat Atomics Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0.001s</td>
+        <td>Habitat Proxies Should be boolean</td>
+        <td>Hamsters Habitat</td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (null)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL. in node_modules/jasmine-core/lib/jasmine-core/jasmine.js (line 4281)
+attempt/timeoutId&lt;@node_modules/jasmine-core/lib/jasmine-core/jasmine.js:4281:23
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Uint8)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:10
+hamstersRun@tests.webpack.js:299:8
+@tests.webpack.js:1664:8
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Uint32)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:10
+hamstersRun@tests.webpack.js:299:8
+@tests.webpack.js:1664:8
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Uint16)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:10
+hamstersRun@tests.webpack.js:299:8
+@tests.webpack.js:1664:8
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Float64)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:10
+hamstersRun@tests.webpack.js:299:8
+@tests.webpack.js:1664:8
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Float32)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:10
+hamstersRun@tests.webpack.js:299:8
+@tests.webpack.js:1664:8
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Int32)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:10
+hamstersRun@tests.webpack.js:299:8
+@tests.webpack.js:1664:8
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Int16)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:10
+hamstersRun@tests.webpack.js:299:8
+@tests.webpack.js:1664:8
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Computes 8th Fibonacci Number (Int8)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:10
+hamstersRun@tests.webpack.js:299:8
+@tests.webpack.js:1664:8
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (null)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:10
+hamstersRun@tests.webpack.js:299:8
+@tests.webpack.js:1683:8
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Uint8)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:10
+hamstersRun@tests.webpack.js:299:8
+@tests.webpack.js:1683:8
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Uint32)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:10
+hamstersRun@tests.webpack.js:299:8
+@tests.webpack.js:1683:8
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Uint16)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:10
+hamstersRun@tests.webpack.js:299:8
+@tests.webpack.js:1683:8
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Float64)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:10
+hamstersRun@tests.webpack.js:299:8
+@tests.webpack.js:1683:8
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Float32)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:10
+hamstersRun@tests.webpack.js:299:8
+@tests.webpack.js:1683:8
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Int32)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:10
+hamstersRun@tests.webpack.js:299:8
+@tests.webpack.js:1683:8
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Int16)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:10
+hamstersRun@tests.webpack.js:299:8
+@tests.webpack.js:1683:8
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Int8)</td>
+        <td>
+          Hamsters running asynchronously
+          <br />ReferenceError: resolve is not defined in tests.webpack.js (line 1137)
+scheduleTask@tests.webpack.js:1137:10
+hamstersRun@tests.webpack.js:299:8
+@tests.webpack.js:1683:8
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Should stringify json to string</td>
+        <td>
+          Hamsters running asynchronously
+          <br />TypeError: _hamsters2.default.stringifyJson is not a function in tests.webpack.js (line 1695)
+@tests.webpack.js:1695:6
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Should parse string to json</td>
+        <td>
+          Hamsters running asynchronously
+          <br />TypeError: _hamsters2.default.parseJson is not a function in tests.webpack.js (line 1703)
+@tests.webpack.js:1703:6
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Hamsters.loop should abstract for loop usage</td>
+        <td>
+          Hamsters running asynchronously
+          <br />TypeError: _hamsters2.default.loop is not a function in tests.webpack.js (line 1713)
+@tests.webpack.js:1713:6
+
+        </td>
+      </tr>
+      <tr class="system-out">
+        <td colspan="3"><strong>System output:</strong><br />Firefox 58.0.0 (Ubuntu 0.0.0) ERROR: 'Hamsters.js v4.2.2 Error: #undefined in undefined: undefined @ 1517373497025'
+<br />Firefox 58.0.0 (Ubuntu 0.0.0) ERROR: 'Hamsters.js v4.2.2 Error: undefined @ 1517373497026'
+<br />Firefox 58.0.0 (Ubuntu 0.0.0) ERROR: 'Unhandled promise rejection', TypeError{}
 </td>
       </tr>
     </table>
