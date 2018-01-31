@@ -97,16 +97,27 @@ class pool {
     return new hamstersHabitat.Worker(workerURI);
   }
 
-  hamsterWheel(task, persistence, wheel, resolve, reject) {
+  prepareMeal(threadArray, task) {
+    let hamsterFood = {
+    	array: threadArray
+    };
+    for (var key in task.input) {
+      if (task.input.hasOwnProperty(key) && ['array', 'threads'].indexOf(key) == -1) {
+        hamsterFood[key] = task.input[key];
+      }
+    }
+    return hamsterFood;
+  }
+
+  hamsterWheel(array, task, persistence, wheel, resolve, reject) {
     let threadId = this.running.length;
     if(this.maxThreads === threadId) {
-      return this.queueWork(task, threadId, resolve, reject);
+      return this.queueWork(array, task, threadId, resolve, reject);
     }
-    let hamsterFood = hamstersData.prepareMeal(task, threadId);
     let hamster = this.grabHamster(threadId, persistence, wheel);
     this.trainHamster(threadId, task, hamster, persistence, resolve, reject);
     this.trackThread(task, threadId);
-    hamstersData.feedHamster(hamster, hamsterFood);
+    hamstersData.feedHamster(hamster, this.prepareMeal(array, task));
     task.count += 1; //Increment count, thread is running
   }
 
@@ -163,12 +174,20 @@ class pool {
 
   scheduleTask(task, persistence, wheel, maxThreads) {
   	if(this.running.length === maxThreads) {
-  		return this.addWorkToPending(task);
+  		return this.addWorkToPending(task, persistence, wheel, resolve, reject);
   	}
+  	let threadArrays = [];
+	  if(task.input.array && task.threads !== 1) {
+	    threadArrays = hamstersData.splitArrays(task.input.array, task.threads); //Divide our array into equal array sizes
+	  }
   	return new Promise((resolve, reject) => {
       let i = 0;
       while (i < task.threads) {
-        this.hamsterWheel(task, persistence, wheel, resolve, reject);
+      	if(threadArrays && task.threads !== 1) {
+        	this.hamsterWheel(threadArrays[i], task, persistence, wheel, resolve, reject);
+		    } else {
+        	this.hamsterWheel(task.input.array, task, persistence, wheel, resolve, reject);
+		    }
         i += 1;
       }
     });

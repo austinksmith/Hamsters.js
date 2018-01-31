@@ -82,15 +82,12 @@ class hamstersjs {
     this.threads = params.threads || 1;
     this.count = 0;
     this.input = params;
-    this.aggregate = params.aggregate || true;
+    this.aggregate = params.aggregate || false;
     this.output = [];
     this.workers = [];
-    this.operator = scope.data.prepareJob(functionToRun, scope.habitat);
     this.memoize = params.memoize || false;
     this.dataType = params.dataType ? params.dataType.toLowerCase() : null;
-    if(params.array && this.threads !== 1) {
-      this.indexes = scope.data.determineSubArrays(params.array, this.threads);
-    }
+    this.input.hamstersJob = scope.data.prepareJob(functionToRun, scope.habitat);
   }
 
   // async hamstersAwait(params, functionToRun) {

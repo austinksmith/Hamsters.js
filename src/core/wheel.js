@@ -25,8 +25,8 @@ class wheel {
   workerScaffold() {
     'use strict';
 
-    var params = {};
-    var rtn = {};
+    self.params = {};
+    self.rtn = {};
 
     addEventListener('connect', function(incomingConnection) {
       const port = incomingConnection.ports[0];
@@ -48,8 +48,8 @@ class wheel {
   regularScaffold() {
     'use strict';
 
-    var params = {};
-    var rtn = {};
+    self.params = {};
+    self.rtn = {};
 
     function prepareReturn(returnObject) {
       var dataType = returnObject.dataType;
@@ -105,7 +105,7 @@ class wheel {
 
   legacyScaffold(params, resolve, reject) {
     setTimeout(function() {
-      var rtn = {
+      self.rtn = {
         data: [],
         dataType: (params.dataType ? params.dataType.toLowerCase() : null)
       };
