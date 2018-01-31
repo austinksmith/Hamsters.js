@@ -96,17 +96,10 @@ class logger {
 
   searchLogBook(searchString, eventType) {
     let finalResults = [];
-    let eventTypeResults;
     if(eventType) {
-      tmpEntries = this.logBook[eventType];
-      finalResults = this.findStringInLogBook(tmpEntries, string);
+      finalResults = this.findStringInLogBook(this.logBook[eventType], string);
     } else {
-      let allResults = this.findStringInLogBookAllTypes(this.logBook);
-      if(all.length !== 0) {
-        finalResults = [finalResults, eventTypeResults].reduce(function(a, b) {
-          return a.concat(b);
-        });
-      }
+      finalResults = this.findStringInLogBookAllTypes(this.logBook);
     }
     return {
       total: finalResults.length,

@@ -32,19 +32,14 @@ class data {
     this.workerURI = null;
   }
 
-
   prepareHamsterFood(task, threadId) {
-    let hamsterFood = {};
+    let hamsterFood = task.input;
     for (var key in task.input) {
       if (task.input.hasOwnProperty(key) && key !== 'array') {
         hamsterFood[key] = task.input[key];
       }
     }
-    if (task.indexes && task.threads !== 1) {
-      hamsterFood.array = this.data.arrayFromIndex(task.input.array, task.indexes[threadId]);
-    } else {
-      hamsterFood.array = task.input.array;
-    }
+    hamsterFood.array = task.input.array;
     if (task.hamstersJob && !hamsterFood.hamstersJob) {
       hamsterFood.hamstersJob = hamstersJob;
     }
@@ -77,7 +72,6 @@ class data {
     }
     return buffers;
   }
-
 
   prepareFunction(functionBody, habitat) {
     if (!habitat.legacy) {
@@ -145,30 +139,6 @@ class data {
     return new types[dataType](buffer);
   }
 
-  determineSubArrayIndexes(array, n) {
-    var i = 0;
-    let size = Math.ceil(array.length/n);
-    var indexes = [];
-    while(i < array.length) {
-      var start = i;
-      var end = ((i + size) - 1);
-      indexes.push({
-        start: start, 
-        end: end
-      });
-      (i += size);
-    }
-    return indexes;
-  }
-
-  subArrayFromIndex(array, index) {
-    if(array.slice) {
-      return array.slice(index.start, index.end);
-    } else {
-      return array.subarray(index.start, index.end);
-    }
-  }
-
   createDataBlob(textContent) {
     if(typeof Blob === 'undefined') {
       let BlobMaker = (BlobBuilder || WebKitBlobBuilder || MozBlobBuilder || MSBlobBuilder);
@@ -228,7 +198,6 @@ class data {
     }
     return threadArrays;
   }
-
 }
 
 var hamstersData = new data();
