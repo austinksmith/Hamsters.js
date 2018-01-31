@@ -1,11 +1,13 @@
-/*
-* Title: this.js
-* Description: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
-* Author: Austin K. Smith
-* Contact: austin@asmithdev.com
-* Copyright: 2015 Austin K. Smith - austin@asmithdev.com
-* License: Artistic License 2.0
-*/
+/* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
+
+/***********************************************************************************
+* Title: Hamsters.js                                                               *
+* Description: 100% Vanilla Javascript Multithreading & Parallel Execution Library *
+* Author: Austin K. Smith                                                          *
+* Contact: austin@asmithdev.com                                                    *  
+* Copyright: 2015 Austin K. Smith - austin@asmithdev.com                           * 
+* License: Artistic License 2.0                                                    *
+***********************************************************************************/
 
 import hamsters from '../src/hamsters';
 
@@ -14,25 +16,6 @@ hamsters.init({
   maxThreads: 1,
   persistence: false,
   cache: false
-});
-
-describe("Hamsters Core Functionality", function() {
-  for(var key in hamsters.habitat) {
-    if(hamsters.habitat.hasOwnProperty(key)) {
-      it("Hamsters.habitat."+key+" should be boolean", function() {
-        expect(hamsters.habitat[key]).toMatch(/true|false/);
-      });
-    }
-  }
-
-  it("Hamsters.tools.aggregate should aggregate array of subarrays", function() {
-    expect(hamsters.tools.aggregateArrays([[1],[2]])).toEqual([1,2]);
-  });
-
-  it("Hamsters.tools.splitArray should split array into subarrays", function() {
-    expect(hamsters.tools.splitArrays([1,2], 2)).toEqual([[1],[2]]);
-  });
-
 });
 
 describe("Hamsters running asynchronously", function() {

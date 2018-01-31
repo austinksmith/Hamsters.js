@@ -1,13 +1,13 @@
 /* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
 
-/*
-* Title: Hamsters.js
-* Description: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
-* Author: Austin K. Smith
-* Contact: austin@asmithdev.com
-* Copyright: 2015 Austin K. Smith - austin@asmithdev.com
-* License: Artistic License 2.0
-*/
+/***********************************************************************************
+* Title: Hamsters.js                                                               *
+* Description: 100% Vanilla Javascript Multithreading & Parallel Execution Library *
+* Author: Austin K. Smith                                                          *
+* Contact: austin@asmithdev.com                                                    *  
+* Copyright: 2015 Austin K. Smith - austin@asmithdev.com                           * 
+* License: Artistic License 2.0                                                    *
+***********************************************************************************/
 
 import hamstersData from './data';
 import hamstersHabitat from './habitat';
@@ -22,16 +22,19 @@ class wheel {
     this.legacy = this.legacyScaffold;
   }
 
+  /**
+  * @function workerScaffold - Provides worker body for library functionality when used within a worker [threads inside threads]
+  */
   workerScaffold() {
     'use strict';
 
     self.params = {};
     self.rtn = {};
 
-    addEventListener('connect', function(incomingConnection) {
+    addEventListener('connect', (incomingConnection) => {
       const port = incomingConnection.ports[0];
       port.start();
-      port.addEventListener('message', function(incomingMessage) {
+      port.addEventListener('message', (incomingMessage) => {
         params = incomingMessage.data;
         rtn = {
           data: [],
@@ -45,6 +48,9 @@ class wheel {
     }, false);
   }
 
+  /**
+  * @function workerScaffold - Provides worker body for library functionality
+  */
   regularScaffold() {
     'use strict';
 
@@ -92,7 +98,7 @@ class wheel {
       return buffers;
     }
 
-    self.onmessage = function(incomingMessage) {
+    addEventListener('message', (incomingMessage) => {
       params = incomingMessage.data;
       rtn = {
         data: [],
@@ -100,9 +106,12 @@ class wheel {
       };
       new Function(params.hamstersJob)();
       postMessage(prepareReturn(rtn), prepareTransferBuffers(rtn));
-    };
+    });
   }
 
+  /**
+  * @function legacyScaffold - Provides library functionality for legacy devices
+  */
   legacyScaffold(params, resolve, reject) {
     setTimeout(function() {
       self.rtn = {

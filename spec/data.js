@@ -9,13 +9,21 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-'use strict';
+import hamsters from '../src/hamsters';
 
-const majorVersion = 4;
-const minorVersion = 2;
-const patchVersion = 2;
-const hamstersVersion = `${majorVersion}.${minorVersion}.${patchVersion}`;
+hamsters.init({
+  maxThreads: 1,
+  persistence: false,
+  cache: false
+});
 
-if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamstersVersion;
-}
+describe("Hamsters Data", () => {
+
+  it("Should aggregate array of subarrays", function() {
+    expect(hamsters.data.aggregateArrays([[1],[2]])).toEqual([1,2]);
+  });
+
+  it("Should split array into subarrays", function() {
+    expect(hamsters.data.splitArrays([1,2], 2)).toEqual([[1],[2]]);
+  });
+});
