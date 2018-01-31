@@ -1,13 +1,13 @@
 /* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
 
-/*
-* Title: Hamsters.js
-* Description: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
-* Author: Austin K. Smith
-* Contact: austin@asmithdev.com
-* Copyright: 2015 Austin K. Smith - austin@asmithdev.com
-* License: Artistic License 2.0
-*/
+/***********************************************************************************
+* Title: Hamsters.js                                                               *
+* Description: 100% Vanilla Javascript Multithreading & Parallel Execution Library *
+* Author: Austin K. Smith                                                          *
+* Contact: austin@asmithdev.com                                                    *  
+* Copyright: 2015 Austin K. Smith - austin@asmithdev.com                           * 
+* License: Artistic License 2.0                                                    *
+***********************************************************************************/
 
 import hamstersData from './data';
 import hamstersHabitat from './habitat';
@@ -17,17 +17,15 @@ import hamstersLogger from './logger';
 'use strict';
 
 class pool {
+
   constructor() {
     this.tasks = [];
 	  this.threads = [];
     this.running = [];
     this.pending = [];
-    this.queueWork = this.addWorkToPending;
-    this.beginWork = this.startTask;
     this.fetchHamster = this.grabHamster;
     this.selectHamsterWheel = this.selectHamsterWheel;
     this.markThreadReady = this.removeThreadFromRunning;
-    this.trackThread = this.keepTrackOfThread;
   }
 
   addWorkToPending(task, id, resolve, reject) {
@@ -46,13 +44,9 @@ class pool {
     return this.spawnHamster(hamstersHabitat, wheel, hamstersData.workerURI);
   }
 
-  newTask(taskOptions) {
-    let index = this.pool.tasks.push(taskOptions);
-    return this.pool.tasks[(index - 1)];
-  }
-
-  startTask(task, resolve, reject) {
-    return this.wheel(task, resolve, reject);
+  registerTask(task) {
+    let index = this.tasks.push(task.id);
+    return this.tasks[(index - 1)];
   }
 
   removeThreadFromRunning(task, id) {
@@ -112,11 +106,12 @@ class pool {
   hamsterWheel(array, task, persistence, wheel, resolve, reject) {
     let threadId = this.running.length;
     if(this.maxThreads === threadId) {
-      return this.queueWork(array, task, threadId, resolve, reject);
+      return this.addWorkToPending(array, task, threadId, resolve, reject);
     }
     let hamster = this.grabHamster(threadId, persistence, wheel);
     this.trainHamster(threadId, task, hamster, persistence, resolve, reject);
-    this.trackThread(task, threadId);
+    this.registerTask(task.id);
+    this.keepTrackOfThread(task, threadId);
     hamstersData.feedHamster(hamster, this.prepareMeal(array, task));
     task.count += 1; //Increment count, thread is running
   }

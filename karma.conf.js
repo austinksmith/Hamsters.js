@@ -1,10 +1,6 @@
-/*
-  karma configuration
- */
+const path = require('path');
 
-var path = require('path');
-
-module.exports = function (config) {
+module.exports = (config) => {
   config.set({
     // Start these browsers, currently available:
     // - Chrome
@@ -16,7 +12,10 @@ module.exports = function (config) {
     // - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
     browsers: ['Chrome','PhantomJS','Firefox'],
     files: [
-      { pattern: 'tests.webpack.js', watched: false },
+      { 
+        pattern: 'tests.webpack.js', 
+        watched: false 
+      },
       'node_modules/babel-polyfill/dist/polyfill.js'
     ],
     frameworks: [
@@ -33,9 +32,8 @@ module.exports = function (config) {
     autoWatch: true,
     // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
     reporters: ['dots', 'progress', 'html'],
-
     htmlReporter: {
-      outputFile: 'specReport/jasmine.html',
+      outputFile: 'report/jasmine.html',
       // Optional
       pageTitle: 'Hamsters.js Jasmine Output',
       subPageTitle: '',
@@ -43,7 +41,6 @@ module.exports = function (config) {
       useCompactStyle: true,
       useLegacyStyle: true
     },
-
     webpack: {
       cache: true,
       module: {
