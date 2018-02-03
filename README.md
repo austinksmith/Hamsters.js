@@ -64,20 +64,20 @@ Your support makes projects like this possible.
 
 ## Contributors
 
-This project exists thanks to all the people who contribute. [Contribute](CONTRIBUTING.md)
+This project exists thanks to all the people who contribute. [Contribute to Hamsters.js](CONTRIBUTING.md)
 <a href="graphs/contributors"><img src="https://opencollective.com/hamstersjs/contributors.svg?width=890" /></a>
 
 
 ## Backers
 
-Thank you to all our backers! 🙏 [Become a backer](https://opencollective.com/hamstersjs#backer)
+Thank you to all our backers! 🙏 [Back Hamsters.js](https://opencollective.com/hamstersjs#backer)
 
 <a href="https://opencollective.com/hamstersjs#backers" target="_blank"><img src="https://opencollective.com/hamstersjs/backers.svg?width=890"></a>
 
 
 ## Sponsors
 
-Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [Become a sponsor](https://opencollective.com/hamstersjs#sponsor)
+Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [Sponsor Hamsters.js](https://opencollective.com/hamstersjs#sponsor)
 
 <a href="https://opencollective.com/hamstersjs/sponsor/0/website" target="_blank"><img src="https://opencollective.com/hamstersjs/sponsor/0/avatar.svg"></a>
 <a href="https://opencollective.com/hamstersjs/sponsor/1/website" target="_blank"><img src="https://opencollective.com/hamstersjs/sponsor/1/avatar.svg"></a>
