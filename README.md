@@ -60,7 +60,7 @@ You can find information on how to make use of the library using the wiki links 
 
 # Support Hamsters.js
 
-Your support makes projects like this possible, please consider supporting this project by visiting [our page on patreon.com](https://www.patreon.com/asmithdev)!
+Your support makes projects like this possible.
 
 ## Contributors
 
