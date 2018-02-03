@@ -18,33 +18,44 @@
 * React Native
 * Node.js
 
+# Examples
+
+You can find a view examples of the library in action using the links below.
+
+[Collatz Conjecture](https://www.hamsters.io/examples/collatzconjecture)
+
+[Square Root](https://www.hamsters.io/examples/squareroot)
+
+[Monte Carlo](https://www.hamsters.io/examples/montecarlo)
+
+
 # How to use Hamsters.js
 
-You can find information on how to make use of the library on the wiki links below.
+You can find information on how to make use of the library using the wiki links below.
 
 [Installing Hamsters.js](https://www.hamsters.io/wiki#installing-hamsters)
 
 [Getting Started](https://www.hamsters.io/wiki#getting-started)
 
-[Restructoring Standard Functions](http://www.hamsters.io/wiki#restructuring-standard-functions)
+[Restructoring Standard Functions](https://www.hamsters.io/wiki#restructuring-standard-functions)
 
-[Tools](http://www.hamsters.io/wiki#tools)
+[Tools](https://www.hamsters.io/wiki#tools)
 
-[Sorting](http://www.hamsters.io/wiki#sorting)
+[Sorting](https://www.hamsters.io/wiki#sorting)
 
-[Persistence](http://www.hamsters.io/wiki#persistence)
+[Persistence](https://www.hamsters.io/wiki#persistence)
 
-[Memoization](http://www.hamsters.io/wiki#memoization)
+[Memoization](https://www.hamsters.io/wiki#memoization)
 
-[Transferable  Objects](http://www.hamsters.io/wiki#transferable-objects)
+[Transferable  Objects](https://www.hamsters.io/wiki#transferable-objects)
 
-[Limitations](http://www.hamsters.io/wiki#limitations)
+[Limitations](https://www.hamsters.io/wiki#limitations)
 
-[Performance Considerations](http://www.hamsters.io/wiki#performance-considerations)
+[Performance Considerations](https://www.hamsters.io/wiki#performance-considerations)
 
-[Debugging](http://www.hamsters.io/wiki#debugging)
+[Debugging](https://www.hamsters.io/wiki#debugging)
 
-[Tested Devices & Browsers](http://www.hamsters.io/wiki#tested-devices-amp-browsers)
+[Tested Devices & Browsers](https://www.hamsters.io/wiki#tested-devices-amp-browsers)
 
 
 # Support Hamsters.js
