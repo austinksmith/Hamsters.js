@@ -12,6 +12,7 @@
 'use strict';
 
 class memoizer {
+  
   constructor() {
     this.maxCacheEntries = 25;
     this.cacheEntries = [];
