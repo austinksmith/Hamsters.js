@@ -25,7 +25,6 @@ class pool {
     this.pending = [];
     this.fetchHamster = this.grabHamster;
     this.selectHamsterWheel = this.selectHamsterWheel;
-    this.markThreadReady = this.removeThreadFromRunning;
   }
 
   // addWorkToPending(task, id, resolve, reject) {
