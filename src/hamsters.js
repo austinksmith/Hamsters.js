@@ -68,14 +68,6 @@ class hamstersjs {
     }
   }
 
-  legacyHamsterWheel(threadId, task, resolve, reject) {
-    this.pool.trackThread(task, threadId);
-    let dataArray = hamstersData.arrayFromIndex(task.input.array, task.indexes[threadId]);
-    hamsterWheel.legacy(task, dataArray, resolve, reject);
-    task.count += 1; //Thread finished
-  }
-
-
   /**
   * @constructor
   * @function hamstersTask - Constructs a new task object from provided arguments
@@ -108,7 +100,6 @@ class hamstersjs {
     return new Promise((resolve, reject) => {
       let task = new this.hamstersTask(params, functionToRun, this);
       let scaffold = hamstersPool.selectHamsterWheel();
-      this.pool.registerTask(task);
       this.pool.scheduleTask(task, this.persistence, scaffold, this.maxThreads).then((results) => {
         resolve(results);
       }).catch((error) => {
@@ -129,7 +120,6 @@ class hamstersjs {
   hamstersRun(params, functionToRun, onSuccess, onError) {
     let task = new this.hamstersTask(params, functionToRun, this);
     let scaffold = hamstersPool.selectHamsterWheel();
-    this.pool.registerTask(task);
     this.pool.scheduleTask(task, this.persistence, scaffold, this.maxThreads).then((results) => {
       onSuccess(results);
     }).catch((error) => {
