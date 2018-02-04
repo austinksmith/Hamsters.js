@@ -65,7 +65,7 @@ Your support makes projects like this possible.
 ## Contributors
 
 This project exists thanks to all the people who contribute. [Contribute to Hamsters.js](CONTRIBUTING.md)
-<a href="graphs/contributors"><img src="https://opencollective.com/hamstersjs/contributors.svg?width=890" /></a>
+<a href="https://github.com/austinksmith/Hamsters.js/graphs/contributors"><img src="https://opencollective.com/hamstersjs/contributors.svg?width=890" /></a>
 
 
 ## Backers
