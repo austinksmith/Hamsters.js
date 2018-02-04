@@ -16,6 +16,10 @@ import hamstersHabitat from './habitat';
 
 class wheel {
 
+  /**
+  * @constructor
+  * @function constructor - Sets properties for this class
+  */
   constructor() {
     this.worker = this.workerScaffold;
     this.regular = this.regularScaffold;

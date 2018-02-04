@@ -21,6 +21,10 @@ import hamstersMemoizer from './core/memoizer';
 
 class hamstersjs {
 
+  /**
+  * @constructor
+  * @function constructor - Sets properties for this class
+  */
   constructor() {
     this.persistence = true;
     this.memoize = false;
@@ -86,10 +90,10 @@ class hamstersjs {
     this.memoize = params.memoize || false;
     this.dataType = params.dataType ? params.dataType.toLowerCase() : null;
     this.input = params;
-    this.input.hamstersJob = scope.data.prepareJob(functionToRun, scope.habitat);
+    this.input.hamstersJob = scope.data.prepareJob(functionToRun);
   }
 
- /**
+  /**
   * @async
   * @function hamstersPromise - Calls library functionality using async promises
   * @param {object} params - Provided library execution options
@@ -100,6 +104,7 @@ class hamstersjs {
     return new Promise((resolve, reject) => {
       let task = new this.hamstersTask(params, functionToRun, this);
       let scaffold = hamstersPool.selectHamsterWheel();
+      this.pool.registerTask(task);
       this.pool.scheduleTask(task, this.persistence, scaffold, this.maxThreads).then((results) => {
         resolve(results);
       }).catch((error) => {
@@ -120,6 +125,7 @@ class hamstersjs {
   hamstersRun(params, functionToRun, onSuccess, onError) {
     let task = new this.hamstersTask(params, functionToRun, this);
     let scaffold = hamstersPool.selectHamsterWheel();
+    this.pool.registerTask(task);
     this.pool.scheduleTask(task, this.persistence, scaffold, this.maxThreads).then((results) => {
       onSuccess(results);
     }).catch((error) => {

@@ -15,6 +15,10 @@ import hamstersHabitat from './habitat';
 
 class data {
 
+  /**
+  * @constructor
+  * @function constructor - Sets properties for this class
+  */
   constructor() {
     this.randomArray = this.randomArray;
     this.aggregateArrays = this.aggregateThreadOutputs;
@@ -30,7 +34,11 @@ class data {
     this.workerURI = null;
   }
 
-  prepareHamsterFood(task, threadId) {
+  /**
+  * @function prepareHamsterFood - Prepares message to send to thread(s)
+  * @param {object} task - Task to process
+  */
+  prepareHamsterFood(task) {
     let hamsterFood = task.input;
     for (var key in task.input) {
       if (task.input.hasOwnProperty(key) && key !== 'array') {
@@ -44,6 +52,11 @@ class data {
     return hamsterFood;
   }
 
+  /**
+  * @function messageWorker - Prepares message to send to thread
+  * @param {worker} hamster - Thread to message
+  * @param {object} hamsterFood - Message to send to thread
+  */  
   messageWorker(hamster, hamsterFood) {
     if (hamstersHabitat.webWorker) {
       return hamster.port.postMessage(hamsterFood);
@@ -54,6 +67,10 @@ class data {
     return hamster.postMessage(hamsterFood, this.prepareTransferBuffers(hamsterFood));
   }
 
+  /**
+  * @function prepareTransferBuffers - Prepares transferrable buffers for faster message passing
+  * @param {object} hamsterFood - Message to send to thread
+  */
   prepareTransferBuffers(hamsterFood) {
     let buffers = [];
     let key = null;
@@ -71,10 +88,14 @@ class data {
     return buffers;
   }
 
-  prepareFunction(functionBody, habitat) {
-    if (!habitat.legacy) {
+  /**
+  * @function prepareFunction - Prepares transferrable buffers for faster message passing
+  * @param {function} functionBody - Message to send to thread
+  */
+  prepareFunction(functionBody) {
+    if (!hamstersHabitat.legacy) {
       functionBody = String(functionBody);
-      if (!habitat.webWorker) {
+      if (!hamstersHabitat.webWorker) {
         let startingIndex = (functionBody.indexOf("{") + 1);
         let endingIndex = (functionBody.length - 1);
         return functionBody.substring(startingIndex, endingIndex);
@@ -83,12 +104,21 @@ class data {
     return functionBody;
   }
 
+  /**
+  * @function generateWorkerBlob - Creates blob uri for flexible scaffold loading
+  * @param {function} workerLogic - Scaffold to use within worker thread
+  */
   generateWorkerBlob(workerLogic) {
     let functionString = '(' + String(workerLogic) + ')();';
     let hamsterBlob = this.createBlob(functionString);
     return URL.createObjectURL(hamsterBlob);
   }
 
+  /**
+  * @function processDataType - Converts buffer into new typed array
+  * @param {string} dataType - Typed array type for this task
+  * @param {object} buffer - Buffer to convert
+  */
   processDataType(dataType, buffer) {
     if(hamstersHabitat.transferrable) {
       return this.typedArrayFromBuffer(dataType, buffer);
@@ -96,6 +126,10 @@ class data {
     return buffer;
   }
 
+  /**
+  * @function prepareOutput - Prepares final task output
+  * @param {task} buffer - Task to prepare output for
+  */
   prepareOutput(task) {
     if(task.aggregate && task.threads !== 1) {
       return this.aggregateThreadOutputs(task.output, task.dataType);
@@ -103,6 +137,11 @@ class data {
     return task.output;
   }
 
+  /**
+  * @function sortArray - Sorts array by defined order
+  * @param {object} arr - Array to sort
+  * @param {string} order - Defined sort order
+  */
   sortArray(arr, order) {
     switch(order) {
       case 'desc':
@@ -119,6 +158,11 @@ class data {
     }
   }
 
+  /**
+  * @function typedArrayFromBuffer - Converts buffer into new typed array
+  * @param {string} dataType - Typed array type for this task
+  * @param {object} buffer - Buffer to convert
+  */
   typedArrayFromBuffer(dataType, buffer) {
     const types = {
       'uint32': Uint32Array,
@@ -137,6 +181,10 @@ class data {
     return new types[dataType](buffer);
   }
 
+  /**
+  * @function createDataBlob - Creates new data blob from textContent
+  * @param {string} textContent - Provided text content for blob
+  */
   createDataBlob(textContent) {
     if(typeof Blob === 'undefined') {
       let BlobMaker = (BlobBuilder || WebKitBlobBuilder || MozBlobBuilder || MSBlobBuilder);
@@ -151,6 +199,11 @@ class data {
     });
   }
 
+  /**
+  * @function randomArray - Creates new random array
+  * @param {number} count - Number of random elements in array
+  * @param {function} onSuccess - onSuccess callback
+  */
   randomArray(count, onSuccess) {
     var randomArray = [];
     while(count > 0) {
@@ -160,6 +213,11 @@ class data {
     onSuccess(randomArray);
   }
 
+  /**
+  * @function aggregateThreadOutputs - Joins individual thread outputs into single result
+  * @param {array} input - Array of arrays to aggregate
+  * @param {string} dataType - Data type to use for typed array
+  */
   aggregateThreadOutputs(input, dataType) {
     if(!dataType || !hamstersHabitat.transferrable) {
       return input.reduce(function(a, b) {
@@ -181,6 +239,11 @@ class data {
     return output;
   }
 
+  /**
+  * @function splitArrayIntoSubArrays - Splits a single array into multiple equal sized subarrays
+  * @param {array} array - Array to split
+  * @param {number} n - Number of subarrays to create
+  */
   splitArrayIntoSubArrays(array, n) {
     let i = 0;
     let threadArrays = [];

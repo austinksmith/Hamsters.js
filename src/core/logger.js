@@ -14,7 +14,11 @@ import hamstersVersion from './version';
 'use strict';
 
 class logger {
-  
+
+  /**
+  * @constructor
+  * @function constructor - Sets properties for this class
+  */
   constructor() {
     this.logBook = {
       error: [], 

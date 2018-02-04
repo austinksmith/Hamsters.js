@@ -13,6 +13,10 @@
 
 class memoizer {
   
+  /**
+  * @constructor
+  * @function constructor - Sets properties for this class
+  */
   constructor() {
     this.maxCacheEntries = 25;
     this.cacheEntries = [];
@@ -21,10 +25,21 @@ class memoizer {
     this.saveItem = this.saveItemToCache;
   }
 
+  /**
+  * @function isItemCached - Checks for existing data in cache
+  * @param {object} input - Provided library execution options
+  * @param {method} functionToRun - Function to execute
+  * @return {object} Execution results from cache, or false
+  */
   isItemCached(input, method) {
   	return !!(this.fetchItem({fn: method, data: input})) || false;
   }
 
+  /**
+  * @function fetchItemFromCache - Fetches cache item from cache
+  * @param {object} cacheItem - Cache item to fetch
+  * @return {object} CacheResults, or false
+  */
   fetchItemFromCache(cacheItem) {
   	let cachedResult = null;
   	for(var key in this.cache) {
@@ -39,6 +54,11 @@ class memoizer {
   	return cachedResult || false;
   }
 
+  /**
+  * @function isItemCached - Checks for existing data in cache
+  * @param {method} functionToRun - Function to execute
+  * @param {object} data - Execution results to cache
+  */
   saveItemToCache(method, data, maxCacheEntries) {
   	let itemToCache = {
   		fn: method,

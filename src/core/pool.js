@@ -17,7 +17,11 @@ import hamstersLogger from './logger';
 'use strict';
 
 class pool {
-
+	
+  /**
+  * @constructor
+  * @function constructor - Sets properties for this class
+  */
   constructor() {
     this.tasks = [];
 	  this.threads = [];
@@ -27,23 +31,33 @@ class pool {
     this.selectHamsterWheel = this.selectHamsterWheel;
   }
 
-  // addWorkToPending(task, id, resolve, reject) {
-  // 	this.pending.push({
-  // 		item: task,
-  // 		threadId: id,
-  // 		promiseResolve: resolve,
-  // 		promiseReject: reject
-  // 	});
-  // }
+  /**
+  * @function grabHamster - Adds task to queue waiting for available thread
+  * @param {object} array - Provided data to execute logic on
+  * @param {object} task - Provided library functionality options for this task
+  * @param {boolean} persistence - Whether persistence mode is enabled or not
+  * @param {function} wheel - Results from select hamster wheel
+  * @param {function} resolve - onSuccess method
+  * @param {function} reject - onError method
+  */
+  addWorkToPending(array, task, persistence, wheel, resolve, reject) {
+  	this.pending.push(arguments);
+  }
 
+  /**
+  * @function grabHamster - Invokes processing of next item in queue
+  * @param {object} item - Task to process
+  */
+  processQueue(item) {
+  	return this.runTask(item.array, item.task, item.persistence, item.wheel, item.resolve, item.reject);
+  }
 
-  // processQueue(hamster, item) {
-  //   if (!item) {
-  //     return;
-  //   }
-  //   this.wheel(item.input, item.params, item.aggregate, item.onSuccess, item.task, item.workerid, hamster, item.memoize); //Assign most recently finished thread to queue item
-  // }
-
+  /**
+  * @function grabHamster - Keeps track of threads running, scoped globally and to task
+  * @param {number} threadId - Id of thread
+  * @param {boolean} persistence - Whether persistence mode is enabled or not
+  * @param {function} wheel - Results from select hamster wheel
+  */
   grabHamster(threadId, persistence, wheel) {
     if(persistence) {
       return this.threads[threadId];
@@ -51,11 +65,20 @@ class pool {
     return this.spawnHamster(hamstersHabitat, wheel, hamstersData.workerURI);
   }
 
+  /**
+  * @function keepTrackOfThread - Keeps track of threads running, scoped globally and to task
+  * @param {object} task - Provided library functionality options for this task
+  * @param {number} id - Id of thread to track
+  */
   keepTrackOfThread(task, id) {
     task.workers.push(id); //Keep track of threads poold to current task
     this.running.push(id); //Keep track of all currently running threads
   }
 
+  /**
+  * @function registerTask - Adds task to execution pool based on id
+  * @param {number} id - Id of task to register
+  */
   registerTask(id) {
     let index = this.tasks.push(id);
     return this.tasks[(index - 1)];
@@ -63,7 +86,7 @@ class pool {
 
   /**
   * @function spawnHamsters - Spawns multiple new threads for execution
-  * @param {boolean} persistence - Results from select hamster wheel
+  * @param {boolean} persistence - Whether persistence mode is enabled or not
   * @param {function} wheel - Results from select hamster wheel
   * @param {number} maxThreds - Max number of threads for this client
   */
@@ -121,7 +144,26 @@ class pool {
   }
 
   /**
-  * @function hamsterWheel - Runs function using threads
+  * @function hamsterWheel - Runs function using thread
+  * @param {object} array - Provided data to execute logic on
+  * @param {object} task - Provided library functionality options for this task
+  * @param {boolean} persistence - Whether persistence mode is enabled or not
+  * @param {function} wheel - Results from select hamster wheel
+  * @param {function} resolve - onSuccess method
+  * @param {function} reject - onError method
+  */
+  runTask(array, task, persistence, wheel, resolve, reject) {
+  	let threadId = this.running.length;
+  	let hamster = this.grabHamster(threadId, persistence, wheel);
+    this.trainHamster(threadId, task, hamster, persistence, resolve, reject);
+    this.registerTask(task.id);
+    this.keepTrackOfThread(task, threadId);
+    hamstersData.feedHamster(hamster, this.prepareMeal(array, task));
+    task.count += 1; //Increment count, thread is running
+  }
+
+  /**
+  * @function hamsterWheel - Runs or queues function using threads
   * @param {object} array - Provided library functionality options for this task
   * @param {object} task - Provided library functionality options for this task
   * @param {boolean} persistence - Whether persistence mode is enabled or not
@@ -130,16 +172,10 @@ class pool {
   * @param {function} reject - onError method
   */
   hamsterWheel(array, task, persistence, wheel, resolve, reject) {
-    let threadId = this.running.length;
-    if(this.maxThreads === threadId) {
-      return this.addWorkToPending(array, task, threadId, resolve, reject);
+    if(this.maxThreads === this.running.length) {
+      return this.addWorkToPending(array, task, persistence, wheel, resolve, reject);
     }
-    let hamster = this.grabHamster(threadId, persistence, wheel);
-    this.trainHamster(threadId, task, hamster, persistence, resolve, reject);
-    this.registerTask(task.id);
-    this.keepTrackOfThread(task, threadId);
-    hamstersData.feedHamster(hamster, this.prepareMeal(array, task));
-    task.count += 1; //Increment count, thread is running
+    return this.runTask(array, task, persistence, wheel, resolve, reject);
   }
 
   /**
@@ -229,9 +265,9 @@ class pool {
       let i = 0;
       while (i < task.threads) {
       	if(threadArrays && task.threads !== 1) {
-        	this.hamsterWheel(threadArrays[i], task, persistence, wheel, resolve, reject);
+        	this.startWheel(threadArrays[i], task, persistence, wheel, resolve, reject);
 		    } else {
-        	this.hamsterWheel(task.input.array, task, persistence, wheel, resolve, reject);
+        	this.startWheel(task.input.array, task, persistence, wheel, resolve, reject);
 		    }
         i += 1;
       }
