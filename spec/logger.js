@@ -9,31 +9,24 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-import hamsters from '../src/hamsters';
-
-if(hamsters.init) {
-  hamsters.init({
-    maxThreads: 1,
-    persistence: false,
-    cache: false
-  });
-}
+import hamstersLogger from '../src/core/logger';
 
 describe("Hamsters Logger", () => {
 
-  it("Tasks Should be an array", () => {
-    expect(hamsters.pool.aggregateArrays([[1],[2]])).toEqual([1,2]);
+  it("LogBook Should be an object", () => {
+    expect(typeof hamstersLogger.logBook).toEqual('object');
   });
 
-  it("Tasks Should be an array", () => {
-    expect(hamsters.data.splitArrays([1,2], 2)).toEqual([[1],[2]]);
+  it("LogBook Errors Should be an array", () => {
+    expect(hamstersLogger.logBook.error).toEqual([]);
   });
 
-  it("Tasks Should be an array", () => {
-    expect(hamsters.pool.aggregateArrays([[1],[2]])).toEqual([1,2]);
+  it("LogBook Info Should be an array", () => {
+    expect(hamstersLogger.logBook.info).toEqual([]);
   });
 
-  it("Tasks Should be an array", () => {
-    expect(hamsters.data.splitArrays([1,2], 2)).toEqual([[1],[2]]);
+  it("LogBook Warning Should be an array", () => {
+    expect(hamstersLogger.logBook.warning).toEqual([]);
   });
+
 });
