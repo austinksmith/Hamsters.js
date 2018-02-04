@@ -27,7 +27,10 @@
     "web workers",
     "parallel",
     "task runner",
-    "thread pool"
+    "thread pool",
+    "hamsters",
+    "parallel js",
+    "parallel es"
   ],
   "bugs": {
     "url": "https://github.com/austinksmith/Hamsters.js/issues"
@@ -47,6 +50,9 @@
     "karma-phantomjs-launcher": "^1.0.2",
     "karma-webpack": "^2.0.6",
     "webpack": "^1.13.2"
+  },
+  "dependencies": {
+
   },
   "directories": {
     "test": "spec"
