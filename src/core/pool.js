@@ -265,9 +265,9 @@ class pool {
       let i = 0;
       while (i < task.threads) {
       	if(threadArrays && task.threads !== 1) {
-        	this.startWheel(threadArrays[i], task, persistence, wheel, resolve, reject);
+        	this.hamsterWheel(threadArrays[i], task, persistence, wheel, resolve, reject);
 		    } else {
-        	this.startWheel(task.input.array, task, persistence, wheel, resolve, reject);
+        	this.hamsterWheel(task.input.array, task, persistence, wheel, resolve, reject);
 		    }
         i += 1;
       }
