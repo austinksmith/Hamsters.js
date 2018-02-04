@@ -14,6 +14,11 @@ import hamstersData from './data';
 'use strict';
 
 class habitat {
+
+  /**
+  * @constructor
+  * @function constructor - Sets properties for this class
+  */
   constructor() {
     this.browser = this.isBrowser();
     this.webWorker = this.isWebWorker();
@@ -30,6 +35,9 @@ class habitat {
     this.sharedWorker = this.locateSharedWorkerObject();
   }
 
+  /**
+  * @function determineGlobalThreads - Determines max number of threads to use
+  */
   determineGlobalThreads() {
     let max = 4;
     if(typeof navigator !== 'undefined') {
@@ -46,42 +54,65 @@ class habitat {
     return max;
   }
 
+  /**
+  * @function locateWorkerObject - Attempts to find a global Worker object
+  */
   locateWorkerObject() {
     return Worker || null;
   }
 
+  /**
+  * @function locateSharedWorkerObject - Attempts to find a global SharedWorker object
+  */
   locateSharedWorkerObject() {
     return SharedWorker || null;
   }
 
+  /**
+  * @function isBrowser - Detects if execution environment is a browser
+  */
   isBrowser() {
     return typeof window === "object";
   }
 
+  /**
+  * @function isInternetExplorer - Detects if execution environment is internet explorer
+  */
   isInternetExplorer(version) {
     return (new RegExp('msie' + (!isNaN(version) ? ('\\s'+version) : ''), 'i').test(navigator.userAgent));
   }
 
+  /**
+  * @function isNode - Detects if execution environment is node.js
+  */
   isNode() {
     return typeof process === "object" && typeof require === "function" && !this.isBrowser() && !this.isWebWorker();
   }
 
+  /**
+  * @function isWebWorker - Detects if execution environment is a webworker
+  */
   isWebWorker() {
     return typeof importScripts === "function";
   }
 
+  /**
+  * @function isReactNative - Detects if execution environment is reactNative
+  */
   isReactNative() {
     return !this.isNode() && typeof global === 'object';
   }
 
+  /**
+  * @function isShell - Detects if execution environment is a shell
+  */
   isShell() {
     return this.isBrowser() && !this.isNode() && !this.isWebWorker() && !this.isReactNative();
   }
 
-  supportsTransferrableObjects() {
-    return typeof Uint8Array !== 'undefined';
-  }
-
+  /**
+  * @function isLegacyEnvironment - Detects if execution environment is a legacy environment
+  */
   isLegacyEnvironment() {
     // Force legacy mode for known devices that don't support threading
     if (this.isBrowser() && !this.isReactNative()) {
@@ -109,10 +140,23 @@ class habitat {
     }
   }
 
+  /**
+  * @function supportsTransferrableObjects - Detects if execution environment supports typed arrays
+  */
+  supportsTransferrableObjects() {
+    return typeof Uint8Array !== 'undefined';
+  }
+
+  /**
+  * @function supportsAtomicOperations - Detects if execution environment supports shared array buffers
+  */
   supportsAtomicOperations() {
     return typeof SharedArrayBuffer !== 'undefined';
   }
 
+  /**
+  * @function supportsProxies - Detects if execution environment supports proxy objects
+  */
   supportsProxies() {
     return typeof Proxy !== 'undefined';
   }
