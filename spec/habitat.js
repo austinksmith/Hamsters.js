@@ -9,47 +9,53 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-import hamsters from '../src/hamsters';
-
-if(hamsters.init) {
-  hamsters.init({
-    maxThreads: 1,
-    persistence: false,
-    cache: false
-  });
-}
+import hamstersHabitat from '../src/core/habitat';
 
 describe("Hamsters Habitat", () => {
 
-  it("Habitat Node Should be boolean", () => {
-    expect(hamsters.habitat['node']).toMatch(/true|false/);
+  it("Habitat Node should be boolean", () => {
+    expect(hamstersHabitat['node']).toMatch(/true|false/);
   });
   
-  it("Habitat Browser Should be boolean", () => {
-    expect(hamsters.habitat['browser']).toMatch(/true|false/);
+  it("Habitat Browser should be boolean", () => {
+    expect(hamstersHabitat['browser']).toMatch(/true|false/);
   });
   
-  it("Habitat Atomics Should be boolean", () => {
-    expect(hamsters.habitat['atomics']).toMatch(/true|false/);
+  it("Habitat Atomics should be boolean", () => {
+    expect(hamstersHabitat['atomics']).toMatch(/true|false/);
   });
 
-  it("Habitat Legacy Should be boolean", () => {
-    expect(hamsters.habitat['legacy']).toMatch(/true|false/);
+  it("Habitat Legacy should be boolean", () => {
+    expect(hamstersHabitat['legacy']).toMatch(/true|false/);
   });
 
-  it("Habitat WebWorker Should be boolean", () => {
-    expect(hamsters.habitat['webWorker']).toMatch(/true|false/);
+  it("Habitat WebWorker should be boolean", () => {
+    expect(hamstersHabitat['webWorker']).toMatch(/true|false/);
   });
 
-  it("Habitat Shell Should be boolean", () => {
-    expect(hamsters.habitat['shell']).toMatch(/true|false/);
+  it("Habitat SharedWorker should be an object or function", () => {
+    var options = ['object', 'function'];
+    expect(options.indexOf(typeof hamstersHabitat['Worker'])).not.toBe(-1);
+  });
+
+  it("Habitat Worker should be an object or function", () => {
+    var options = ['object', 'function'];
+    expect(options.indexOf(typeof hamstersHabitat['sharedWorker'])).not.toBe(-1);
+  });
+
+  it("Habitat Shell should be boolean", () => {
+    expect(hamstersHabitat['shell']).toMatch(/true|false/);
   });
   
-  it("Habitat Atomics Should be boolean", () => {
-    expect(hamsters.habitat['transferrable']).toMatch(/true|false/);
+  it("Habitat Atomics should be boolean", () => {
+    expect(hamstersHabitat['transferrable']).toMatch(/true|false/);
   });
 
-  it("Habitat Proxies Should be boolean", () => {
-    expect(hamsters.habitat['proxies']).toMatch(/true|false/);
+  it("Habitat Proxies should be boolean", () => {
+    expect(hamstersHabitat['proxies']).toMatch(/true|false/);
+  });
+
+  it("Habitat Logical Threads should be detected", () => {
+    expect(hamstersHabitat['logicalThreads']).not.toBe(null);
   });
 });

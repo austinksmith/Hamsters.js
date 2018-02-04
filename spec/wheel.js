@@ -9,31 +9,19 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-import hamsters from '../src/hamsters';
-
-if(hamsters.init) {
-  hamsters.init({
-    maxThreads: 1,
-    persistence: false,
-    cache: false
-  });
-}
+import hamstersWheel from '../src/core/wheel';
 
 describe("Hamsters Wheel", () => {
 
-  it("Tasks Should be an array", () => {
-    expect(hamsters.pool.aggregateArrays([[1],[2]])).toEqual([1,2]);
+  it("WebWorker scaffold should be a function", () => {
+    expect((typeof hamstersWheel.worker)).toEqual('function');
   });
 
-  it("Tasks Should be an array", () => {
-    expect(hamsters.data.splitArrays([1,2], 2)).toEqual([[1],[2]]);
+  it("Regular scaffold should be a function", () => {
+    expect((typeof hamstersWheel.regular)).toEqual('function');
   });
 
-  it("Tasks Should be an array", () => {
-    expect(hamsters.pool.aggregateArrays([[1],[2]])).toEqual([1,2]);
-  });
-
-  it("Tasks Should be an array", () => {
-    expect(hamsters.data.splitArrays([1,2], 2)).toEqual([[1],[2]]);
+  it("Legacy scaffold should be a function", () => {
+    expect((typeof hamstersWheel.legacy)).toEqual('function');
   });
 });
