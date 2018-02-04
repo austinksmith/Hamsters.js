@@ -26,9 +26,6 @@ You can find a view examples of the library in action using the links below.
 
 [Square Root](https://www.hamsters.io/examples/squareroot)
 
-[Monte Carlo](https://www.hamsters.io/examples/montecarlo)
-
-
 # How to use Hamsters.js
 
 You can find information on how to make use of the library using the wiki links below.
