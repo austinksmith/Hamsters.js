@@ -39,14 +39,17 @@ describe("Hamsters Data", () => {
     let stringArray = ['One', 'Two', 'Three', 'Four'];
     let i = 0;
     let sorted = null;
+    let selection = null;
     for (i; i < sortOptions.length; i++) {
       if(sortOptions[i].indexOf('Alpha') !== -1) {
         sorted = hamstersData.sortOutput(new Array(stringArray), sortOptions[i]);
+        selection = stringArray;
       } else {
         sorted = hamstersData.sortOutput(new Array(numberArray), sortOptions[i]);
+        selection = numberArray;
       }
       it("sortOutput " + sortOptions[i] + " should sort array", function() {
-        expect(sorted).not.toEqual(stringArray);
+        expect(sorted).not.toEqual(selection);
       });
     }
   });
