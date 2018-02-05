@@ -13,19 +13,19 @@ import hamstersLogger from '../src/core/logger';
 
 describe("Hamsters Logger", () => {
 
-  it("LogBook Should be an object", () => {
+  it("LogBook should be an object", () => {
     expect(typeof hamstersLogger.logBook).toEqual('object');
   });
 
-  it("LogBook Errors Should be an array", () => {
+  it("LogBook Errors should be an array", () => {
     expect(hamstersLogger.logBook.error).toEqual([]);
   });
 
-  it("LogBook Info Should be an array", () => {
+  it("LogBook Info should be an array", () => {
     expect(hamstersLogger.logBook.info).toEqual([]);
   });
 
-  it("LogBook Warning Should be an array", () => {
+  it("LogBook Warning should be an array", () => {
     expect(hamstersLogger.logBook.warning).toEqual([]);
   });
 

@@ -24,4 +24,5 @@ describe("Hamsters Memoizer", () => {
   it("itemCached should return boolean", () => {
     expect(hamstersMemoizer.itemCached({}, [])).toMatch(/true|false/);
   });
+
 });
