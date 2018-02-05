@@ -58,4 +58,5 @@ describe("Hamsters Habitat", () => {
   it("Habitat Logical Threads should be detected", () => {
     expect(hamstersHabitat['logicalThreads']).not.toBe(null);
   });
+
 });
