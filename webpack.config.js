@@ -1,7 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 
-const browser = {
+const web = {
   target: 'web',
   devtool: 'sourcemap',
   entry: [
@@ -27,6 +27,33 @@ const browser = {
   }
 };
 
+const node = {
+  target: 'node',
+  devtool: 'sourcemap',
+  entry: [
+    './src/hamsters',
+  ],
+  output: {
+    path: path.resolve('./build'),
+    filename: 'hamsters.node.min.js',
+    library: 'hamsters',
+    libraryTarget: 'commonjs2'
+  },
+  module: {
+    loaders: [
+      {
+        test: [/\.js?$/],
+        exclude: path.resolve(__dirname, 'node_modules'),
+        loader: 'babel',
+        query: {
+          presets: ['es2015'],
+        },
+      }
+    ]
+  }
+};
+
 module.exports = [
-  browser
+  web,
+  node
 ];

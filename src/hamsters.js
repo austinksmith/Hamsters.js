@@ -104,7 +104,6 @@ class hamstersjs {
     return new Promise((resolve, reject) => {
       let task = new this.hamstersTask(params, functionToRun, this);
       let scaffold = hamstersPool.selectHamsterWheel();
-      this.pool.registerTask(task);
       this.pool.scheduleTask(task, this.persistence, scaffold, this.maxThreads).then((results) => {
         resolve(results);
       }).catch((error) => {
@@ -125,7 +124,6 @@ class hamstersjs {
   hamstersRun(params, functionToRun, onSuccess, onError) {
     let task = new this.hamstersTask(params, functionToRun, this);
     let scaffold = hamstersPool.selectHamsterWheel();
-    this.pool.registerTask(task);
     this.pool.scheduleTask(task, this.persistence, scaffold, this.maxThreads).then((results) => {
       onSuccess(results);
     }).catch((error) => {

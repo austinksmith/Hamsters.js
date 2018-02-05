@@ -4,7 +4,7 @@
   "description": "100% Vanilla Javascript Multithreading & Parallel Execution Library",
   "homepage": "http://www.hamsters.io/",
   "version": "5.0.0",
-  "main": "src/hamsters.js",
+  "main": "build/hamsters.node.min.js",
   "scripts": {
     "build": "rm -rf ./build && webpack --config ./hamsters.webpack.config.js",
     "test": "karma start --reporters html"
