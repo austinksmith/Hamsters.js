@@ -48,9 +48,9 @@ class habitat {
         max = 20;
       }
     }
-    if(this.isNode() && typeof os !== 'undefined') {
-      max = os.cpus().length;
-    }
+    // if(this.isNode() && typeof os !== 'undefined') {
+    //   max = os.cpus().length;
+    // }
     return max;
   }
 
