@@ -34,12 +34,12 @@ describe("Hamsters Habitat", () => {
   });
 
   it("Habitat SharedWorker should be an object or function", () => {
-    var options = ['object', 'function'];
+    const options = ['object', 'function'];
     expect(options.indexOf(typeof hamstersHabitat['Worker'])).not.toBe(-1);
   });
 
   it("Habitat Worker should be an object or function", () => {
-    var options = ['object', 'function'];
+    const options = ['object', 'function'];
     expect(options.indexOf(typeof hamstersHabitat['sharedWorker'])).not.toBe(-1);
   });
 

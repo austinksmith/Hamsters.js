@@ -11,7 +11,6 @@
 
 import hamstersPool from '../src/core/pool';
 
-
 describe("Hamsters Pool", () => {
 
   it("Tasks should be an array", () => {
