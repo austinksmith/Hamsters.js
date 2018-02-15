@@ -194,7 +194,9 @@ class pool {
       output = hamstersData.sortOutput(output, task.sort);
     }
     this.tasks[task.id] = null; //Clean up our task, not needed any longer
-    resolve(output);
+    resolve({
+      data: output
+    });
   }
 
   /**
