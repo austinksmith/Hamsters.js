@@ -261,10 +261,10 @@ class pool {
   * @param {number} maxThreads - Maximum number of threads for this client
   */
   scheduleTask(task, persistence, wheel, maxThreads) {
+    let threadArrays = [];
   	if(this.running.length === maxThreads) {
   		return this.addWorkToPending(task, persistence, wheel, resolve, reject);
   	}
-  	let threadArrays = [];
 	  if(task.input.array && task.threads !== 1) {
 	    threadArrays = hamstersData.splitArrays(task.input.array, task.threads); //Divide our array into equal array sizes
 	  }

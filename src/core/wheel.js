@@ -42,12 +42,12 @@ class wheel {
         params = incomingMessage.data;
         rtn = {
           data: [],
-          dataType: params.dataType
+          dataType: params.dataType,
+          threadStart: Date.now()
         };
         eval("(" + params.hamstersJob + ")")();
-        port.postMessage({
-          results: rtn
-        });
+        rtn.threadEnd = Date.now();
+        port.postMessage(rtn);
       }, false);
     }, false);
   }
@@ -62,7 +62,7 @@ class wheel {
     self.rtn = {};
 
     function prepareReturn(returnObject) {
-      var dataType = returnObject.dataType;
+      let dataType = returnObject.dataType;
       if(dataType) {
         returnObject.data = typedArrayFromBuffer(dataType, returnObject.data);
       }
@@ -105,10 +105,12 @@ class wheel {
     addEventListener('message', (incomingMessage) => {
       params = incomingMessage.data;
       rtn = {
+        threadStart: Date.now(),
         data: [],
         dataType: (params.dataType ? params.dataType.toLowerCase() : null)
       };
       new Function(params.hamstersJob)();
+      rtn.threadEnd = Date.now();
       postMessage(prepareReturn(rtn), prepareTransferBuffers(rtn));
     });
   }
@@ -117,19 +119,19 @@ class wheel {
   * @function legacyScaffold - Provides library functionality for legacy devices
   */
   legacyScaffold(params, resolve) {
-    setTimeout(function() {
+    setTimeout(() => {
       // Node.js doesn't support self for some reason, so let's use global instead
       // this works great for node, not so great for reactNative
       // IOS has a secury check within React Native preventing global variable assignment
       // Android does not have the same security restriction
-      if(typeof self === 'undefined') {
-        var self = (global || window);
-      }
+      var self = (self || global || window || this);
       self.params = params;
       self.rtn = {
+        threadStart: Date.now(),
         data: []
       };
       params.hamstersJob();
+      rtn.threadEnd = Date.now();
       resolve(rtn);
     }, 4); //4ms delay (HTML5 spec minimum), simulate threading
   }
