@@ -41,7 +41,7 @@ class pool {
   * @param {function} reject - onError method
   */
   addWorkToPending(array, task, persistence, wheel, resolve, reject) {
-  	this.pending.push(arguments);
+  	this.pending.push(arguments);``
   }
 
   /**
@@ -154,11 +154,16 @@ class pool {
   */
   runTask(array, task, persistence, wheel, resolve, reject) {
   	let threadId = this.running.length;
-  	let hamster = this.grabHamster(threadId, persistence, wheel);
-    this.trainHamster(threadId, task, hamster, persistence, resolve, reject);
+    let hamsterFood = this.prepareMeal(array, task);
     this.registerTask(task.id);
     this.keepTrackOfThread(task, threadId);
-    hamstersData.feedHamster(hamster, this.prepareMeal(array, task));
+    if(hamstersHabitat.legacy) {
+      wheel(hamsterFood, resolve, reject);
+    } else {
+      let hamster = this.grabHamster(threadId, persistence, wheel);
+      this.trainHamster(threadId, task, hamster, persistence, resolve, reject);
+      hamstersData.feedHamster(hamster, hamsterFood);
+    }
     task.count += 1; //Increment count, thread is running
   }
 

@@ -82,15 +82,21 @@ class hamstersjs {
   */
   hamstersTask(params, functionToRun, scope) {
     this.id = scope.pool.tasks.length;
-    this.threads = params.threads || 1;
     this.count = 0;
-    this.aggregate = params.aggregate || false;
+    this.aggregate = (params.aggregate || false);
     this.output = [];
     this.workers = [];
-    this.memoize = params.memoize || false;
-    this.dataType = params.dataType ? params.dataType.toLowerCase() : null;
+    this.memoize = (params.memoize || false);
+    this.dataType = (params.dataType ? params.dataType.toLowerCase() : null);
     this.input = params;
-    this.input.hamstersJob = scope.data.prepareJob(functionToRun);
+    // Do not modify function if we're running on the main thread for legacy fallback
+    if(hamstersHabitat.legacy) {
+      this.threads = 1;
+      this.input.hamstersJob = functionToRun;
+    } else {
+      this.threads = (params.threads || 1);
+      this.input.hamstersJob = scope.data.prepareJob(functionToRun);
+    }
   }
 
   /**
@@ -103,8 +109,7 @@ class hamstersjs {
   hamstersPromise(params, functionToRun) {
     return new Promise((resolve, reject) => {
       let task = new this.hamstersTask(params, functionToRun, this);
-      let scaffold = hamstersPool.selectHamsterWheel();
-      this.pool.scheduleTask(task, this.persistence, scaffold, this.maxThreads).then((results) => {
+      this.pool.scheduleTask(task, this.persistence, this.maxThreads).then((results) => {
         resolve(results);
       }).catch((error) => {
         hamstersLogger.error(error.messsage, reject);

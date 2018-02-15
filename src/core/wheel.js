@@ -116,18 +116,14 @@ class wheel {
   /**
   * @function legacyScaffold - Provides library functionality for legacy devices
   */
-  legacyScaffold(params, resolve, reject) {
+  legacyScaffold(params, resolve) {
     setTimeout(function() {
+      self.params = params;
       self.rtn = {
-        data: [],
-        dataType: (params.dataType ? params.dataType.toLowerCase() : null)
+        data: []
       };
-      params.hamstersJob();
-      if (params.dataType) {
-        rtn.data = hamstersData.processDataType(params.dataType, rtn.data, hamstersHabitat.transferable);
-        rtn.dataType = params.dataType;
-      }
-      resolve(rtn);
+      self.params.hamstersJob();
+      resolve(self.rtn);
     }, 4); //4ms delay (HTML5 spec minimum), simulate threading
   }
 };
