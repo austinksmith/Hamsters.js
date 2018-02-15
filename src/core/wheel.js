@@ -118,12 +118,19 @@ class wheel {
   */
   legacyScaffold(params, resolve) {
     setTimeout(function() {
+      // Node.js doesn't support self for some reason, so let's use global instead
+      // this works great for node, not so great for reactNative
+      // IOS has a secury check within React Native preventing global variable assignment
+      // Android does not have the same security restriction
+      if(typeof self === 'undefined') {
+        var self = (global || window);
+      }
       self.params = params;
       self.rtn = {
         data: []
       };
-      self.params.hamstersJob();
-      resolve(self.rtn);
+      params.hamstersJob();
+      resolve(rtn);
     }, 4); //4ms delay (HTML5 spec minimum), simulate threading
   }
 };
