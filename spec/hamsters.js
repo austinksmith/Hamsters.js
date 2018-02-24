@@ -41,3 +41,30 @@ describe("Hamsters.js", () => {
     expect(hamsters.maxThreads).toEqual(2);
   });
 });
+
+describe("WebHamsters running asynchronously", () => {
+  
+  beforeEach((done) => {
+    done();
+  });
+
+  var dataTypes = ['Int8','Int16','Int32','Float32','Float64','Uint16','Uint32','Uint8', null];
+
+  for (var i = dataTypes.length - 1; i >= 0; i--) {
+    it("Calculates square root of 4000 ("+dataTypes[i]+")", function(done) {
+      var params = {
+        threads: 1,
+        aggregate: true,
+        dataType: dataTypes[i],
+        num: 4000
+      };
+      hamsters.run(params, function() {
+        rtn.data.push(Math.floor(Math.sqrt(params.num)));
+      }, function(res) {
+        console.log(res);
+        expect(res.data[0][0]).toEqual(63);
+        done();
+      });
+    });
+  }
+});
