@@ -11,21 +11,6 @@
 
 import hamsters from '../src/hamsters';
 
-    // this.persistence = true;
-    // this.memoize = false;
-    // this.atomics = false;
-    // this.debug = false;
-    // this.version = hamstersVersion;
-    // this.maxThreads = hamstersHabitat.logicalThreads;
-    // this.habitat = hamstersHabitat;
-    // this.data = hamstersData;
-    // this.pool = hamstersPool;
-    // this.logger = hamstersLogger;
-    // this.memoizer = hamstersMemoizer;
-    // this.run = this.hamstersRun;
-    // this.promise = this.hamstersPromise;
-    // this.init = this.initializeLibrary;
-
 describe("Hamsters.js", () => {
 
   it("Persistence should be boolean", () => {
