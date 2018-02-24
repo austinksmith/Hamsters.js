@@ -32,8 +32,10 @@ class wheel {
   workerScaffold() {
     'use strict';
 
-    self.params = {};
-    self.rtn = {};
+    var me = (self || global || window || this);
+
+    me.params = {};
+    me.rtn = {};
 
     addEventListener('connect', (incomingConnection) => {
       const port = incomingConnection.ports[0];
@@ -58,8 +60,10 @@ class wheel {
   regularScaffold() {
     'use strict';
 
-    self.params = {};
-    self.rtn = {};
+    let me = (self || global || window || this);
+
+    me.params = {};
+    me.rtn = {};
 
     function prepareReturn(returnObject) {
       let dataType = returnObject.dataType;
@@ -124,9 +128,9 @@ class wheel {
       // this works great for node, not so great for reactNative
       // IOS has a secury check within React Native preventing global variable assignment
       // Android does not have the same security restriction
-      var self = (self || global || window || this);
-      self.params = params;
-      self.rtn = {
+      var me = (self || global || window || this);
+      me.params = params;
+      me.rtn = {
         threadStart: Date.now(),
         data: []
       };

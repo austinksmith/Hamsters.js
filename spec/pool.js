@@ -29,4 +29,8 @@ describe("Hamsters Pool", () => {
     expect(hamstersPool.pending).toEqual([]);
   });
 
+  it("selectHamsterWheel should return a function", () => {
+    expect(typeof hamstersPool.selectHamsterWheel()).toEqual('function');
+  });
+
 });

@@ -45,7 +45,7 @@ class logger {
     let timeStamp = Date.now();
     let timeStampedMessage = `Hamsters.js v${hamstersVersion} Warning: ${message} @ ${timeStamp}`;
     this.saveLogEntry('warning', timeStampedMessage);
-    console.warning(timeStampedMessage);
+    console.warn(timeStampedMessage);
   }
 
   errorLog(message, reject) {
