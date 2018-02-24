@@ -70,6 +70,10 @@ class hamstersjs {
         }
       }
     }
+    // Ensure legacy mode is disabled when we pass a third party worker library
+    if(typeof this.habitat.Worker === 'function') {
+      this.habitat.legacy = false;
+    }
   }
 
   /**
@@ -109,7 +113,7 @@ class hamstersjs {
   hamstersPromise(params, functionToRun) {
     return new Promise((resolve, reject) => {
       let task = new this.hamstersTask(params, functionToRun, this);
-      this.pool.scheduleTask(task, this.persistence, this.maxThreads).then((results) => {
+      this.pool.scheduleTask(task, this.persistence, scaffold, this.maxThreads).then((results) => {
         resolve(results);
       }).catch((error) => {
         hamstersLogger.error(error.messsage, reject);
