@@ -19,7 +19,8 @@
     params = incomingMessage.data;
     rtn = {
       data: [],
-      dataType: params.dataType ? params.dataType.toLowerCase() : null
+      dataType: params.dataType ? params.dataType.toLowerCase() : null,
+      threadStart: Date.now()
     };
   };
 
@@ -67,6 +68,7 @@
   function onmessage(incomingMessage) {
     setDefaults(incomingMessage);
     new Function(params.fn)();
+    rtn.threadEnd = Date.now();
     postMessage(prepareReturn(rtn), prepareTransferBuffers(rtn));
   };
 })();

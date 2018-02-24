@@ -48,9 +48,9 @@ class habitat {
         max = 20;
       }
     }
-    // if(this.isNode() && typeof os !== 'undefined') {
-    //   max = os.cpus().length;
-    // }
+    if(this.isNode() && !this.isReactNative() && typeof os !== 'undefined') {
+      max = os.cpus().length;
+    }
     return max;
   }
 
@@ -86,7 +86,7 @@ class habitat {
   * @function isNode - Detects if execution environment is node.js
   */
   isNode() {
-    return typeof process === "object" && typeof require === "function" && !this.isBrowser() && !this.isWebWorker();
+    return typeof process === "object" && typeof require === "function" && !this.isBrowser() && !this.isWebWorker() && !this.isReactNative();
   }
 
   /**
