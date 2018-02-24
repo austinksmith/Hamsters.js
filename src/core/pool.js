@@ -49,7 +49,7 @@ class pool {
   * @param {object} item - Task to process
   */
   processQueue(item) {
-  	return this.runTask(item.array, item.task, item.persistence, item.wheel, item.resolve, item.reject);
+  	return this.runTask(item[0], item[1], item[2], item[3], item[4], item[5]);
   }
 
   /**
@@ -176,8 +176,8 @@ class pool {
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
-  hamsterWheel(array, task, persistence, wheel, resolve, reject) {
-    if(this.maxThreads === this.running.length) {
+  hamsterWheel(array, task, persistence, maxThreads, wheel, resolve, reject) {
+    if(maxThreads === this.running.length) {
       return this.addWorkToPending(array, task, persistence, wheel, resolve, reject);
     }
     return this.runTask(array, task, persistence, wheel, resolve, reject);
@@ -262,9 +262,6 @@ class pool {
   */
   scheduleTask(task, persistence, wheel, maxThreads) {
     let threadArrays = [];
-  	if(this.running.length === maxThreads) {
-  		return this.addWorkToPending(task, persistence, wheel, resolve, reject);
-  	}
 	  if(task.input.array && task.threads !== 1) {
 	    threadArrays = hamstersData.splitArrays(task.input.array, task.threads); //Divide our array into equal array sizes
 	  }
@@ -272,9 +269,9 @@ class pool {
       let i = 0;
       while (i < task.threads) {
       	if(threadArrays && task.threads !== 1) {
-        	this.hamsterWheel(threadArrays[i], task, persistence, wheel, resolve, reject);
+        	this.hamsterWheel(threadArrays[i], task, persistence, maxThreads, wheel, resolve, reject);
 		    } else {
-        	this.hamsterWheel(task.input.array, task, persistence, wheel, resolve, reject);
+        	this.hamsterWheel(task.input.array, task, persistence, maxThreads, wheel, resolve, reject);
 		    }
         i += 1;
       }
