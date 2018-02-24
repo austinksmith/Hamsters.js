@@ -109,9 +109,9 @@ class wheel {
     addEventListener('message', (incomingMessage) => {
       params = incomingMessage.data;
       rtn = {
-        threadStart: Date.now(),
         data: [],
-        dataType: (params.dataType ? params.dataType.toLowerCase() : null)
+        dataType: (params.dataType ? params.dataType.toLowerCase() : null),
+        threadStart: Date.now()
       };
       new Function(params.hamstersJob)();
       rtn.threadEnd = Date.now();
@@ -131,8 +131,8 @@ class wheel {
       var me = (self || global || window || this);
       me.params = params;
       me.rtn = {
-        threadStart: Date.now(),
-        data: []
+        data: [],
+        threadStart: Date.now()
       };
       params.hamstersJob();
       rtn.threadEnd = Date.now();

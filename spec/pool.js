@@ -18,7 +18,7 @@ describe("Hamsters Pool", () => {
   });
 
   it("Threads should be an array", () => {
-    expect(hamstersPool.threads).toEqual([]);
+    expect(hamstersPool.threads.length).toEqual(2);
   });
 
   it("Running should be an array", () => {
