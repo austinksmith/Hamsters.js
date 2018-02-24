@@ -36,7 +36,7 @@ You can find information on how to make use of the library using the wiki links 
 
 [Restructoring Standard Functions](https://www.hamsters.io/wiki#restructuring-standard-functions)
 
-[Tools](https://www.hamsters.io/wiki#tools)
+[Promises](https://www.hamsters.io/wiki#promises)
 
 [Sorting](https://www.hamsters.io/wiki#sorting)
 
