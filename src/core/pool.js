@@ -41,7 +41,7 @@ class pool {
   * @param {function} reject - onError method
   */
   addWorkToPending(array, task, persistence, wheel, resolve, reject) {
-  	this.pending.push(arguments);``
+  	this.pending.push(arguments);
   }
 
   /**

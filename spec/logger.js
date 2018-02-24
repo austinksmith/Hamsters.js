@@ -17,16 +17,36 @@ describe("Hamsters Logger", () => {
     expect(typeof hamstersLogger.logBook).toEqual('object');
   });
 
-  it("LogBook Errors should be an array", () => {
+  it("LogBook Errors should be an empty array", () => {
     expect(hamstersLogger.logBook.error).toEqual([]);
   });
 
-  it("LogBook Info should be an array", () => {
-    expect(hamstersLogger.logBook.info).toEqual([]);
+  it("LogBook Error should save to error array", () => {
+    expect(hamstersLogger.logBook.error.length).toEqual(0);
+    hamstersLogger.error('Hamsters are better than gerbals');
+    expect(hamstersLogger.logBook.error.length).toEqual(1);
   });
 
-  it("LogBook Warning should be an array", () => {
+  it("LogBook Info should be an empty array", () => {
+    expect(hamstersLogger.logBook.info).toEqual([]);
+    expect(hamstersLogger.logBook.info.length).toEqual(0);
+  });
+
+  it("LogBook Info should save to info array", () => {
+    expect(hamstersLogger.logBook.info.length).toEqual(0);
+    hamstersLogger.info('Hamsters are better than gerbals');
+    expect(hamstersLogger.logBook.info.length).toEqual(1);
+  });
+
+  it("LogBook Warning should be an empty array", () => {
     expect(hamstersLogger.logBook.warning).toEqual([]);
+    expect(hamstersLogger.logBook.warning.length).toEqual(0);
+  });
+
+  it("LogBook Warning should save to warning array", () => {
+    expect(hamstersLogger.logBook.warning.length).toEqual(0);
+    hamstersLogger.warning('Hamsters are better than gerbals');
+    expect(hamstersLogger.logBook.warning.length).toEqual(1);
   });
 
 });
