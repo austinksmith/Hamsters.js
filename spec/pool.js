@@ -14,7 +14,7 @@ import hamstersPool from '../src/core/pool';
 describe("Hamsters Pool", () => {
 
   it("Tasks should be an array", () => {
-    expect(hamstersPool.tasks).toEqual([]);
+    expect(hamstersPool.tasks.length).toEqual(9);
   });
 
   it("Threads should be an array", () => {
