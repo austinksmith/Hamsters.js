@@ -10,6 +10,7 @@
 ***********************************************************************************/
 
 import hamstersHabitat from './habitat';
+import hamstersLogger from './logger';
 
 'use strict';
 
@@ -181,19 +182,39 @@ class data {
     return new types[dataType](buffer);
   }
 
+
+  /**
+  * @function createDataBlob - Attempts to locate data blob builder, vender prefixes galore
+  */
+  locateBlobBuilder() {
+    if(typeof BlobBuilder !== 'undefined') {
+      return BlobBuilder;
+    }
+    if(typeof WebKitBlobBuilder !== 'undefined') {
+      return WebKitBlobBuilder;
+    }
+    if(typeof MozBlobBuilder !== 'undefined') {
+      return MozBlobBuilder;
+    }
+    if(typeof MSBlobBuilder !== 'undefined') {
+      return MSBlobBuilder;
+    }
+    return hamstersLogger.error('Fatal Exception: Environment does not support data blobs!');
+  }
+
   /**
   * @function createDataBlob - Creates new data blob from textContent
   * @param {string} textContent - Provided text content for blob
   */
   createDataBlob(textContent) {
-    if(typeof Blob === 'undefined') {
-      let BlobMaker = (BlobBuilder || WebKitBlobBuilder || MozBlobBuilder || MSBlobBuilder);
+    if(typeof Blob !== 'undefined') {
+      let BlobMaker = this.locateBlobBuilder();
       let blob = new BlobMaker();
       blob.append([textContent], {
         type: 'application/javascript'
       });
       return blob.getBlob();
-    } 
+    }
     return new Blob([textContent], {
       type: 'application/javascript'
     });
