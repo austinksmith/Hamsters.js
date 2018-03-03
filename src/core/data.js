@@ -207,7 +207,7 @@ class data {
   * @param {string} textContent - Provided text content for blob
   */
   createDataBlob(textContent) {
-    if(typeof Blob !== 'undefined') {
+    if(typeof Blob === 'undefined') {
       let BlobMaker = this.locateBlobBuilder();
       let blob = new BlobMaker();
       blob.append([textContent], {
