@@ -125,11 +125,10 @@ class habitat {
       }
     }
     // Detect sharedWorker support for use within webworkers
-    if (this.webWorker && typeof this.SharedWorker !== 'undefined') {
+    if (this.webWorker() && typeof this.SharedWorker !== 'undefined') {
       try {
         let workerBlob = hamstersData.generateBlob();
         let SharedHamster = new this.SharedWorker(workerBlob, 'SharedHamsterWheel');
-        hamstersData.workerURI = workerBlob;
       } catch (e) {
         this.legacy = true;
       }
