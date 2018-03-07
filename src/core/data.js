@@ -199,7 +199,7 @@ class data {
     if(typeof MSBlobBuilder !== 'undefined') {
       return MSBlobBuilder;
     }
-    return hamstersLogger.error('Fatal Exception: Environment does not support data blobs!');
+    return hamstersLogger.error('Environment does not support data blobs!');
   }
 
   /**
