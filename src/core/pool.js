@@ -95,7 +95,7 @@ class pool {
     if(hamstersHabitat.legacy) {
       return;
     }
-    if(hamstersHabitat.browser) {
+    if(hamstersHabitat.browser && !hamstersHabitat.reactNative) {
       workerURI = hamstersData.generateBlob(wheel);
     }
     if (persistence) {
@@ -113,13 +113,10 @@ class pool {
   * @param {string} workerURI - URI for created library blob object 
   */
   spawnHamster(wheel, workerURI) {
-    if (hamstersHabitat.ie10) {
-      return new hamstersHabitat.Worker(wheel);
-    }
     if (hamstersHabitat.webWorker) {
       return new hamstersHabitat.SharedWorker(workerURI, 'SharedHamsterWheel');
     }
-    if ((hamstersHabitat.node || hamstersHabitat.reactNative) && !hamstersHabitat.browser) {
+    if (hamstersHabitat.node || hamstersHabitat.reactNative || hamstersHabitat.ie10) {
       return new hamstersHabitat.Worker(wheel);
     }
     return new hamstersHabitat.Worker(workerURI);
