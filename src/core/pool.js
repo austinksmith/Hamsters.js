@@ -95,6 +95,7 @@ class pool {
     if(hamstersHabitat.legacy) {
       return;
     }
+    console.log(hamstersHabitat);
     if(hamstersHabitat.browser && !hamstersHabitat.reactNative) {
       workerURI = hamstersData.generateBlob(wheel);
     }
@@ -113,6 +114,7 @@ class pool {
   * @param {string} workerURI - URI for created library blob object 
   */
   spawnHamster(wheel, workerURI) {
+    console.log(hamstersHabitat);
     if (hamstersHabitat.webWorker) {
       return new hamstersHabitat.SharedWorker(workerURI, 'SharedHamsterWheel');
     }

@@ -20,13 +20,17 @@ class habitat {
   * @function constructor - Sets properties for this class
   */
   constructor() {
+    this.debug = false;
+    this.importScripts = null;
+    this.memoize = false;
+    this.persistence = true;
+    this.legacy = this.isLegacyEnvironment() || false;
     this.browser = this.isBrowser();
     this.webWorker = this.isWebWorker();
     this.node = this.isNode();
     this.reactNative = this.isReactNative();
     this.shell = this.isShell();
     this.transferrable = this.supportsTransferrableObjects();
-    this.legacy = this.isLegacyEnvironment();
     this.atomics = this.supportsAtomicOperations();
     this.proxies = this.supportsProxies();
     this.isIE = this.isInternetExplorer;
@@ -100,7 +104,7 @@ class habitat {
   * @function isReactNative - Detects if execution environment is reactNative
   */
   isReactNative() {
-    return !this.isNode() && typeof global === 'object';
+    return !this.isNode() && typeof global === 'object' && !this.isBrowser();
   }
 
   /**
@@ -116,7 +120,7 @@ class habitat {
   isLegacyEnvironment() {
     // Force legacy mode for known devices that don't support threading
     if (this.isBrowser() && !this.isReactNative()) {
-      let isIE10 = this.habitat.isIE(10);
+      let isIE10 = this.isInternetExplorer(10);
       let userAgent = navigator.userAgent;
       let lacksWorkerSupport = (typeof this.Worker === 'undefined');
       let legacyAgents = ['Kindle/3.0', 'Mobile/8F190', 'IEMobile'];

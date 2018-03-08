@@ -26,10 +26,6 @@ class hamstersjs {
   * @function constructor - Sets properties for this class
   */
   constructor() {
-    this.persistence = true;
-    this.memoize = false;
-    this.atomics = false;
-    this.debug = false;
     this.version = hamstersVersion;
     this.maxThreads = hamstersHabitat.logicalThreads;
     this.habitat = hamstersHabitat;
@@ -51,7 +47,7 @@ class hamstersjs {
     if (typeof startOptions !== 'undefined') {
       this.processStartOptions(startOptions);
     }
-    hamstersPool.spawnHamsters(this.persistence, hamstersPool.selectHamsterWheel(), this.maxThreads);
+    hamstersPool.spawnHamsters(hamstersHabitat.persistence, hamstersPool.selectHamsterWheel(), this.maxThreads);
     delete this.init;
   }
 
@@ -66,7 +62,9 @@ class hamstersjs {
       'legacy', 'webworker',
       'reactnative', 'atomics',
       'proxies', 'transferrable',
-      'browser', 'shell', 'node'
+      'browser', 'shell', 
+      'node', 'debug',
+      'persistence'
     ];
     for (var key in startOptions) {
       if (startOptions.hasOwnProperty(key)) {
@@ -120,7 +118,7 @@ class hamstersjs {
   hamstersPromise(params, functionToRun) {
     return new Promise((resolve, reject) => {
       let task = new this.hamstersTask(params, functionToRun, this);
-      this.pool.scheduleTask(task, this.persistence, scaffold, this.maxThreads).then((results) => {
+      this.pool.scheduleTask(task, this.habitat.persistence, scaffold, this.maxThreads).then((results) => {
         resolve(results);
       }).catch((error) => {
         hamstersLogger.error(error.messsage, reject);
@@ -140,7 +138,7 @@ class hamstersjs {
   hamstersRun(params, functionToRun, onSuccess, onError) {
     let task = new this.hamstersTask(params, functionToRun, this);
     let scaffold = hamstersPool.selectHamsterWheel();
-    this.pool.scheduleTask(task, this.persistence, scaffold, this.maxThreads).then((results) => {
+    this.pool.scheduleTask(task, this.habitat.persistence, scaffold, this.maxThreads).then((results) => {
       onSuccess(results);
     }).catch((error) => {
       hamstersLogger.error(error.messsage, onError);
