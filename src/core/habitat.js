@@ -62,14 +62,14 @@ class habitat {
   * @function locateWorkerObject - Attempts to find a global Worker object
   */
   locateWorkerObject() {
-    return (typeof Worker !== 'undefined') ? Worker : null;
+    return typeof Worker !== 'undefined' ? Worker : null;
   }
 
   /**
   * @function locateSharedWorkerObject - Attempts to find a global SharedWorker object
   */
   locateSharedWorkerObject() {
-    return (typeof SharedWorker !== 'undefined') ? SharedWorker : null;
+    return typeof SharedWorker !== 'undefined' ? SharedWorker : null;
   }
 
   /**
