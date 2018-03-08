@@ -13,22 +13,6 @@ import hamsters from '../src/hamsters';
 
 describe("Hamsters.js", () => {
 
-  it("Persistence should be boolean", () => {
-    expect(hamsters.persistence).toMatch(/true|false/);
-  });
-
-  it("Memoize should be boolean", () => {
-    expect(hamsters.memoize).toMatch(/true|false/);
-  });
-
-  it("Atomics should be boolean", () => {
-    expect(hamsters.atomics).toMatch(/true|false/);
-  });
-
-  it("Debug should be boolean", () => {
-    expect(hamsters.debug).toMatch(/true|false/);
-  });
-
   it("maxThreads should be detected", () => {
     expect(hamsters.maxThreads).toEqual((navigator.hardwareConcurrency || 4));
   });
