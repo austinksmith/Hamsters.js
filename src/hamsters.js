@@ -60,7 +60,11 @@ class hamstersjs {
   * @param {object} startOptions - Provided library functionality options
   */
   processStartOptions(startOptions) {
-    let habitatKeys = ['worker', 'sharedWorker', 'legacy'];
+    let habitatKeys = [
+      'worker', 'sharedworker',
+      'legacy', 'webworker',
+      'shell'
+    ];
     for (var key in startOptions) {
       if (startOptions.hasOwnProperty(key)) {
         if (habitatKeys.indexOf(key.toLowerCase()) !== -1) {
