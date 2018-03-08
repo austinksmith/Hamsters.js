@@ -60,10 +60,13 @@ class hamstersjs {
   * @param {object} startOptions - Provided library functionality options
   */
   processStartOptions(startOptions) {
+    // Add options to override library environment behavior
     let habitatKeys = [
       'worker', 'sharedworker',
       'legacy', 'webworker',
-      'shell'
+      'reactnative', 'atomics',
+      'proxies', 'transferrable',
+      'browser', 'shell', 'node'
     ];
     for (var key in startOptions) {
       if (startOptions.hasOwnProperty(key)) {
