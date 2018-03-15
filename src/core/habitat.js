@@ -104,7 +104,7 @@ class habitat {
   * @function isReactNative - Detects if execution environment is reactNative
   */
   isReactNative() {
-    return !this.isNode() && typeof global === 'object' && !this.isBrowser();
+    return !this.isNode() && typeof global === 'object';
   }
 
   /**
