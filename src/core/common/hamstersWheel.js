@@ -14,14 +14,14 @@
    'use strict';
 
     if(typeof self === 'undefined') {
-      let self = (global || window || this);
+      var self = (global || window || this);
     }
 
     self.params = {};
     self.rtn = {};
 
     function prepareReturn(returnObject) {
-      let dataType = returnObject.dataType;
+      var dataType = returnObject.dataType;
       if(dataType) {
         returnObject.data = typedArrayFromBuffer(dataType, returnObject.data);
       }
@@ -29,7 +29,7 @@
     }
 
     function typedArrayFromBuffer(dataType, buffer) {
-      const types = {
+      var types = {
         'uint32': Uint32Array,
         'uint16': Uint16Array,
         'uint8': Uint8Array,
@@ -47,8 +47,8 @@
     }
 
     function prepareTransferBuffers(hamsterFood) {
-      let buffers = [];
-      let key = null;
+      var buffers = [];
+      var key = null;
       for (key in hamsterFood) {
         if (hamsterFood.hasOwnProperty(key) && hamsterFood[key]) {
           if(hamsterFood[key].buffer) {
