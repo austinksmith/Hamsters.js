@@ -7,7 +7,7 @@
   "main": "build/hamsters.node.min.js",
   "scripts": {
     "build": "rm -rf ./build && webpack --config ./hamsters.webpack.config.js && npm run copy-common",
-    "copy-common": "mkdir ./build/common && cp ./src/common/hamstersWheel.js ./build/common/hamstersWheel.js",
+    "copy-common": "mkdir ./build/common && cp ./src/core/common/hamstersWheel.js ./build/common/hamstersWheel.js",
     "test": "karma start --reporters html"
   },
   "license": "Artistic-2.0",
