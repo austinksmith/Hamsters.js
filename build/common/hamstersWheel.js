@@ -61,7 +61,7 @@
       return buffers;
     }
 
-    addEventListener('message', function(incomingMessage) {
+    onmessage = function(incomingMessage) {
       params = incomingMessage.data;
       rtn = {
         data: [],
@@ -71,6 +71,6 @@
       new Function(params.hamstersJob)();
       rtn.threadEnd = Date.now();
       postMessage(prepareReturn(rtn), prepareTransferBuffers(rtn));
-    });
+    };
 
 }());
