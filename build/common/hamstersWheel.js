@@ -9,7 +9,7 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-(function)() {
+(function () {
 
    'use strict';
 
@@ -73,4 +73,4 @@
       postMessage(prepareReturn(rtn), prepareTransferBuffers(rtn));
     });
 
-})();
+}());
