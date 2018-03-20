@@ -217,13 +217,10 @@ class pool {
     // Handle successful response from a thread
     function onThreadResponse(message) {
       let results = message.data;
-      // String only communcation for rn...in 2k18
-      if(hamstersHabitat.reactNative) {
-        results = JSON.parse(results);
-      }
       pool.running.splice(pool.running.indexOf(threadId), 1); //Remove thread from running pool
     	task.workers.splice(task.workers.indexOf(threadId), 1); //Remove thread from task running pool
-      task.output[threadId] = results.data; // Save results data to output
+      // String only communcation for rn...in 2k18
+      task.output[threadId] = hamstersHabitat.reactNative ? JSON.parse(results).data : results.data; // Save results data to output
       if (task.workers.length === 0 && task.count === task.threads) {
         pool.returnOutputAndRemoveTask(task, resolve);
       }
