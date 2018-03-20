@@ -114,7 +114,10 @@ class pool {
   * @param {string} workerURI - URI for created library blob object 
   */
   spawnHamster(wheel, workerURI) {
-    if(hamstersHabitat.reactNative || hamstersHabitat.ie10) {
+    if(hamstersHabitat.reactNative) {
+      return new hamstersHabitat.Worker('./common/rnHamstersWheel.js');
+    }
+    if(hamstersHabitat.ie10) {
       return new hamstersHabitat.Worker('./common/hamstersWheel.js');
     }
     if (hamstersHabitat.node) {
