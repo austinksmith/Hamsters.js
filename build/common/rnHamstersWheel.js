@@ -19,7 +19,7 @@ import { self } from 'react-native-threads';
     self.rtn = {};
 
     self.onmessage = function(incomingMessage) {
-      params = incomingMessage.data;
+      params = JSON.parse(incomingMessage.data);
       rtn = {
         data: [],
         dataType: (params.dataType ? params.dataType.toLowerCase() : null),
@@ -27,7 +27,7 @@ import { self } from 'react-native-threads';
       };
       new Function(params.hamstersJob)();
       rtn.threadEnd = Date.now();
-      postMessage(prepareReturn(rtn), prepareTransferBuffers(rtn));
+      postMessage(prepareReturn(rtn));
     };
 
     function prepareReturn(returnObject) {
@@ -35,7 +35,7 @@ import { self } from 'react-native-threads';
       if(dataType) {
         returnObject.data = typedArrayFromBuffer(dataType, returnObject.data);
       }
-      return returnObject;
+      return JSON.stringify(returnObject);
     }
 
     function typedArrayFromBuffer(dataType, buffer) {
@@ -54,21 +54,6 @@ import { self } from 'react-native-threads';
         return buffer;
       }
       return new types[dataType](buffer);
-    }
-
-    function prepareTransferBuffers(hamsterFood) {
-      var buffers = [];
-      var key = null;
-      for (key in hamsterFood) {
-        if (hamsterFood.hasOwnProperty(key) && hamsterFood[key]) {
-          if(hamsterFood[key].buffer) {
-            buffers.push(hamsterFood[key].buffer);
-          } else if(Array.isArray(hamsterFood[key]) && typeof ArrayBuffer !== 'undefined') {
-            buffers.push(new ArrayBuffer(hamsterFood[key]));
-          }
-        }
-      }
-      return buffers;
     }
 
 }());

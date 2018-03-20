@@ -65,6 +65,9 @@ class data {
     if (hamstersHabitat.ie10) {
       return hamster.postMessage(hamsterFood);
     }
+    if(hamstersHabitat.reactNative) {
+      return hamster.postMessage(JSON.stringify(hamsterFood));
+    }
     return hamster.postMessage(hamsterFood, this.prepareTransferBuffers(hamsterFood));
   }
 
