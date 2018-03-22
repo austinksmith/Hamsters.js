@@ -25,6 +25,9 @@ import { self } from 'react-native-threads';
         dataType: (params.dataType ? params.dataType.toLowerCase() : null),
         threadStart: Date.now()
       };
+      if(params.importScripts) {
+        self.importScripts(params.importScripts);
+      }
       new Function(params.hamstersJob)();
       rtn.threadEnd = Date.now();
       postMessage(prepareReturn(rtn));
