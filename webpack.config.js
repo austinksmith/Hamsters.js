@@ -13,6 +13,7 @@ const web = {
     library: 'hamsters',
     libraryTarget: 'var'
   },
+  plugins: webpack.plugins,
   module: {
     loaders: [
       {
@@ -24,7 +25,14 @@ const web = {
         },
       }
     ]
-  }
+  },
+  plugins: [
+    new webpack.optimize.OccurrenceOrderPlugin,
+    new webpack.optimize.UglifyJsPlugin({
+        include: /\.min\.js$/,
+        minimize: true
+    }),
+  ]
 };
 
 const node = {
@@ -50,7 +58,14 @@ const node = {
         },
       }
     ]
-  }
+  },
+  plugins: [
+    new webpack.optimize.OccurrenceOrderPlugin,
+    new webpack.optimize.UglifyJsPlugin({
+        include: /\.min\.js$/,
+        minimize: true
+    }),
+  ]
 };
 
 module.exports = [
