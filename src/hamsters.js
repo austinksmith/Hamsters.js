@@ -64,7 +64,7 @@ class hamstersjs {
       'proxies', 'transferrable',
       'browser', 'shell', 
       'node', 'debug',
-      'persistence'
+      'persistence', 'importscripts'
     ];
     for (var key in startOptions) {
       if (startOptions.hasOwnProperty(key)) {
