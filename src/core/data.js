@@ -59,14 +59,14 @@ class data {
   * @param {object} hamsterFood - Message to send to thread
   */  
   messageWorker(hamster, hamsterFood) {
-    if (hamstersHabitat.webWorker) {
-      return hamster.port.postMessage(hamsterFood);
+    if(hamstersHabitat.reactNative) {
+      return hamster.postMessage(JSON.stringify(hamsterFood));
     }
     if (hamstersHabitat.ie10) {
       return hamster.postMessage(hamsterFood);
     }
-    if(hamstersHabitat.reactNative) {
-      return hamster.postMessage(JSON.stringify(hamsterFood));
+    if (hamstersHabitat.webWorker) {
+      return hamster.port.postMessage(hamsterFood);
     }
     return hamster.postMessage(hamsterFood, this.prepareTransferBuffers(hamsterFood));
   }
