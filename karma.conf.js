@@ -35,7 +35,7 @@ module.exports = (config) => {
     htmlReporter: {
       outputFile: 'report/jasmine.html',
       // Optional
-      pageTitle: 'HSA.js Jasmine Output',
+      pageTitle: 'Hamsters.js Jasmine Output',
       subPageTitle: '',
       groupSuites: true,
       useCompactStyle: true,

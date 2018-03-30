@@ -1,12 +1,13 @@
 {
-  "name": "hsa.js",
+  "name": "hamsters.js",
   "author": "Austin K Smith",
-  "description": "100% Vanilla Javascript Heterogeneous System Architecture Computing Library",
+  "description": "100% Vanilla Javascript Multithreading & Parallel Execution Library",
   "homepage": "http://www.hamsters.io/",
-  "version": "1.0.0",
-  "main": "build/hsa.node.min.js",
+  "version": "5.1.1",
+  "main": "build/hamsters.node.min.js",
   "scripts": {
-    "build": "rm -rf ./build && webpack --config ./hsa.webpack.config.js && npm run copy-common",
+    "build": "rm -rf ./build && webpack --config ./hamsters.webpack.config.js && npm run copy-common",
+    "copy-common": "mkdir ./build/common && cp -a ./src/core/common/. ./build/common/",
     "test": "karma start --reporters html"
   },
   "license": "Artistic-2.0",
@@ -30,13 +31,7 @@
     "thread pool",
     "hamsters",
     "parallel js",
-    "parallel es",
-    "gpu",
-    "weblgl",
-    "hsa",
-    "hsa compute",
-    "heterogeneous",
-    "heterogeneous system architecture"
+    "parallel es"
   ],
   "bugs": {
     "url": "https://github.com/austinksmith/Hamsters.js/issues"
@@ -58,10 +53,14 @@
     "webpack": "^1.13.2"
   },
   "dependencies": {
-    "gpu.js": "^1.2.0",
-    "hamsters.js": "^5.1.1"
+
   },
   "directories": {
     "test": "tests"
+  },
+  "collective": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/hamstersjs",
+    "logo": "https://opencollective.com/hamstersjs/logo.txt"
   }
 }

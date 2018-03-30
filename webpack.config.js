@@ -5,12 +5,12 @@ const web = {
   target: 'web',
   devtool: 'sourcemap',
   entry: [
-    './src/hsa',
+    './src/hamsters',
   ],
   output: {
     path: path.resolve('./build'),
-    filename: 'hsa.web.min.js',
-    library: 'hsa',
+    filename: 'hamsters.web.min.js',
+    library: 'hamsters',
     libraryTarget: 'var'
   },
   plugins: webpack.plugins,
@@ -39,12 +39,12 @@ const node = {
   target: 'node',
   devtool: 'sourcemap',
   entry: [
-    './src/hsa',
+    './src/hamsters',
   ],
   output: {
     path: path.resolve('./build'),
-    filename: 'hsa.node.min.js',
-    library: 'hsa',
+    filename: 'hamsters.node.min.js',
+    library: 'hamsters',
     libraryTarget: 'commonjs2'
   },
   module: {
