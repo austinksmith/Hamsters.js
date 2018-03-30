@@ -1,5 +1,5 @@
 
-Thank you for using Hamsters.js! In order to best assist you please follow the guidelines laid out below as they will help significantly in resolving your issues. Tickets that do not follow the provided issue template have less than satisfactory information to resolve the problem reported and will therefore not receive priority support.
+Thank you for using HSA.js! In order to best assist you please follow the guidelines laid out below as they will help significantly in resolving your issues. Tickets that do not follow the provided issue template have less than satisfactory information to resolve the problem reported and will therefore not receive priority support.
 
 ### Be polite and courteous 
 
