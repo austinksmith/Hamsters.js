@@ -19,9 +19,11 @@ describe("Hamsters.js", () => {
 
   it("Init should initialize library", () => {
     hamsters.init({
-      maxThreads: 2,
+      maxThreads: 2
       browser: true,
-      reactNative: false
+      webWorker: false,
+      reactNative: false,
+      node: false
     });
     expect(typeof hamsters.init).toBe('undefined');
     expect(hamsters.maxThreads).toEqual(2);

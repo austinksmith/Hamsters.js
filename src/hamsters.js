@@ -47,7 +47,9 @@ class hamstersjs {
     if (typeof startOptions !== 'undefined') {
       this.processStartOptions(startOptions);
     }
-    hamstersPool.spawnHamsters(hamstersHabitat.persistence, hamstersPool.selectHamsterWheel(), this.maxThreads);
+    if(!hamstersHabitat.legacy && hamstersHabitat.persistence) {
+      hamstersPool.spawnHamsters(hamstersHabitat.persistence, this.maxThreads);
+    }
     delete this.init;
   }
 
@@ -118,7 +120,7 @@ class hamstersjs {
   hamstersPromise(params, functionToRun) {
     return new Promise((resolve, reject) => {
       let task = new this.hamstersTask(params, functionToRun, this);
-      this.pool.scheduleTask(task, this.habitat.persistence, scaffold, this.maxThreads).then((results) => {
+      this.pool.scheduleTask(task, this.habitat.persistence, this.maxThreads).then((results) => {
         resolve(results);
       }).catch((error) => {
         hamstersLogger.error(error.messsage, reject);
@@ -137,8 +139,7 @@ class hamstersjs {
   */
   hamstersRun(params, functionToRun, onSuccess, onError) {
     let task = new this.hamstersTask(params, functionToRun, this);
-    let scaffold = hamstersPool.selectHamsterWheel();
-    this.pool.scheduleTask(task, this.habitat.persistence, scaffold, this.maxThreads).then((results) => {
+    this.pool.scheduleTask(task, this.habitat.persistence, this.maxThreads).then((results) => {
       onSuccess(results);
     }).catch((error) => {
       hamstersLogger.error(error.messsage, onError);

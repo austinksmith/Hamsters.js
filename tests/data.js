@@ -27,7 +27,7 @@ describe("Hamsters Data", () => {
   });
 
   it("generateBlob should generate blob with object url", function() {
-    let dataBlobURI = hamstersData.generateBlob(function() {
+    let dataBlobURI = hamstersData.generateWorkerBlob(function() {
       console.log('one hamster government');
     });
     expect(dataBlobURI).not.toEqual(null);
