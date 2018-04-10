@@ -25,7 +25,7 @@ class data {
     this.aggregateArrays = this.aggregateThreadOutputs;
     this.splitArrays = this.splitArrayIntoSubArrays;
     this.createBlob = this.createDataBlob;
-    this.generateBlob = this.generateWorkerBlob;
+    this.generateWorkerBlob = this.generateWorkerBlob;
     this.processDataType = this.processDataType;
     this.sortOutput = this.sortArray;
     this.getOutput = this.prepareOutput;
@@ -114,7 +114,7 @@ class data {
   */
   generateWorkerBlob(workerLogic) {
     let functionString = '(' + String(workerLogic) + ')();';
-    let hamsterBlob = this.createBlob(functionString);
+    let hamsterBlob = this.createDataBlob(functionString);
     return URL.createObjectURL(hamsterBlob);
   }
 

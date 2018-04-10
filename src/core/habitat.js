@@ -10,6 +10,7 @@
 ***********************************************************************************/
 
 import hamstersData from './data';
+import hamstersWheel from './wheel';
 
 'use strict';
 
@@ -37,6 +38,7 @@ class habitat {
     this.logicalThreads = this.determineGlobalThreads();
     this.Worker = this.locateWorkerObject();
     this.sharedWorker = this.locateSharedWorkerObject();
+    this.selectHamsterWheel = this.selectHamsterWheel;
   }
 
   /**
@@ -90,7 +92,7 @@ class habitat {
   * @function isNode - Detects if execution environment is node.js
   */
   isNode() {
-    return typeof process === "object" && typeof require === "function" && !this.isBrowser() && !this.isWebWorker();
+    return typeof process === "object" && typeof require === "function" && !this.isWebWorker();
   }
 
   /**
@@ -104,7 +106,7 @@ class habitat {
   * @function isReactNative - Detects if execution environment is reactNative
   */
   isReactNative() {
-    return !this.isNode() && typeof global === 'object';
+    return !this.isNode() && typeof global === 'object' && !this.isBrowser();
   }
 
   /**
@@ -163,6 +165,29 @@ class habitat {
   supportsProxies() {
     return typeof Proxy !== 'undefined';
   }
+
+  /**
+  * @function scheduleTask - Determines which scaffold to use for proper execution for various environments
+  */
+  selectHamsterWheel() {
+    if(this.reactNative) {
+      return './common/rnHamstersWheel.js';
+    }
+    if(this.isIE(10)) {
+      return './common/hamstersWheel.js';
+    }
+    if (this.node) {
+      return hamstersWheel.regular;
+    }
+    if (this.legacy) {
+      return hamstersWheel.legacy;
+    }
+    if(this.webWorker) {
+      return hamstersWheel.worker;
+    }
+    return hamstersData.generateWorkerBlob(hamstersWheel.regular);
+  }
+
 }
 
 var hamstersHabitat = new habitat();

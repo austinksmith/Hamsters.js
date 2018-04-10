@@ -11,7 +11,6 @@
 
 import hamstersData from './data';
 import hamstersHabitat from './habitat';
-import hamstersWheel from './wheel';
 import hamstersLogger from './logger';
 
 'use strict';
@@ -28,7 +27,6 @@ class pool {
     this.running = [];
     this.pending = [];
     this.fetchHamster = this.grabHamster;
-    this.selectHamsterWheel = this.selectHamsterWheel;
   }
 
   /**
@@ -49,7 +47,7 @@ class pool {
   * @param {object} item - Task to process
   */
   processQueue(item) {
-  	return this.runTask(item[0], item[1], item[2], item[3], item[4], item[5]);
+  	return this.runTask(item[0], item[1], item[2], item[3], item[4]);
   }
 
   /**
@@ -58,11 +56,11 @@ class pool {
   * @param {boolean} persistence - Whether persistence mode is enabled or not
   * @param {function} wheel - Results from select hamster wheel
   */
-  grabHamster(threadId, persistence, wheel) {
+  grabHamster(threadId, persistence) {
     if(persistence) {
       return this.threads[threadId];
     }
-    return this.spawnHamster(hamstersHabitat, wheel, hamstersData.workerURI);
+    return this.spawnHamster();
   }
 
   /**
@@ -90,22 +88,12 @@ class pool {
   * @param {function} wheel - Results from select hamster wheel
   * @param {number} maxThreds - Max number of threads for this client
   */
-  spawnHamsters(persistence, wheel, maxThreads) {
-  	let workerURI = null;
-    if(hamstersHabitat.legacy) {
-      return;
+  spawnHamsters(persistence, maxThreads) {
+    hamstersLogger.info(`${maxThreads} Logical Threads Detected, Spawning ${maxThreads} Hamsters`);
+    for (maxThreads; maxThreads > 0; maxThreads--) {
+      this.threads.push(this.spawnHamster());
     }
-    console.log(hamstersHabitat);
-    if(hamstersHabitat.browser && !hamstersHabitat.reactNative) {
-      workerURI = hamstersData.generateBlob(wheel);
-    }
-    if (persistence) {
-      hamstersLogger.info(`${maxThreads} Logical Threads Detected, Spawning ${maxThreads} Hamsters`);
-      for (maxThreads; maxThreads > 0; maxThreads--) {
-        this.threads.push(this.spawnHamster(wheel, workerURI));
-      }
-      hamstersLogger.info(`${this.threads.length} hamsters ready and awaiting instructions`);
-    }
+    hamstersLogger.info(`${this.threads.length} hamsters ready and awaiting instructions`);
   }
 
   /**
@@ -113,20 +101,11 @@ class pool {
   * @param {function} wheel - Results from select hamster wheel
   * @param {string} workerURI - URI for created library blob object 
   */
-  spawnHamster(wheel, workerURI) {
-    if(hamstersHabitat.reactNative) {
-      return new hamstersHabitat.Worker('./common/rnHamstersWheel.js');
-    }
-    if(hamstersHabitat.ie10) {
-      return new hamstersHabitat.Worker('./common/hamstersWheel.js');
-    }
-    if (hamstersHabitat.node) {
-      return new hamstersHabitat.Worker(wheel);
-    }
+  spawnHamster() {
     if (hamstersHabitat.webWorker) {
-      return new hamstersHabitat.SharedWorker(workerURI, 'SharedHamsterWheel');
+      return new hamstersHabitat.SharedWorker(hamstersHabitat.selectHamsterWheel(), 'SharedHamsterWheel');
     }
-    return new hamstersHabitat.Worker(workerURI);
+    return new hamstersHabitat.Worker(hamstersHabitat.selectHamsterWheel());
   }
 
   /**
@@ -156,7 +135,7 @@ class pool {
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
-  runTask(array, task, persistence, wheel, resolve, reject) {
+  runTask(array, task, persistence, resolve, reject) {
   	let threadId = this.running.length;
     let hamsterFood = this.prepareMeal(array, task);
     this.registerTask(task.id);
@@ -164,7 +143,7 @@ class pool {
     if(hamstersHabitat.legacy) {
       wheel(hamsterFood, resolve, reject);
     } else {
-      let hamster = this.grabHamster(threadId, persistence, wheel);
+      let hamster = this.grabHamster(threadId, persistence);
       this.trainHamster(threadId, task, hamster, persistence, resolve, reject);
       hamstersData.feedHamster(hamster, hamsterFood);
     }
@@ -180,11 +159,11 @@ class pool {
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
-  hamsterWheel(array, task, persistence, maxThreads, wheel, resolve, reject) {
+  hamsterWheel(array, task, persistence, maxThreads, resolve, reject) {
     if(maxThreads === this.running.length) {
-      return this.addWorkToPending(array, task, persistence, wheel, resolve, reject);
+      return this.addWorkToPending(array, task, persistence, resolve, reject);
     }
-    return this.runTask(array, task, persistence, wheel, resolve, reject);
+    return this.runTask(array, task, persistence, resolve, reject);
   }
 
   /**
@@ -250,26 +229,13 @@ class pool {
   }
 
   /**
-  * @function scheduleTask - Determines which scaffold to use for proper execution for various environments
-  */
-  selectHamsterWheel() {
-    if (hamstersHabitat.legacy) {
-      return hamstersWheel.legacy;
-    }
-    if(hamstersHabitat.webWorker) {
-      return hamstersWheel.worker;
-    }
-    return hamstersWheel.regular;
-  }
-
-  /**
   * @function scheduleTask - Adds new task to the system for execution
   * @param {object} task - Provided library functionality options for this task
   * @param {boolean} persistence - Whether persistence mode is enabled or not
   * @param {function} wheel - Scaffold to execute login within
   * @param {number} maxThreads - Maximum number of threads for this client
   */
-  scheduleTask(task, persistence, wheel, maxThreads) {
+  scheduleTask(task, persistence, maxThreads) {
     let threadArrays = [];
 	  if(task.input.array && task.threads !== 1) {
 	    threadArrays = hamstersData.splitArrays(task.input.array, task.threads); //Divide our array into equal array sizes
@@ -278,9 +244,9 @@ class pool {
       let i = 0;
       while (i < task.threads) {
       	if(threadArrays && task.threads !== 1) {
-        	this.hamsterWheel(threadArrays[i], task, persistence, maxThreads, wheel, resolve, reject);
+        	this.hamsterWheel(threadArrays[i], task, persistence, maxThreads, resolve, reject);
 		    } else {
-        	this.hamsterWheel(task.input.array, task, persistence, maxThreads, wheel, resolve, reject);
+        	this.hamsterWheel(task.input.array, task, persistence, maxThreads, resolve, reject);
 		    }
         i += 1;
       }
