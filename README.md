@@ -4,7 +4,7 @@
 
 **Website**: [Hamsters.io](http://www.hamsters.io)
 
-**Description**: 100% Vanilla Javascript Multithreading & Parallel Execution Library
+**Description**: 100% Vanilla JavaScript Multithreading & Parallel Execution Library
 
 **License**: Artistic License 2.0
 
@@ -14,7 +14,7 @@
 
 * All major browsers IE9+
 * Inside of existing web workers (threads inside threads)
-* Javascript shell environments
+* JavaScript shell environments
 * React Native
 * Node.js
 
