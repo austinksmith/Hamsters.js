@@ -48,7 +48,8 @@ class wheel {
         rtn = {
           data: [],
           dataType: params.dataType,
-          threadStart: Date.now()
+          threadStart: Date.now(),
+          threadEnd: null
         };
         if(params.importScripts) {
           self.importScripts(params.importScripts);
@@ -119,7 +120,8 @@ class wheel {
       rtn = {
         data: [],
         dataType: (params.dataType ? params.dataType.toLowerCase() : null),
-        threadStart: Date.now()
+        threadStart: Date.now(),
+        threadEnd: null
       };
       if(params.importScripts) {
         self.importScripts(params.importScripts);
@@ -141,7 +143,8 @@ class wheel {
       rtn = {
         data: [],
         dataType: (params.dataType ? params.dataType.toLowerCase() : null),
-        threadStart: Date.now()
+        threadStart: Date.now(),
+        threadEnd: null
       };
       if(params.importScripts) {
         self.importScripts(params.importScripts);
@@ -189,7 +192,8 @@ class wheel {
       self.params = params;
       self.rtn = {
         data: [],
-        threadStart: Date.now()
+        threadStart: Date.now(),
+        threadEnd: null
       };
       params.hamstersJob();
       rtn.threadEnd = Date.now();
