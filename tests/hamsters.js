@@ -10,23 +10,20 @@
 ***********************************************************************************/
 
 import hamsters from '../src/hamsters';
+import hamstersData from '../src/core/data';
+
 
 describe("Hamsters.js", () => {
 
-  it("maxThreads should be detected", () => {
+  it("maxThreads should be detected and match logical thread count", () => {
     expect(hamsters.maxThreads).toEqual((navigator.hardwareConcurrency || 4));
   });
 
-  it("Init should initialize library", () => {
+  it("Init should initialize library and be removed", () => {
     hamsters.init({
-      maxThreads: 2
-      browser: true,
-      webWorker: false,
-      reactNative: false,
-      node: false
+      browser: true
     });
-    expect(typeof hamsters.init).toBe('undefined');
-    expect(hamsters.maxThreads).toEqual(2);
+    expect(typeof hamsters.init).toBe('undefined'); 
   });
 });
 

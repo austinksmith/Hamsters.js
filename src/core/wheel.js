@@ -23,6 +23,7 @@ class wheel {
   constructor() {
     this.worker = this.workerScaffold;
     this.regular = this.regularScaffold;
+    this.reactNative = this.reactNativeScaffold;
     this.legacy = this.legacyScaffold;
   }
 
@@ -129,19 +130,62 @@ class wheel {
     });
   }
 
+  reactNativeScaffold() {
+   'use strict';
+
+    self.params = {};
+    self.rtn = {};
+
+    self.onmessage = function(incomingMessage) {
+      params = JSON.parse(incomingMessage.data);
+      rtn = {
+        data: [],
+        dataType: (params.dataType ? params.dataType.toLowerCase() : null),
+        threadStart: Date.now()
+      };
+      if(params.importScripts) {
+        self.importScripts(params.importScripts);
+      }
+      new Function(params.hamstersJob)();
+      rtn.threadEnd = Date.now();
+      postMessage(prepareReturn(rtn));
+    };
+
+    function prepareReturn(returnObject) {
+      var dataType = returnObject.dataType;
+      if(dataType) {
+        returnObject.data = typedArrayFromBuffer(dataType, returnObject.data);
+      }
+      return JSON.stringify(returnObject);
+    }
+
+    function typedArrayFromBuffer(dataType, buffer) {
+      var types = {
+        'uint32': Uint32Array,
+        'uint16': Uint16Array,
+        'uint8': Uint8Array,
+        'uint8clamped': Uint8ClampedArray,
+        'int32': Int32Array,
+        'int16': Int16Array,
+        'int8': Int8Array,
+        'float32': Float32Array,
+        'float64': Float64Array
+      };
+      if (!types[dataType]) {
+        return buffer;
+      }
+      return new types[dataType](buffer);
+    }
+  }
+
   /**
   * @function legacyScaffold - Provides library functionality for legacy devices
   */
   legacyScaffold(params, resolve) {
     setTimeout(() => {
-      // Node.js doesn't support self for some reason, so let's use global instead
-      // this works great for node, not so great for reactNative
-      // IOS has a secury check within React Native preventing global variable assignment
-      // Android does not have the same security restriction
       if(typeof self === 'undefined') {
         var self = (global || window || this);
       }
-
       self.params = params;
       self.rtn = {
         data: [],

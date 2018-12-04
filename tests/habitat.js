@@ -10,6 +10,8 @@
 ***********************************************************************************/
 
 import hamstersHabitat from '../src/core/habitat';
+import hamstersData from '../src/core/data';
+
 
 describe("Hamsters Habitat", () => {
 
