@@ -12,15 +12,15 @@
         <td colspan="3" title="Mozilla/5.0 (Unknown; Linux x86_64) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.1.1 Safari/538.1">Browser: PhantomJS 2.1.1 (Linux 0.0.0)</td>
       </tr>
       <tr class="overview">
-        <td colspan="3">Timestamp: 2018-4-10 08:46:40</td>
+        <td colspan="3">Timestamp: 12/4/2018, 10:32:00 AM</td>
       </tr>
       <tr>
         <td colspan="3">
-          38 tests / 
+          49 tests / 
           0 errors / 
-          4 failures / 
+          18 failures / 
           0 skipped / 
-          runtime: 0.017s
+          runtime: 45.06s
         </td>
       </tr>
       <tr class="header">
@@ -29,7 +29,7 @@
         <td>Suite / Results</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.002s</td>
+        <td>Passed in 0.004s</td>
         <td>aggregateArrays should aggregate array of subarrays</td>
         <td>Hamsters Data</td>
       </tr>
@@ -44,7 +44,7 @@
         <td>Hamsters Data</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.001s</td>
+        <td>Passed in 0s</td>
         <td>generateBlob should generate blob with object url</td>
         <td>Hamsters Data</td>
       </tr>
@@ -69,12 +69,12 @@
         <td>Hamsters Data &raquo; sortOutput options</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.002s</td>
+        <td>Passed in 0.004s</td>
         <td>randomArray should generate a random array</td>
         <td>Hamsters Data</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.001s</td>
         <td>prepareJob should convert function to string</td>
         <td>Hamsters Data</td>
       </tr>
@@ -89,7 +89,7 @@
         <td>Hamsters Habitat</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.001s</td>
+        <td>Passed in 0s</td>
         <td>Habitat Atomics should be boolean</td>
         <td>Hamsters Habitat</td>
       </tr>
@@ -124,7 +124,7 @@
         <td>Hamsters Habitat</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.001s</td>
         <td>Habitat Proxies should be boolean</td>
         <td>Hamsters Habitat</td>
       </tr>
@@ -134,27 +134,144 @@
         <td>Hamsters Habitat</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>LogBook should be an object</td>
-        <td>Hamsters Logger</td>
+        <td>Passed in 0s</td>
+        <td>maxThreads should be detected and match logical thread count</td>
+        <td>Hamsters.js</td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Init should initialize library and be removed</td>
+        <td>
+          Hamsters.js
+          <br />TypeError: undefined is not a function (evaluating '_data2.default.generateWorkerBlob(_wheel2.default.regular)') in tests.webpack.js (line 767)
+selectHamsterWheel@tests.webpack.js:767:48
+spawnHamster@tests.webpack.js:1883:80
+spawnHamsters@tests.webpack.js:1866:45
+initializeLibrary@tests.webpack.js:1620:38
+tests.webpack.js:1499:29
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (null)</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Uint8)</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Uint32)</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Uint16)</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Float64)</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Float32)</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Int32)</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Int16)</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Int8)</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
       </tr>
       <tr class="pass">
         <td>Passed in 0s</td>
-        <td>LogBook Errors should be an empty array</td>
+        <td>LogBook should be an object</td>
         <td>Hamsters Logger</td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>LogBook Errors should be an empty array</td>
+        <td>
+          Hamsters Logger
+          <br />Expected $.length = 4 to equal 0.
+Expected $[0] = 'Hamsters.js v5.1.1 Error: undefined @ 1543937520940' to equal undefined.
+Expected $[1] = 'Hamsters.js v5.1.1 Error: undefined @ 1543937525945' to equal undefined.
+Expected $[2] = 'Hamsters.js v5.1.1 Error: undefined @ 1543937530949' to equal undefined.
+Expected $[3] = 'Hamsters.js v5.1.1 Error: undefined @ 1543937535951' to equal undefined.
+tests.webpack.js:2196:52
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
         <td>LogBook Error should save to error array</td>
-        <td>Hamsters Logger</td>
+        <td>
+          Hamsters Logger
+          <br />Expected 4 to equal 0.
+tests.webpack.js:2200:59
+
+          <br />Expected 5 to equal 1.
+tests.webpack.js:2202:59
+
+        </td>
       </tr>
       <tr class="fail">
         <td>Failed</td>
         <td>LogBook Info should be a non empty array</td>
         <td>
           Hamsters Logger
-          <br />Expected 0 to equal 3.
-tests.webpack.js:1457:58
+          <br />Expected 2 to equal 3.
+tests.webpack.js:2206:58
 
         </td>
       </tr>
@@ -163,21 +280,21 @@ tests.webpack.js:1457:58
         <td>LogBook Info should save to info array</td>
         <td>
           Hamsters Logger
-          <br />Expected 0 to equal 3.
-tests.webpack.js:1461:58
+          <br />Expected 2 to equal 3.
+tests.webpack.js:2210:58
 
-          <br />Expected 1 to equal 4.
-tests.webpack.js:1463:58
+          <br />Expected 3 to equal 4.
+tests.webpack.js:2212:58
 
         </td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.001s</td>
+        <td>Passed in 0s</td>
         <td>LogBook Warning should be an empty array</td>
         <td>Hamsters Logger</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.001s</td>
         <td>LogBook Warning should save to warning array</td>
         <td>Hamsters Logger</td>
       </tr>
@@ -187,7 +304,7 @@ tests.webpack.js:1463:58
         <td>Hamsters Memoizer</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.001s</td>
+        <td>Passed in 0s</td>
         <td>maxCacheEntries should be set</td>
         <td>Hamsters Memoizer</td>
       </tr>
@@ -201,8 +318,8 @@ tests.webpack.js:1463:58
         <td>Tasks should be an array</td>
         <td>
           Hamsters Pool
-          <br />Expected 0 to equal 9.
-tests.webpack.js:1634:49
+          <br />Expected 4 to equal 9.
+tests.webpack.js:2278:49
 
         </td>
       </tr>
@@ -212,19 +329,38 @@ tests.webpack.js:1634:49
         <td>
           Hamsters Pool
           <br />Expected 0 to equal 2.
-tests.webpack.js:1638:51
+tests.webpack.js:2282:51
 
         </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Running should be an array</td>
-        <td>Hamsters Pool</td>
+        <td>
+          Hamsters Pool
+          <br />Expected $.length = 4 to equal 0.
+Expected $[0] = 0 to equal undefined.
+Expected $[1] = 1 to equal undefined.
+Expected $[2] = 2 to equal undefined.
+Expected $[3] = 3 to equal undefined.
+tests.webpack.js:2286:44
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Pending should be an array</td>
-        <td>Hamsters Pool</td>
+        <td>
+          Hamsters Pool
+          <br />Expected $.length = 5 to equal 0.
+Expected $[0] = [object Arguments] to equal undefined.
+Expected $[1] = [object Arguments] to equal undefined.
+Expected $[2] = [object Arguments] to equal undefined.
+Expected $[3] = [object Arguments] to equal undefined.
+Expected $[4] = [object Arguments] to equal undefined.
+tests.webpack.js:2290:44
+
+        </td>
       </tr>
       <tr class="pass">
         <td>Passed in 0s</td>
@@ -242,27 +378,39 @@ tests.webpack.js:1638:51
         <td>Hamsters Wheel</td>
       </tr>
       <tr class="system-out">
-        <td colspan="3"><strong>System output:</strong><br />PhantomJS 2.1.1 (Linux 0.0.0) ERROR: 'Hamsters.js v5.1.1 Error: Hamsters are better than gerbals @ 1523364400893'
-<br />PhantomJS 2.1.1 (Linux 0.0.0) INFO: 'Hamsters.js v5.1.1 Info: Hamsters are better than gerbals @ 1523364400895'
-<br />PhantomJS 2.1.1 (Linux 0.0.0) WARN: 'Hamsters.js v5.1.1 Warning: Hamsters are better than gerbals @ 1523364400897'
+        <td colspan="3"><strong>System output:</strong><br />PhantomJS 2.1.1 (Linux 0.0.0) INFO: 'Hamsters.js v5.1.1 Info: Preparing the hamster wheels & readying hamsters @ 1543937520935'
+<br />PhantomJS 2.1.1 (Linux 0.0.0) INFO: 'Hamsters.js v5.1.1 Info: 4 Logical Threads Detected, Spawning 4 Hamsters @ 1543937520936'
+<br />PhantomJS 2.1.1 (Linux 0.0.0) ERROR: 'Hamsters.js v5.1.1 Error: undefined @ 1543937520940'
+<br />Firefox 63.0.0 (Ubuntu 0.0.0) INFO: 'Hamsters.js v5.1.1 Info: Preparing the hamster wheels & readying hamsters @ 1543937523249'
+<br />Firefox 63.0.0 (Ubuntu 0.0.0) INFO: 'Hamsters.js v5.1.1 Info: 4 Logical Threads Detected, Spawning 4 Hamsters @ 1543937523250'
+<br />Firefox 63.0.0 (Ubuntu 0.0.0) ERROR: 'Hamsters.js v5.1.1 Error: undefined @ 1543937523260'
+<br />PhantomJS 2.1.1 (Linux 0.0.0) ERROR: 'Hamsters.js v5.1.1 Error: undefined @ 1543937525945'
+<br />Firefox 63.0.0 (Ubuntu 0.0.0) ERROR: 'Hamsters.js v5.1.1 Error: undefined @ 1543937528261'
+<br />PhantomJS 2.1.1 (Linux 0.0.0) ERROR: 'Hamsters.js v5.1.1 Error: undefined @ 1543937530949'
+<br />Firefox 63.0.0 (Ubuntu 0.0.0) ERROR: 'Hamsters.js v5.1.1 Error: undefined @ 1543937533264'
+<br />PhantomJS 2.1.1 (Linux 0.0.0) ERROR: 'Hamsters.js v5.1.1 Error: undefined @ 1543937535951'
+<br />Firefox 63.0.0 (Ubuntu 0.0.0) ERROR: 'Hamsters.js v5.1.1 Error: undefined @ 1543937538267'
+<br />PhantomJS 2.1.1 (Linux 0.0.0) ERROR: 'Hamsters.js v5.1.1 Error: Hamsters are better than gerbals @ 1543937565975'
+<br />PhantomJS 2.1.1 (Linux 0.0.0) INFO: 'Hamsters.js v5.1.1 Info: Hamsters are better than gerbals @ 1543937565977'
+<br />PhantomJS 2.1.1 (Linux 0.0.0) WARN: 'Hamsters.js v5.1.1 Warning: Hamsters are better than gerbals @ 1543937565977'
 </td>
       </tr>
     </table>
     <hr/>
     <table cellspacing="0" cellpadding="0" border="0">
       <tr class="overview">
-        <td colspan="3" title="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36">Browser: Chrome 65.0.3325 (Linux 0.0.0)</td>
+        <td colspan="3" title="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:63.0) Gecko/20100101 Firefox/63.0">Browser: Firefox 63.0.0 (Ubuntu 0.0.0)</td>
       </tr>
       <tr class="overview">
-        <td colspan="3">Timestamp: 2018-4-10 08:46:41</td>
+        <td colspan="3">Timestamp: 12/4/2018, 10:32:03 AM</td>
       </tr>
       <tr>
         <td colspan="3">
-          38 tests / 
+          49 tests / 
           0 errors / 
-          4 failures / 
+          18 failures / 
           0 skipped / 
-          runtime: 0.017s
+          runtime: 45.312s
         </td>
       </tr>
       <tr class="header">
@@ -271,57 +419,57 @@ tests.webpack.js:1638:51
         <td>Suite / Results</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.002s</td>
+        <td>Passed in 0.013s</td>
         <td>aggregateArrays should aggregate array of subarrays</td>
         <td>Hamsters Data</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.001s</td>
+        <td>Passed in 0.016s</td>
         <td>splitArrays should split array into subarrays</td>
         <td>Hamsters Data</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.001s</td>
+        <td>Passed in 0.009s</td>
         <td>createBlob should create dataBlob</td>
         <td>Hamsters Data</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.002s</td>
+        <td>Passed in 0.055s</td>
         <td>generateBlob should generate blob with object url</td>
         <td>Hamsters Data</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.019s</td>
         <td>sortOutput asc should sort array</td>
         <td>Hamsters Data &raquo; sortOutput options</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.029s</td>
         <td>sortOutput desc should sort array</td>
         <td>Hamsters Data &raquo; sortOutput options</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.001s</td>
         <td>sortOutput ascAlpha should sort array</td>
         <td>Hamsters Data &raquo; sortOutput options</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.006s</td>
         <td>sortOutput descAlpha should sort array</td>
         <td>Hamsters Data &raquo; sortOutput options</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.002s</td>
+        <td>Passed in 0.007s</td>
         <td>randomArray should generate a random array</td>
         <td>Hamsters Data</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.004s</td>
         <td>prepareJob should convert function to string</td>
         <td>Hamsters Data</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.002s</td>
         <td>Habitat Node should be boolean</td>
         <td>Hamsters Habitat</td>
       </tr>
@@ -331,249 +479,7 @@ tests.webpack.js:1638:51
         <td>Hamsters Habitat</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Habitat Atomics should be boolean</td>
-        <td>Hamsters Habitat</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Habitat Legacy should be boolean</td>
-        <td>Hamsters Habitat</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Habitat WebWorker should be boolean</td>
-        <td>Hamsters Habitat</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Habitat SharedWorker should be an object or function</td>
-        <td>Hamsters Habitat</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Habitat Worker should be an object or function</td>
-        <td>Hamsters Habitat</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
-        <td>Habitat Shell should be boolean</td>
-        <td>Hamsters Habitat</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Habitat Atomics should be boolean</td>
-        <td>Hamsters Habitat</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Habitat Proxies should be boolean</td>
-        <td>Hamsters Habitat</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Habitat Logical Threads should be detected</td>
-        <td>Hamsters Habitat</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>LogBook should be an object</td>
-        <td>Hamsters Logger</td>
-      </tr>
-      <tr class="pass">
         <td>Passed in 0.001s</td>
-        <td>LogBook Errors should be an empty array</td>
-        <td>Hamsters Logger</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>LogBook Error should save to error array</td>
-        <td>Hamsters Logger</td>
-      </tr>
-      <tr class="fail">
-        <td>Failed</td>
-        <td>LogBook Info should be a non empty array</td>
-        <td>
-          Hamsters Logger
-          <br />Expected 0 to equal 3.
-    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1457:51)
-
-        </td>
-      </tr>
-      <tr class="fail">
-        <td>Failed</td>
-        <td>LogBook Info should save to info array</td>
-        <td>
-          Hamsters Logger
-          <br />Expected 0 to equal 3.
-    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1461:51)
-
-          <br />Expected 1 to equal 4.
-    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1463:51)
-
-        </td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
-        <td>LogBook Warning should be an empty array</td>
-        <td>Hamsters Logger</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>LogBook Warning should save to warning array</td>
-        <td>Hamsters Logger</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>cacheEntries should be an array</td>
-        <td>Hamsters Memoizer</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>maxCacheEntries should be set</td>
-        <td>Hamsters Memoizer</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>itemCached should return boolean</td>
-        <td>Hamsters Memoizer</td>
-      </tr>
-      <tr class="fail">
-        <td>Failed</td>
-        <td>Tasks should be an array</td>
-        <td>
-          Hamsters Pool
-          <br />Expected 0 to equal 9.
-    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1634:42)
-
-        </td>
-      </tr>
-      <tr class="fail">
-        <td>Failed</td>
-        <td>Threads should be an array</td>
-        <td>
-          Hamsters Pool
-          <br />Expected 0 to equal 2.
-    at UserContext.&lt;anonymous&gt; (tests.webpack.js:1638:44)
-
-        </td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Running should be an array</td>
-        <td>Hamsters Pool</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
-        <td>Pending should be an array</td>
-        <td>Hamsters Pool</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>WebWorker scaffold should be a function</td>
-        <td>Hamsters Wheel</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Regular scaffold should be a function</td>
-        <td>Hamsters Wheel</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Legacy scaffold should be a function</td>
-        <td>Hamsters Wheel</td>
-      </tr>
-      <tr class="system-out">
-        <td colspan="3"><strong>System output:</strong><br />Chrome 65.0.3325 (Linux 0.0.0) ERROR: 'Hamsters.js v5.1.1 Error: Hamsters are better than gerbals @ 1523364401404'
-<br />Chrome 65.0.3325 (Linux 0.0.0) INFO: 'Hamsters.js v5.1.1 Info: Hamsters are better than gerbals @ 1523364401405'
-<br />Chrome 65.0.3325 (Linux 0.0.0) WARN: 'Hamsters.js v5.1.1 Warning: Hamsters are better than gerbals @ 1523364401407'
-</td>
-      </tr>
-    </table>
-    <hr/>
-    <table cellspacing="0" cellpadding="0" border="0">
-      <tr class="overview">
-        <td colspan="3" title="Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:59.0) Gecko/20100101 Firefox/59.0">Browser: Firefox 59.0.0 (Ubuntu 0.0.0)</td>
-      </tr>
-      <tr class="overview">
-        <td colspan="3">Timestamp: 2018-4-10 08:46:42</td>
-      </tr>
-      <tr>
-        <td colspan="3">
-          38 tests / 
-          0 errors / 
-          4 failures / 
-          0 skipped / 
-          runtime: 0.252s
-        </td>
-      </tr>
-      <tr class="header">
-        <td>Status</td>
-        <td>Spec</td>
-        <td>Suite / Results</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.006s</td>
-        <td>aggregateArrays should aggregate array of subarrays</td>
-        <td>Hamsters Data</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.006s</td>
-        <td>splitArrays should split array into subarrays</td>
-        <td>Hamsters Data</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
-        <td>createBlob should create dataBlob</td>
-        <td>Hamsters Data</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.008s</td>
-        <td>generateBlob should generate blob with object url</td>
-        <td>Hamsters Data</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.008s</td>
-        <td>sortOutput asc should sort array</td>
-        <td>Hamsters Data &raquo; sortOutput options</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.096s</td>
-        <td>sortOutput desc should sort array</td>
-        <td>Hamsters Data &raquo; sortOutput options</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.086s</td>
-        <td>sortOutput ascAlpha should sort array</td>
-        <td>Hamsters Data &raquo; sortOutput options</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.028s</td>
-        <td>sortOutput descAlpha should sort array</td>
-        <td>Hamsters Data &raquo; sortOutput options</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>randomArray should generate a random array</td>
-        <td>Hamsters Data</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
-        <td>prepareJob should convert function to string</td>
-        <td>Hamsters Data</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
-        <td>Habitat Node should be boolean</td>
-        <td>Hamsters Habitat</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0.002s</td>
-        <td>Habitat Browser should be boolean</td>
-        <td>Hamsters Habitat</td>
-      </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
         <td>Habitat Atomics should be boolean</td>
         <td>Hamsters Habitat</td>
       </tr>
@@ -598,12 +504,12 @@ tests.webpack.js:1638:51
         <td>Hamsters Habitat</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.002s</td>
+        <td>Passed in 0s</td>
         <td>Habitat Shell should be boolean</td>
         <td>Hamsters Habitat</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.001s</td>
         <td>Habitat Atomics should be boolean</td>
         <td>Hamsters Habitat</td>
       </tr>
@@ -613,32 +519,158 @@ tests.webpack.js:1638:51
         <td>Hamsters Habitat</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.001s</td>
         <td>Habitat Logical Threads should be detected</td>
         <td>Hamsters Habitat</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.001s</td>
+        <td>maxThreads should be detected and match logical thread count</td>
+        <td>Hamsters.js</td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Init should initialize library and be removed</td>
+        <td>
+          Hamsters.js
+          <br />TypeError: _data2.default.generateWorkerBlob is not a function in tests.webpack.js (line 767)
+selectHamsterWheel@tests.webpack.js:767:15
+spawnHamster@tests.webpack.js:1883:44
+spawnHamsters@tests.webpack.js:1866:28
+initializeLibrary@tests.webpack.js:1620:10
+@tests.webpack.js:1499:6
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (null)</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL. in node_modules/jasmine-core/lib/jasmine-core/jasmine.js (line 4470)
+attempt/timeoutId&lt;@node_modules/jasmine-core/lib/jasmine-core/jasmine.js:4470:23
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Uint8)</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL. in node_modules/jasmine-core/lib/jasmine-core/jasmine.js (line 4470)
+attempt/timeoutId&lt;@node_modules/jasmine-core/lib/jasmine-core/jasmine.js:4470:23
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Uint32)</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL. in node_modules/jasmine-core/lib/jasmine-core/jasmine.js (line 4470)
+attempt/timeoutId&lt;@node_modules/jasmine-core/lib/jasmine-core/jasmine.js:4470:23
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Uint16)</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL. in node_modules/jasmine-core/lib/jasmine-core/jasmine.js (line 4470)
+attempt/timeoutId&lt;@node_modules/jasmine-core/lib/jasmine-core/jasmine.js:4470:23
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Float64)</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL. in node_modules/jasmine-core/lib/jasmine-core/jasmine.js (line 4470)
+attempt/timeoutId&lt;@node_modules/jasmine-core/lib/jasmine-core/jasmine.js:4470:23
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Float32)</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL. in node_modules/jasmine-core/lib/jasmine-core/jasmine.js (line 4470)
+attempt/timeoutId&lt;@node_modules/jasmine-core/lib/jasmine-core/jasmine.js:4470:23
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Int32)</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL. in node_modules/jasmine-core/lib/jasmine-core/jasmine.js (line 4470)
+attempt/timeoutId&lt;@node_modules/jasmine-core/lib/jasmine-core/jasmine.js:4470:23
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Int16)</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL. in node_modules/jasmine-core/lib/jasmine-core/jasmine.js (line 4470)
+attempt/timeoutId&lt;@node_modules/jasmine-core/lib/jasmine-core/jasmine.js:4470:23
+
+        </td>
+      </tr>
+      <tr class="fail">
+        <td>Failed</td>
+        <td>Calculates square root of 4000 (Int8)</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL. in node_modules/jasmine-core/lib/jasmine-core/jasmine.js (line 4470)
+attempt/timeoutId&lt;@node_modules/jasmine-core/lib/jasmine-core/jasmine.js:4470:23
+
+        </td>
+      </tr>
+      <tr class="pass">
+        <td>Passed in 0.001s</td>
         <td>LogBook should be an object</td>
         <td>Hamsters Logger</td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>LogBook Errors should be an empty array</td>
-        <td>Hamsters Logger</td>
+        <td>
+          Hamsters Logger
+          <br />Expected $.length = 4 to equal 0.
+Expected $[0] = 'Hamsters.js v5.1.1 Error: undefined @ 1543937523260' to equal undefined.
+Expected $[1] = 'Hamsters.js v5.1.1 Error: undefined @ 1543937528261' to equal undefined.
+Expected $[2] = 'Hamsters.js v5.1.1 Error: undefined @ 1543937533264' to equal undefined.
+Expected $[3] = 'Hamsters.js v5.1.1 Error: undefined @ 1543937538267' to equal undefined.
+@tests.webpack.js:2196:45
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>LogBook Error should save to error array</td>
-        <td>Hamsters Logger</td>
+        <td>
+          Hamsters Logger
+          <br />Expected 4 to equal 0.
+@tests.webpack.js:2200:52
+
+          <br />Expected 5 to equal 1.
+@tests.webpack.js:2202:52
+
+        </td>
       </tr>
       <tr class="fail">
         <td>Failed</td>
         <td>LogBook Info should be a non empty array</td>
         <td>
           Hamsters Logger
-          <br />Expected 0 to equal 3.
-@tests.webpack.js:1457:6
+          <br />Expected 2 to equal 3.
+@tests.webpack.js:2206:51
 
         </td>
       </tr>
@@ -647,16 +679,16 @@ tests.webpack.js:1638:51
         <td>LogBook Info should save to info array</td>
         <td>
           Hamsters Logger
-          <br />Expected 0 to equal 3.
-@tests.webpack.js:1461:6
+          <br />Expected 2 to equal 3.
+@tests.webpack.js:2210:51
 
-          <br />Expected 1 to equal 4.
-@tests.webpack.js:1463:6
+          <br />Expected 3 to equal 4.
+@tests.webpack.js:2212:51
 
         </td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.001s</td>
         <td>LogBook Warning should be an empty array</td>
         <td>Hamsters Logger</td>
       </tr>
@@ -671,12 +703,12 @@ tests.webpack.js:1638:51
         <td>Hamsters Memoizer</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.001s</td>
         <td>maxCacheEntries should be set</td>
         <td>Hamsters Memoizer</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.001s</td>
         <td>itemCached should return boolean</td>
         <td>Hamsters Memoizer</td>
       </tr>
@@ -685,8 +717,8 @@ tests.webpack.js:1638:51
         <td>Tasks should be an array</td>
         <td>
           Hamsters Pool
-          <br />Expected 0 to equal 9.
-@tests.webpack.js:1634:6
+          <br />Expected 4 to equal 9.
+@tests.webpack.js:2278:42
 
         </td>
       </tr>
@@ -696,19 +728,38 @@ tests.webpack.js:1638:51
         <td>
           Hamsters Pool
           <br />Expected 0 to equal 2.
-@tests.webpack.js:1638:6
+@tests.webpack.js:2282:44
 
         </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Running should be an array</td>
-        <td>Hamsters Pool</td>
+        <td>
+          Hamsters Pool
+          <br />Expected $.length = 4 to equal 0.
+Expected $[0] = 0 to equal undefined.
+Expected $[1] = 1 to equal undefined.
+Expected $[2] = 2 to equal undefined.
+Expected $[3] = 3 to equal undefined.
+@tests.webpack.js:2286:37
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Pending should be an array</td>
-        <td>Hamsters Pool</td>
+        <td>
+          Hamsters Pool
+          <br />Expected $.length = 5 to equal 0.
+Expected $[0] = [object Arguments] to equal undefined.
+Expected $[1] = [object Arguments] to equal undefined.
+Expected $[2] = [object Arguments] to equal undefined.
+Expected $[3] = [object Arguments] to equal undefined.
+Expected $[4] = [object Arguments] to equal undefined.
+@tests.webpack.js:2290:37
+
+        </td>
       </tr>
       <tr class="pass">
         <td>Passed in 0s</td>
@@ -721,14 +772,14 @@ tests.webpack.js:1638:51
         <td>Hamsters Wheel</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.002s</td>
+        <td>Passed in 0s</td>
         <td>Legacy scaffold should be a function</td>
         <td>Hamsters Wheel</td>
       </tr>
       <tr class="system-out">
-        <td colspan="3"><strong>System output:</strong><br />Firefox 59.0.0 (Ubuntu 0.0.0) ERROR: 'Hamsters.js v5.1.1 Error: Hamsters are better than gerbals @ 1523364402866'
-<br />Firefox 59.0.0 (Ubuntu 0.0.0) INFO: 'Hamsters.js v5.1.1 Info: Hamsters are better than gerbals @ 1523364402868'
-<br />Firefox 59.0.0 (Ubuntu 0.0.0) WARN: 'Hamsters.js v5.1.1 Warning: Hamsters are better than gerbals @ 1523364402870'
+        <td colspan="3"><strong>System output:</strong><br />Firefox 63.0.0 (Ubuntu 0.0.0) ERROR: 'Hamsters.js v5.1.1 Error: Hamsters are better than gerbals @ 1543937568399'
+<br />Firefox 63.0.0 (Ubuntu 0.0.0) INFO: 'Hamsters.js v5.1.1 Info: Hamsters are better than gerbals @ 1543937568402'
+<br />Firefox 63.0.0 (Ubuntu 0.0.0) WARN: 'Hamsters.js v5.1.1 Warning: Hamsters are better than gerbals @ 1543937568406'
 </td>
       </tr>
     </table>

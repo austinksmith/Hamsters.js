@@ -34,7 +34,7 @@ class habitat {
     this.transferrable = this.supportsTransferrableObjects();
     this.atomics = this.supportsAtomicOperations();
     this.proxies = this.supportsProxies();
-    this.isIE = this.isInternetExplorer;
+    this.isIE10 = !this.isNode() && !this.isReactNative() && this.isInternetExplorer(10);
     this.logicalThreads = this.determineGlobalThreads();
     this.Worker = this.locateWorkerObject();
     this.sharedWorker = this.locateSharedWorkerObject();
@@ -54,7 +54,7 @@ class habitat {
         max = 20;
       }
     }
-    if(this.isNode() && typeof os !== 'undefined') {
+    if(this.node && typeof os !== 'undefined') {
       max = os.cpus().length;
     }
     return max;
@@ -92,7 +92,7 @@ class habitat {
   * @function isNode - Detects if execution environment is node.js
   */
   isNode() {
-    return typeof process === "object" && typeof require === "function" && !this.isWebWorker();
+    return typeof process === "object" && typeof require === "function" && !this.isWebWorker() && !this.isBrowser();
   }
 
   /**
@@ -122,11 +122,10 @@ class habitat {
   isLegacyEnvironment() {
     // Force legacy mode for known devices that don't support threading
     if (this.isBrowser() && !this.isReactNative()) {
-      let isIE10 = this.isInternetExplorer(10);
       let userAgent = navigator.userAgent;
       let lacksWorkerSupport = (typeof this.Worker === 'undefined');
       let legacyAgents = ['Kindle/3.0', 'Mobile/8F190', 'IEMobile'];
-      if (lacksWorkerSupport || legacyAgents.indexOf(userAgent) !== -1 || isIE10) {
+      if (lacksWorkerSupport || legacyAgents.indexOf(userAgent) !== -1 || this.isIE10) {
         this.legacy = true;
       }
     }
@@ -170,24 +169,23 @@ class habitat {
   * @function scheduleTask - Determines which scaffold to use for proper execution for various environments
   */
   selectHamsterWheel() {
-    if(this.reactNative) {
-      return './common/rnHamstersWheel.js';
-    }
-    if(this.isIE(10)) {
-      return './common/hamstersWheel.js';
-    }
-    if (this.node) {
-      return hamstersWheel.regular;
-    }
     if (this.legacy) {
       return hamstersWheel.legacy;
+    }
+    if(this.isIE10) {
+      return './common/hamstersWheel.js';
+    }
+    if(this.reactNative) {
+      return hamstersWheel.reactNative;
     }
     if(this.webWorker) {
       return hamstersWheel.worker;
     }
+    if (this.node) {
+      return hamstersWheel.regular;
+    }
     return hamstersData.generateWorkerBlob(hamstersWheel.regular);
   }
-
 }
 
 var hamstersHabitat = new habitat();

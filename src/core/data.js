@@ -113,9 +113,9 @@ class data {
   * @param {function} workerLogic - Scaffold to use within worker thread
   */
   generateWorkerBlob(workerLogic) {
-    let functionString = '(' + String(workerLogic) + ')();';
-    let hamsterBlob = this.createDataBlob(functionString);
-    return URL.createObjectURL(hamsterBlob);
+    let hamsterBlob = this.createBlob(workerLogic);
+    let dataBlobURL = URL.createObjectURL(hamsterBlob);
+    return dataBlobURL;
   }
 
   /**

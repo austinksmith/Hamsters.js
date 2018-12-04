@@ -42,7 +42,7 @@ module.exports = (config) => {
       useLegacyStyle: true
     },
     webpack: {
-      cache: true,
+      cache: false,
       module: {
         loaders: [
           {
