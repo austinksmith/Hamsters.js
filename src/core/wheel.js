@@ -115,7 +115,7 @@ class wheel {
       return buffers;
     }
 
-    addEventListener('message', (incomingMessage) => {
+    self.onmessage = function(incomingMessage) {
       params = incomingMessage.data;
       rtn = {
         data: [],
@@ -129,7 +129,7 @@ class wheel {
       new Function(params.hamstersJob)();
       rtn.threadEnd = Date.now();
       postMessage(prepareReturn(rtn), prepareTransferBuffers(rtn));
-    });
+    }
   }
 
   reactNativeScaffold() {

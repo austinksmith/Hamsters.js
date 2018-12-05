@@ -145,7 +145,7 @@ class pool {
     } else {
       let hamster = this.grabHamster(threadId, persistence);
       this.trainHamster(threadId, task, hamster, persistence, resolve, reject);
-      hamstersData.feedHamster(hamster, hamsterFood);
+      hamstersData.feedHamster(hamster, hamsterFood, hamstersHabitat);
     }
     task.count += 1; //Increment count, thread is running
   }
@@ -221,9 +221,11 @@ class pool {
     // Register on message/error handlers
     if (hamstersHabitat.webWorker) {
       hamster.port.onmessage = onThreadResponse;
+      hamster.port.onmessageerror = onThreadError;
       hamster.port.onerror = onThreadError;
     } else {
       hamster.onmessage = onThreadResponse;
+      hamster.onmessageerror = onThreadError;
       hamster.onerror = onThreadError;
     }
   }

@@ -20,9 +20,7 @@ describe("Hamsters.js", () => {
   });
 
   it("Init should initialize library and be removed", () => {
-    hamsters.init({
-      browser: true
-    });
+    hamsters.init();
     expect(typeof hamsters.init).toBe('undefined'); 
   });
 });
