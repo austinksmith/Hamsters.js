@@ -61,7 +61,7 @@
       return buffers;
     }
 
-    onmessage = function(incomingMessage) {
+    self.onmessage = function(incomingMessage) {
       params = incomingMessage.data;
       rtn = {
         data: [],

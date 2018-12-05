@@ -58,27 +58,27 @@ class data {
   * @param {worker} hamster - Thread to message
   * @param {object} hamsterFood - Message to send to thread
   */  
-  messageWorker(hamster, hamsterFood) {
-    if(hamstersHabitat.reactNative) {
+  messageWorker(hamster, hamsterFood, habitat) {
+    if(habitat.reactNative) {
       return hamster.postMessage(JSON.stringify(hamsterFood));
     }
-    if (hamstersHabitat.ie10) {
+    if (habitat.ie10) {
       return hamster.postMessage(hamsterFood);
     }
-    if (hamstersHabitat.webWorker) {
+    if (habitat.webWorker) {
       return hamster.port.postMessage(hamsterFood);
     }
-    return hamster.postMessage(hamsterFood, this.prepareTransferBuffers(hamsterFood));
+    return hamster.postMessage(hamsterFood, this.prepareTransferBuffers(hamsterFood, habitat.transferrable));
   }
 
   /**
   * @function prepareTransferBuffers - Prepares transferrable buffers for faster message passing
   * @param {object} hamsterFood - Message to send to thread
   */
-  prepareTransferBuffers(hamsterFood) {
+  prepareTransferBuffers(hamsterFood, transferrable) {
     let buffers = [];
     let key = null;
-    if(hamstersHabitat.transferrable) {
+    if(transferrable) {
       for (key in hamsterFood) {
         if (hamsterFood.hasOwnProperty(key) && hamsterFood[key]) {
           if(hamsterFood[key].buffer) {
@@ -113,7 +113,7 @@ class data {
   * @param {function} workerLogic - Scaffold to use within worker thread
   */
   generateWorkerBlob(workerLogic) {
-    let hamsterBlob = this.createBlob(workerLogic);
+    let hamsterBlob = this.createDataBlob('(' + String(workerLogic) + ')();');
     let dataBlobURL = URL.createObjectURL(hamsterBlob);
     return dataBlobURL;
   }

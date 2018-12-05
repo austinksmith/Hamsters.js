@@ -132,17 +132,17 @@ module.exports =
 	
 	  }, {
 	    key: 'messageWorker',
-	    value: function messageWorker(hamster, hamsterFood) {
-	      if (_habitat2.default.reactNative) {
+	    value: function messageWorker(hamster, hamsterFood, habitat) {
+	      if (habitat.reactNative) {
 	        return hamster.postMessage(JSON.stringify(hamsterFood));
 	      }
-	      if (_habitat2.default.ie10) {
+	      if (habitat.ie10) {
 	        return hamster.postMessage(hamsterFood);
 	      }
-	      if (_habitat2.default.webWorker) {
+	      if (habitat.webWorker) {
 	        return hamster.port.postMessage(hamsterFood);
 	      }
-	      return hamster.postMessage(hamsterFood, this.prepareTransferBuffers(hamsterFood));
+	      return hamster.postMessage(hamsterFood, this.prepareTransferBuffers(hamsterFood, habitat.transferrable));
 	    }
 	
 	    /**
@@ -152,10 +152,10 @@ module.exports =
 	
 	  }, {
 	    key: 'prepareTransferBuffers',
-	    value: function prepareTransferBuffers(hamsterFood) {
+	    value: function prepareTransferBuffers(hamsterFood, transferrable) {
 	      var buffers = [];
 	      var key = null;
-	      if (_habitat2.default.transferrable) {
+	      if (transferrable) {
 	        for (key in hamsterFood) {
 	          if (hamsterFood.hasOwnProperty(key) && hamsterFood[key]) {
 	            if (hamsterFood[key].buffer) {
@@ -196,7 +196,7 @@ module.exports =
 	  }, {
 	    key: 'generateWorkerBlob',
 	    value: function generateWorkerBlob(workerLogic) {
-	      var hamsterBlob = this.createBlob(workerLogic);
+	      var hamsterBlob = this.createDataBlob('(' + String(workerLogic) + ')();');
 	      var dataBlobURL = URL.createObjectURL(hamsterBlob);
 	      return dataBlobURL;
 	    }
@@ -911,7 +911,8 @@ module.exports =
 	          rtn = {
 	            data: [],
 	            dataType: params.dataType,
-	            threadStart: Date.now()
+	            threadStart: Date.now(),
+	            threadEnd: null
 	          };
 	          if (params.importScripts) {
 	            self.importScripts(params.importScripts);
@@ -980,12 +981,13 @@ module.exports =
 	        return buffers;
 	      }
 	
-	      addEventListener('message', function (incomingMessage) {
+	      self.onmessage = function (incomingMessage) {
 	        params = incomingMessage.data;
 	        rtn = {
 	          data: [],
 	          dataType: params.dataType ? params.dataType.toLowerCase() : null,
-	          threadStart: Date.now()
+	          threadStart: Date.now(),
+	          threadEnd: null
 	        };
 	        if (params.importScripts) {
 	          self.importScripts(params.importScripts);
@@ -993,7 +995,7 @@ module.exports =
 	        new Function(params.hamstersJob)();
 	        rtn.threadEnd = Date.now();
 	        postMessage(prepareReturn(rtn), prepareTransferBuffers(rtn));
-	      });
+	      };
 	    }
 	  }, {
 	    key: 'reactNativeScaffold',
@@ -1008,7 +1010,8 @@ module.exports =
 	        rtn = {
 	          data: [],
 	          dataType: params.dataType ? params.dataType.toLowerCase() : null,
-	          threadStart: Date.now()
+	          threadStart: Date.now(),
+	          threadEnd: null
 	        };
 	        if (params.importScripts) {
 	          self.importScripts(params.importScripts);
@@ -1061,7 +1064,8 @@ module.exports =
 	        self.params = params;
 	        self.rtn = {
 	          data: [],
-	          threadStart: Date.now()
+	          threadStart: Date.now(),
+	          threadEnd: null
 	        };
 	        params.hamstersJob();
 	        rtn.threadEnd = Date.now();
@@ -1381,7 +1385,7 @@ module.exports =
 	      } else {
 	        var hamster = this.grabHamster(threadId, persistence);
 	        this.trainHamster(threadId, task, hamster, persistence, resolve, reject);
-	        _data2.default.feedHamster(hamster, hamsterFood);
+	        _data2.default.feedHamster(hamster, hamsterFood, _habitat2.default);
 	      }
 	      task.count += 1; //Increment count, thread is running
 	    }
@@ -1466,9 +1470,11 @@ module.exports =
 	      // Register on message/error handlers
 	      if (_habitat2.default.webWorker) {
 	        hamster.port.onmessage = onThreadResponse;
+	        hamster.port.onmessageerror = onThreadError;
 	        hamster.port.onerror = onThreadError;
 	      } else {
 	        hamster.onmessage = onThreadResponse;
+	        hamster.onmessageerror = onThreadError;
 	        hamster.onerror = onThreadError;
 	      }
 	    }
