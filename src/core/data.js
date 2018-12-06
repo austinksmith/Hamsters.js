@@ -97,13 +97,11 @@ class data {
   * @param {function} functionBody - Message to send to thread
   */
   prepareFunction(functionBody) {
-    if (!hamstersHabitat.legacy) {
-      functionBody = String(functionBody);
-      if (!hamstersHabitat.webWorker) {
-        let startingIndex = (functionBody.indexOf("{") + 1);
-        let endingIndex = (functionBody.length - 1);
-        return functionBody.substring(startingIndex, endingIndex);
-      }
+    functionBody = String(functionBody);
+    if (!hamstersHabitat.webWorker) {
+      let startingIndex = (functionBody.indexOf("{") + 1);
+      let endingIndex = (functionBody.length - 1);
+      return functionBody.substring(startingIndex, endingIndex);
     }
     return functionBody;
   }

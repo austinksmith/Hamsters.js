@@ -18,7 +18,9 @@ describe("Hamsters.js", () => {
   });
 
   it("Init should initialize library and be removed", () => {
-    hamsters.init();
+    hamsters.init({
+      maxThreads: 16
+    });
     expect(typeof hamsters.init).toBe('undefined'); 
   });
 });
@@ -43,8 +45,8 @@ describe("WebHamsters running asynchronously", () => {
         rtn.data.push(Math.floor(Math.sqrt(params.num)));
       }, function(res) {
         console.log(res);
-        console.log(res.data[0][0]);
-        expect(res.data[0][0]).toEqual(63);
+        console.log(res.data[0]);
+        expect(res.data[0]).toEqual(63);
         done();
       });
     });
