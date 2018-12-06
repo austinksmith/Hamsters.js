@@ -25,7 +25,8 @@ class habitat {
     this.importScripts = null;
     this.memoize = false;
     this.persistence = true;
-    this.legacy = this.isLegacyEnvironment() || false;
+    this.legacy = true;
+    this.legacyWheel = hamstersWheel.legacy,
     this.browser = this.isBrowser();
     this.webWorker = this.isWebWorker();
     this.node = this.isNode();
@@ -169,9 +170,6 @@ class habitat {
   * @function scheduleTask - Determines which scaffold to use for proper execution for various environments
   */
   selectHamsterWheel() {
-    if (this.legacy) {
-      return hamstersWheel.legacy;
-    }
     if(this.isIE10) {
       return './common/hamstersWheel.js';
     }

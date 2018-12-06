@@ -10,8 +10,6 @@
 ***********************************************************************************/
 
 import hamsters from '../src/hamsters';
-import hamstersData from '../src/core/data';
-
 
 describe("Hamsters.js", () => {
 
