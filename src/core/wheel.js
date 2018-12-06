@@ -184,7 +184,7 @@ class wheel {
   /**
   * @function legacyScaffold - Provides library functionality for legacy devices
   */
-  legacyScaffold(params, resolve) {
+  legacyScaffold(params, resolve, reject) {
     setTimeout(() => {
       if(typeof self === 'undefined') {
         var self = (global || window || this);

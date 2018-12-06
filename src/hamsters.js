@@ -47,8 +47,8 @@ class hamstersjs {
     if (typeof startOptions !== 'undefined') {
       this.processStartOptions(startOptions);
     }
-    if(!hamstersHabitat.legacy && hamstersHabitat.persistence) {
-      hamstersPool.spawnHamsters(hamstersHabitat.persistence, this.maxThreads);
+    if(!this.habitat.legacy && this.habitat.persistence === true) {
+      hamstersPool.spawnHamsters(this.habitat.persistence, this.maxThreads);
     }
     delete this.init;
   }
@@ -78,7 +78,7 @@ class hamstersjs {
       }
     }
     // Ensure legacy mode is disabled when we pass a third party worker library
-    if(typeof this.habitat.Worker === 'function') {
+    if(typeof this.habitat.Worker === 'function' && startOptions['legacy'] !== true) {
       this.habitat.legacy = false;
     }
   }
@@ -101,7 +101,7 @@ class hamstersjs {
     this.dataType = (params.dataType ? params.dataType.toLowerCase() : null);
     this.input = params;
     // Do not modify function if we're running on the main thread for legacy fallback
-    if(hamstersHabitat.legacy) {
+    if(scope.habitat.legacy) {
       this.threads = 1;
       this.input.hamstersJob = functionToRun;
     } else {
@@ -120,7 +120,7 @@ class hamstersjs {
   hamstersPromise(params, functionToRun) {
     return new Promise((resolve, reject) => {
       let task = new this.hamstersTask(params, functionToRun, this);
-      this.pool.scheduleTask(task, this.habitat.persistence, this.maxThreads).then((results) => {
+      this.pool.scheduleTask(task, this).then((results) => {
         resolve(results);
       }).catch((error) => {
         hamstersLogger.error(error.messsage, reject);
@@ -139,7 +139,7 @@ class hamstersjs {
   */
   hamstersRun(params, functionToRun, onSuccess, onError) {
     let task = new this.hamstersTask(params, functionToRun, this);
-    this.pool.scheduleTask(task, this.habitat.persistence, this.maxThreads).then((results) => {
+    this.pool.scheduleTask(task, this).then((results) => {
       onSuccess(results);
     }).catch((error) => {
       hamstersLogger.error(error.messsage, onError);

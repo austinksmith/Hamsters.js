@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 
 module.exports = (config) => {
   config.set({
@@ -10,7 +11,7 @@ module.exports = (config) => {
     // - Safari (only Mac; has to be installed with `npm install karma-safari-launcher`)
     // - PhantomJS
     // - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
-    browsers: ['Chrome','PhantomJS','Firefox'],
+    browsers: ['PhantomJS'],
     files: [
       { 
         pattern: 'tests.webpack.js', 
@@ -28,10 +29,10 @@ module.exports = (config) => {
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
     logLevel: config.LOG_DEBUG,
     captureTimeout: 60000,
-    singleRun: true,
+    singleRun: false,
     autoWatch: true,
     // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
-    reporters: ['dots', 'progress', 'html'],
+    reporters: ['dots', 'progress', 'html', 'coverage'],
     htmlReporter: {
       outputFile: 'report/jasmine.html',
       // Optional
@@ -43,15 +44,19 @@ module.exports = (config) => {
     },
     webpack: {
       cache: false,
+      plugins: webpack.plugins,
       module: {
         loaders: [
           {
-            test: /\.js/,
-            exclude: /node_modules/,
-            loader: 'babel-loader'
+            test: [/\.js?$/],
+            exclude: path.resolve(__dirname, 'node_modules'),
+            loader: 'babel',
+            query: {
+              presets: ['es2015'],
+            },
           }
-        ],
-      },
+        ]
+      }
     },
   });
 };

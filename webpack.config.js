@@ -9,7 +9,7 @@ const web = {
   ],
   output: {
     path: path.resolve('./build'),
-    filename: 'hamsters.web.js',
+    filename: 'hamsters.web.min.js',
     library: 'hamsters',
     libraryTarget: 'var'
   },
@@ -22,17 +22,10 @@ const web = {
         loader: 'babel',
         query: {
           presets: ['es2015'],
-        },
+        }
       }
     ]
-  },
-  plugins: [
-    new webpack.optimize.OccurrenceOrderPlugin,
-    // new webpack.optimize.UglifyJsPlugin({
-    //     include: /\.min\.js$/,
-    //     minimize: true
-    // }),
-  ]
+  }
 };
 
 const node = {
@@ -43,7 +36,7 @@ const node = {
   ],
   output: {
     path: path.resolve('./build'),
-    filename: 'hamsters.node.js',
+    filename: 'hamsters.node.min.js',
     library: 'hamsters',
     libraryTarget: 'commonjs2'
   },
@@ -55,17 +48,10 @@ const node = {
         loader: 'babel',
         query: {
           presets: ['es2015'],
-        },
+        }
       }
     ]
-  },
-  plugins: [
-    new webpack.optimize.OccurrenceOrderPlugin,
-    // new webpack.optimize.UglifyJsPlugin({
-    //     include: /\.min\.js$/,
-    //     minimize: true
-    // }),
-  ]
+  }
 };
 
 module.exports = [
