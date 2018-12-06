@@ -108,6 +108,14 @@ class hamstersjs {
     }
   }
 
+  scheduleTask(task, resolve, reject) {
+    this.pool.scheduleTask(task, this).then((results) => {
+      return resolve(results);
+    }).catch((error) => {
+      return hamstersLogger.error(error.messsage, reject);
+    });
+  }
+
   /**
   * @async
   * @function hamstersPromise - Calls library functionality using async promises
@@ -118,11 +126,7 @@ class hamstersjs {
   hamstersPromise(params, functionToRun) {
     return new Promise((resolve, reject) => {
       let task = new this.hamstersTask(params, functionToRun, this);
-      this.pool.scheduleTask(task, this).then((results) => {
-        return resolve(results);
-      }).catch((error) => {
-        return hamstersLogger.error(error.messsage, reject);
-      });
+      this.scheduleTask(task, resolve, reject);
     });
   }
 
@@ -137,11 +141,7 @@ class hamstersjs {
   */
   hamstersRun(params, functionToRun, onSuccess, onError) {
     let task = new this.hamstersTask(params, functionToRun, this);
-    this.pool.scheduleTask(task, this).then((results) => {
-      return onSuccess(results);
-    }).catch((error) => {
-      return hamstersLogger.error(error.messsage, onError);
-    });
+    this.scheduleTask(task, onSuccess, onError);
   }
 }
 
