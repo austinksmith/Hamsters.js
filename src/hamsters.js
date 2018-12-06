@@ -68,13 +68,12 @@ class hamstersjs {
       'node', 'debug',
       'persistence', 'importscripts'
     ];
-    for (var key in startOptions) {
-      if (startOptions.hasOwnProperty(key)) {
-        if (habitatKeys.indexOf(key.toLowerCase()) !== -1) {
-          this.habitat[key] = startOptions[key];
-        } else {
-          this[key] = startOptions[key];
-        }
+    let key = null;
+    for (key of Object.keys(startOptions)) {
+      if (habitatKeys.indexOf(key.toLowerCase()) !== -1) {
+        this.habitat[key] = startOptions[key];
+      } else {
+        this[key] = startOptions[key];
       }
     }
     // Ensure legacy mode is disabled when we pass a third party worker library
