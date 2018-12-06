@@ -31,33 +31,34 @@ class logger {
     this.errorFromThread = this.errorFromThread;
     this.saveLogEntry = this.saveToLogBook;
     this.getLogEntries = this.fetchLogBook;
+    this.createAndSaveStampedMessage = this.generateTimeStampedMessage;
     this.searchLogEntries = this.searchLogBook;
   }
 
   infoLog(message) {
-    let timeStamp = Date.now();
-    let timeStampedMessage = `Hamsters.js v${hamstersVersion} Info: ${message} @ ${timeStamp}`;
-    this.saveLogEntry('info', timeStampedMessage);
+    let timeStampedMessage = this.createAndSaveStampedMessage('Info', message);
     console.info(timeStampedMessage);
   }
 
   warningLog(message) {
-    let timeStamp = Date.now();
-    let timeStampedMessage = `Hamsters.js v${hamstersVersion} Warning: ${message} @ ${timeStamp}`;
-    this.saveLogEntry('warning', timeStampedMessage);
+    let timeStampedMessage = this.createAndSaveStampedMessage('Warning', message);
     console.warn(timeStampedMessage);
   }
 
   errorLog(message, reject) {
-    let timeStamp = Date.now();
-    let timeStampedMessage = `Hamsters.js v${hamstersVersion} Error: ${message} @ ${timeStamp}`;
-    this.saveLogEntry('error', timeStampedMessage);
+    let timeStampedMessage = this.createAndSaveStampedMessage('Error', message);
     console.error(timeStampedMessage);
     if(reject) {
       reject(timeStampedMessage);
     } else {
       return timeStampedMessage;
     }
+  }
+
+  generateTimeStampedMessage(type, message) {
+    let record = `Hamsters.js v${hamstersVersion} ${type}: ${message} @ ${Date.now()}`
+    this.saveLogEntry(type.toLowerCase(), record);
+    return record;
   }
 
   errorFromThread(error, reject) {
