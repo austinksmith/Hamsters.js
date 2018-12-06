@@ -9,9 +9,9 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-import hamstersVersion from './version';
-
 'use strict';
+
+import hamstersVersion from './version';
 
 class logger {
 

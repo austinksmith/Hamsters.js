@@ -9,11 +9,11 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
+'use strict';
+
 import hamstersData from './data';
 import hamstersHabitat from './habitat';
 import hamstersLogger from './logger';
-
-'use strict';
 
 class pool {
 	

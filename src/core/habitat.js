@@ -9,10 +9,10 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
+'use strict';
+
 import hamstersData from './data';
 import hamstersWheel from './wheel';
-
-'use strict';
 
 class habitat {
 
