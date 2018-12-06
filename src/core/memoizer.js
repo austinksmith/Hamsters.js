@@ -42,15 +42,14 @@ class memoizer {
   */
   fetchItemFromCache(cacheItem) {
   	let cachedResult = null;
-  	for(var key in this.cache) {
-  		if(this.cache.hasOwnProperty(key)) {
-  			if(cacheItem[key].fn === cacheItem.fn) {
-  				if(cacheItem[key].input === cacheItem.data) {
-  					cachedResult = cacheItem[key].input;
-  				}
-  			}
-  		}
-  	}
+    let key = null;
+    for(key of Object.keys(this.cache)) {
+      if(cacheItem[key].fn === cacheItem.fn) {
+        if(cacheItem[key].input === cacheItem.data) {
+          cachedResult = cacheItem[key].input;
+        }
+      }
+    }
   	return cachedResult || false;
   }
 
