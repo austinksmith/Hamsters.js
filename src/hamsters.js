@@ -120,9 +120,9 @@ class hamstersjs {
     return new Promise((resolve, reject) => {
       let task = new this.hamstersTask(params, functionToRun, this);
       this.pool.scheduleTask(task, this).then((results) => {
-        resolve(results);
+        return resolve(results);
       }).catch((error) => {
-        hamstersLogger.error(error.messsage, reject);
+        return hamstersLogger.error(error.messsage, reject);
       });
     });
   }
@@ -139,9 +139,9 @@ class hamstersjs {
   hamstersRun(params, functionToRun, onSuccess, onError) {
     let task = new this.hamstersTask(params, functionToRun, this);
     this.pool.scheduleTask(task, this).then((results) => {
-      onSuccess(results);
+      return onSuccess(results);
     }).catch((error) => {
-      hamstersLogger.error(error.messsage, onError);
+      return hamstersLogger.error(error.messsage, onError);
     });
   }
 }
