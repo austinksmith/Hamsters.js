@@ -175,7 +175,7 @@ class habitat {
       return './common/hamstersWheel.js';
     }
     if(this.reactNative) {
-      return hamstersWheel.reactNative;
+      return './common/rnHamstersWheel.js';
     }
     if(this.webWorker) {
       return hamstersWheel.worker;
