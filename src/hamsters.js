@@ -9,15 +9,14 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
+'use strict';
+
 import hamstersVersion from './core/version';
 import hamstersHabitat from './core/habitat';
 import hamstersPool from './core/pool';
 import hamstersData from './core/data';
-import hamstersWheel from './core/wheel';
 import hamstersLogger from './core/logger';
 import hamstersMemoizer from './core/memoizer';
-
-'use strict';
 
 class hamstersjs {
 
