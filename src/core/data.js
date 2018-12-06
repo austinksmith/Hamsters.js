@@ -48,7 +48,7 @@ class data {
     }
     hamsterFood.array = task.input.array;
     if (task.hamstersJob && !hamsterFood.hamstersJob) {
-      hamsterFood.hamstersJob = hamstersJob;
+      hamsterFood.hamstersJob = task.hamstersJob;
     }
     return hamsterFood;
   }

@@ -93,7 +93,7 @@ class habitat {
   * @function isNode - Detects if execution environment is node.js
   */
   isNode() {
-    return typeof process === "object" && typeof require === "function" && !this.isWebWorker() && !this.isBrowser();
+    return typeof process === "object" && typeof require === "function" && !this.isWebWorker() && !this.browser;
   }
 
   /**
@@ -107,14 +107,14 @@ class habitat {
   * @function isReactNative - Detects if execution environment is reactNative
   */
   isReactNative() {
-    return !this.isNode() && typeof global === 'object' && !this.isBrowser();
+    return !this.isNode() && typeof global === 'object' && !this.browser;
   }
 
   /**
   * @function isShell - Detects if execution environment is a shell
   */
   isShell() {
-    return this.isBrowser() && !this.isNode() && !this.isWebWorker() && !this.isReactNative();
+    return this.browser && !this.isNode() && !this.isWebWorker() && !this.isReactNative();
   }
 
   /**
@@ -122,7 +122,7 @@ class habitat {
   */
   isLegacyEnvironment() {
     // Force legacy mode for known devices that don't support threading
-    if (this.isBrowser() && !this.isReactNative()) {
+    if (this.browser && !this.isReactNative()) {
       let userAgent = navigator.userAgent;
       let lacksWorkerSupport = (typeof this.Worker === 'undefined');
       let legacyAgents = ['Kindle/3.0', 'Mobile/8F190', 'IEMobile'];
@@ -141,8 +141,9 @@ class habitat {
     }
     // Final check, if we're in a shell environment or we have no worker object use legacy mode
     if(!this.legacy) {
-      return this.isShell() || !this.locateWorkerObject();
+      this.legacy = this.isShell() || !this.locateWorkerObject();
     }
+    return this.legacy;
   }
 
   /**
