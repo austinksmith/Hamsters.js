@@ -20,7 +20,6 @@ class wheel {
   constructor() {
     this.worker = this.workerScaffold;
     this.regular = this.regularScaffold;
-    this.reactNative = this.reactNativeScaffold;
     this.legacy = this.legacyScaffold;
   }
 
@@ -100,11 +99,13 @@ class wheel {
     function prepareTransferBuffers(hamsterFood) {
       let buffers = [];
       let key = null;
-      for (key of Object.keys(hamsterFood)) {
-        if(hamsterFood[key].buffer) {
-          buffers.push(hamsterFood[key].buffer);
-        } else if(Array.isArray(hamsterFood[key]) && typeof ArrayBuffer !== 'undefined') {
-          buffers.push(new ArrayBuffer(hamsterFood[key]));
+      for (key in hamsterFood) {
+        if (hamsterFood.hasOwnProperty(key) && hamsterFood[key]) {
+          if(hamsterFood[key].buffer) {
+            buffers.push(hamsterFood[key].buffer);
+          } else if(Array.isArray(hamsterFood[key]) && typeof ArrayBuffer !== 'undefined') {
+            buffers.push(new ArrayBuffer(hamsterFood[key]));
+          }
         }
       }
       return buffers;
@@ -127,59 +128,10 @@ class wheel {
     }
   }
 
-  reactNativeScaffold() {
-   'use strict';
-
-    self.params = {};
-    self.rtn = {};
-
-    self.onmessage = function(incomingMessage) {
-      params = JSON.parse(incomingMessage.data);
-      rtn = {
-        data: [],
-        dataType: (params.dataType ? params.dataType.toLowerCase() : null),
-        threadStart: Date.now(),
-        threadEnd: null
-      };
-      if(params.importScripts) {
-        self.importScripts(params.importScripts);
-      }
-      new Function(params.hamstersJob)();
-      rtn.threadEnd = Date.now();
-      postMessage(prepareReturn(rtn));
-    };
-
-    function prepareReturn(returnObject) {
-      var dataType = returnObject.dataType;
-      if(dataType) {
-        returnObject.data = typedArrayFromBuffer(dataType, returnObject.data);
-      }
-      return JSON.stringify(returnObject);
-    }
-
-    function typedArrayFromBuffer(dataType, buffer) {
-      var types = {
-        'uint32': Uint32Array,
-        'uint16': Uint16Array,
-        'uint8': Uint8Array,
-        'uint8clamped': Uint8ClampedArray,
-        'int32': Int32Array,
-        'int16': Int16Array,
-        'int8': Int8Array,
-        'float32': Float32Array,
-        'float64': Float64Array
-      };
-      if (!types[dataType]) {
-        return buffer;
-      }
-      return new types[dataType](buffer);
-    }
-  }
-
   /**
   * @function legacyScaffold - Provides library functionality for legacy devices
   */
-  legacyScaffold(params, resolve, reject) {
+  legacyScaffold(params, resolve) {
     setTimeout(() => {
       if(typeof self === 'undefined') {
         var self = (global || window || this);
@@ -195,7 +147,7 @@ class wheel {
       resolve(rtn);
     }, 4); //4ms delay (HTML5 spec minimum), simulate threading
   }
-}
+};
 
 var hamstersWheel = new wheel();
 
