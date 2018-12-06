@@ -103,13 +103,11 @@ class wheel {
     function prepareTransferBuffers(hamsterFood) {
       let buffers = [];
       let key = null;
-      for (key in hamsterFood) {
-        if (hamsterFood.hasOwnProperty(key) && hamsterFood[key]) {
-          if(hamsterFood[key].buffer) {
-            buffers.push(hamsterFood[key].buffer);
-          } else if(Array.isArray(hamsterFood[key]) && typeof ArrayBuffer !== 'undefined') {
-            buffers.push(new ArrayBuffer(hamsterFood[key]));
-          }
+      for (key of Object.keys(hamsterFood)) {
+        if(hamsterFood[key].buffer) {
+          buffers.push(hamsterFood[key].buffer);
+        } else if(Array.isArray(hamsterFood[key]) && typeof ArrayBuffer !== 'undefined') {
+          buffers.push(new ArrayBuffer(hamsterFood[key]));
         }
       }
       return buffers;
