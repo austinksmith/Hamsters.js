@@ -119,7 +119,7 @@ class pool {
     	array: threadArray
     };
     for (var key in task.input) {
-      if (task.input.hasOwnProperty(key) && ['array', 'threads'].indexOf(key) == -1) {
+      if (task.input.hasOwnProperty(key) && ['array', 'threads'].indexOf(key) === -1) {
         hamsterFood[key] = task.input[key];
       }
     }
@@ -238,11 +238,11 @@ class pool {
   * @param {number} maxThreads - Maximum number of threads for this client
   */
   scheduleTask(task, scope) {
-    let threadArrays = [];
-	  if(task.input.array && task.threads !== 1) {
-	    threadArrays = scope.data.splitArrays(task.input.array, task.threads); //Divide our array into equal array sizes
-	  }
   	return new Promise((resolve, reject) => {
+      let threadArrays = [];
+      if(task.input.array && task.threads !== 1) {
+        threadArrays = scope.data.splitArrays(task.input.array, task.threads); //Divide our array into equal array sizes
+      }
       let i = 0;
       while (i < task.threads) {
       	if(threadArrays && task.threads !== 1) {
