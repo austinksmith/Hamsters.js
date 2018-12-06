@@ -11,9 +11,6 @@
 
 'use strict';
 
-import hamstersData from './data';
-import hamstersHabitat from './habitat';
-
 class wheel {
 
   /**
@@ -198,7 +195,7 @@ class wheel {
       resolve(rtn);
     }, 4); //4ms delay (HTML5 spec minimum), simulate threading
   }
-};
+}
 
 var hamstersWheel = new wheel();
 
