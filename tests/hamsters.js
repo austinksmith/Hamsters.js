@@ -45,7 +45,6 @@ describe("WebHamsters running asynchronously", () => {
         rtn.data.push(Math.floor(Math.sqrt(params.num)));
       }, function(res) {
         console.log(res);
-        console.log(res.data[0]);
         expect(res.data[0]).toEqual(63);
         done();
       });

@@ -46,8 +46,8 @@ class pool {
   * @function grabHamster - Invokes processing of next item in queue
   * @param {object} item - Task to process
   */
-  processQueue(item) {
-  	return this.runTask(item[0], item[1], item[2], item[3], item[4]);
+  processQueue(item, hamster) {
+  	return this.runTask(hamster, item[0], item[1], item[2], item[3], item[4]);
   }
 
   /**
@@ -135,7 +135,7 @@ class pool {
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
-  runTask(array, task, scope, resolve, reject) {
+  runTask(hamster, array, task, scope, resolve, reject) {
   	let threadId = this.running.length;
     let hamsterFood = this.prepareMeal(array, task);
     this.registerTask(task.id);
@@ -143,8 +143,7 @@ class pool {
     if(scope.habitat.legacy) {
       scope.habitat.legacyWheel(hamsterFood, resolve, reject);
     } else {
-      let hamster = this.grabHamster(threadId, scope.habitat);
-      this.trainHamster(threadId, task, hamster, scope, resolve, reject);
+      this.trainHamster(task.count, task, hamster, scope, resolve, reject);
       scope.data.feedHamster(hamster, hamsterFood, scope.habitat);
     }
     task.count += 1; //Increment count, thread is running
@@ -163,7 +162,8 @@ class pool {
     if(scope.maxThreads === this.running.length) {
       return this.addWorkToPending(array, task, scope, resolve, reject);
     }
-    return this.runTask(array, task, scope, resolve, reject);
+    let hamster = this.grabHamster(this.running.length, scope.habitat);
+    return this.runTask(hamster, array, task, scope, resolve, reject);
   }
 
   /**
@@ -208,9 +208,8 @@ class pool {
         pool.returnOutputAndRemoveTask(task, resolve);
       }
       if (pool.pending.length !== 0) {
-        pool.processQueue(pool.pending.shift());
-      }
-      if (!scope.habitat.persistence && !scope.habitat.webWorker) {
+        pool.processQueue(pool.pending.shift(), hamster);
+      } else if (!scope.habitat.persistence && !scope.habitat.webWorker) {
         hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
       }
     }

@@ -14,19 +14,19 @@ import hamstersPool from '../src/core/pool';
 describe("Hamsters Pool", () => {
 
   it("Tasks should be an array", () => {
-    expect(hamstersPool.tasks.length).toEqual(9);
+    expect(Array.isArray(hamstersPool.tasks)).toEqual(true);
   });
 
   it("Threads should be an array", () => {
-    expect(hamstersPool.threads.length).toEqual(2);
+    expect(Array.isArray(hamstersPool.threads)).toEqual(true);
   });
 
   it("Running should be an array", () => {
-    expect(hamstersPool.running).toEqual([]);
+    expect(Array.isArray(hamstersPool.running)).toEqual(true);
   });
 
   it("Pending should be an array", () => {
-    expect(hamstersPool.pending).toEqual([]);
+    expect(Array.isArray(hamstersPool.pending)).toEqual(true);
   });
 
 });
