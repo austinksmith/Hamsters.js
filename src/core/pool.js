@@ -89,11 +89,9 @@ class pool {
   * @param {number} maxThreds - Max number of threads for this client
   */
   spawnHamsters(persistence, maxThreads) {
-    hamstersLogger.info(`${maxThreads} Logical Threads Detected, Spawning ${maxThreads} Hamsters`);
     for (maxThreads; maxThreads > 0; maxThreads--) {
       this.threads.push(this.spawnHamster());
     }
-    hamstersLogger.info(`${this.threads.length} hamsters ready and awaiting instructions`);
   }
 
   /**

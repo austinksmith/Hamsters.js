@@ -38,7 +38,7 @@ module.exports = (config) => {
       // Optional
       pageTitle: 'Hamsters.js Jasmine Output',
       subPageTitle: '',
-      groupSuites: false,
+      groupSuites: true,
       useCompactStyle: true,
       useLegacyStyle: true
     },
