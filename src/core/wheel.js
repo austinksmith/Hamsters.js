@@ -43,15 +43,12 @@ class wheel {
         params = incomingMessage.data;
         rtn = {
           data: [],
-          dataType: params.dataType,
-          threadStart: Date.now(),
-          threadEnd: null
+          dataType: params.dataType
         };
         if(params.importScripts) {
           self.importScripts(params.importScripts);
         }
         eval("(" + params.hamstersJob + ")")();
-        rtn.threadEnd = Date.now();
         port.postMessage(rtn);
       }, false);
     }, false);
@@ -115,15 +112,12 @@ class wheel {
       params = incomingMessage.data;
       rtn = {
         data: [],
-        dataType: (params.dataType ? params.dataType.toLowerCase() : null),
-        threadStart: Date.now(),
-        threadEnd: null
+        dataType: (params.dataType ? params.dataType.toLowerCase() : null)
       };
       if(params.importScripts) {
         self.importScripts(params.importScripts);
       }
       new Function(params.hamstersJob)();
-      rtn.threadEnd = Date.now();
       postMessage(prepareReturn(rtn), prepareTransferBuffers(rtn));
     }
   }

@@ -48,8 +48,8 @@ class hamstersjs {
     if(!this.habitat.legacy && this.habitat.persistence === true) {
       hamstersPool.spawnHamsters(this.habitat.persistence, this.maxThreads);
     }
-    delete this.init;
     this.logger.info(`Hamsters.js v${this.version} initialized using up to ${this.maxThreads} threads.`);
+    delete this.init;
   }
 
   /**

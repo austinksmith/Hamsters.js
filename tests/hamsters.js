@@ -18,9 +18,7 @@ describe("Hamsters.js", () => {
   });
 
   it("Init should initialize library and be removed", () => {
-    hamsters.init({
-      maxThreads: 16
-    });
+    hamsters.init();
     expect(typeof hamsters.init).toBe('undefined'); 
   });
 });
