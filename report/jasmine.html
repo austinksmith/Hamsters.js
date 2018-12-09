@@ -12,15 +12,15 @@
         <td colspan="3" title="Mozilla/5.0 (Unknown; Linux x86_64) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.1.1 Safari/538.1">Browser: PhantomJS 2.1.1 (Linux 0.0.0)</td>
       </tr>
       <tr class="overview">
-        <td colspan="3">Timestamp: 12/9/2018, 4:35:59 PM</td>
+        <td colspan="3">Timestamp: 12/9/2018, 5:42:29 PM</td>
       </tr>
       <tr>
         <td colspan="3">
           49 tests / 
           0 errors / 
-          0 failures / 
+          12 failures / 
           0 skipped / 
-          runtime: 0.08s
+          runtime: 45.069s
         </td>
       </tr>
       <tr class="header">
@@ -29,12 +29,12 @@
         <td>Suite / Results</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.001s</td>
+        <td>Passed in 0.002s</td>
         <td>aggregateArrays should aggregate array of subarrays</td>
         <td>Hamsters Data</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.001s</td>
         <td>splitArrays should split array into subarrays</td>
         <td>Hamsters Data</td>
       </tr>
@@ -79,7 +79,7 @@
         <td>Hamsters Data</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.001s</td>
+        <td>Passed in 0s</td>
         <td>Habitat Node should be boolean</td>
         <td>Hamsters Habitat</td>
       </tr>
@@ -109,7 +109,7 @@
         <td>Hamsters Habitat</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.001s</td>
+        <td>Passed in 0s</td>
         <td>Habitat Worker should be an object or function</td>
         <td>Hamsters Habitat</td>
       </tr>
@@ -119,7 +119,7 @@
         <td>Hamsters Habitat</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.001s</td>
         <td>Habitat Atomics should be boolean</td>
         <td>Hamsters Habitat</td>
       </tr>
@@ -138,70 +138,132 @@
         <td>maxThreads should be detected and match logical thread count</td>
         <td>Hamsters.js</td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Init should initialize library and be removed</td>
-        <td>Hamsters.js</td>
+        <td>
+          Hamsters.js
+          <br />TypeError: undefined is not an object (evaluating 'data.generateWorkerBlob') in tests.webpack.js (line 782)
+selectHamsterWheel@tests.webpack.js:782:19
+spawnHamster@tests.webpack.js:1848:59
+spawnHamsters@tests.webpack.js:1834:45
+initializeLibrary@tests.webpack.js:1565:38
+tests.webpack.js:1452:29
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.012s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Calculates square root of 4000 (null)</td>
-        <td>WebHamsters running asynchronously</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.006s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Calculates square root of 4000 (Uint8)</td>
-        <td>WebHamsters running asynchronously</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.006s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Calculates square root of 4000 (Uint32)</td>
-        <td>WebHamsters running asynchronously</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.009s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Calculates square root of 4000 (Uint16)</td>
-        <td>WebHamsters running asynchronously</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.006s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Calculates square root of 4000 (Float64)</td>
-        <td>WebHamsters running asynchronously</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.005s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Calculates square root of 4000 (Float32)</td>
-        <td>WebHamsters running asynchronously</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.005s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Calculates square root of 4000 (Int32)</td>
-        <td>WebHamsters running asynchronously</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.006s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Calculates square root of 4000 (Int16)</td>
-        <td>WebHamsters running asynchronously</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.012s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>Calculates square root of 4000 (Int8)</td>
-        <td>WebHamsters running asynchronously</td>
+        <td>
+          WebHamsters running asynchronously
+          <br />Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+
+        </td>
       </tr>
       <tr class="pass">
         <td>Passed in 0s</td>
         <td>LogBook should be an object</td>
         <td>Hamsters Logger</td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>LogBook Errors should be an empty array</td>
-        <td>Hamsters Logger</td>
+        <td>
+          Hamsters Logger
+          <br />Expected $.length = 4 to equal 0.
+Expected $[0] = 'Hamsters.js v5.1.2 Error: undefined @ 1544395349514' to equal undefined.
+Expected $[1] = 'Hamsters.js v5.1.2 Error: undefined @ 1544395354516' to equal undefined.
+Expected $[2] = 'Hamsters.js v5.1.2 Error: undefined @ 1544395359518' to equal undefined.
+Expected $[3] = 'Hamsters.js v5.1.2 Error: undefined @ 1544395364537' to equal undefined.
+tests.webpack.js:2185:52
+
+        </td>
       </tr>
-      <tr class="pass">
-        <td>Passed in 0.001s</td>
+      <tr class="fail">
+        <td>Failed</td>
         <td>LogBook Error should save to error array</td>
-        <td>Hamsters Logger</td>
+        <td>
+          Hamsters Logger
+          <br />Expected 4 to equal 0.
+tests.webpack.js:2189:59
+
+          <br />Expected 5 to equal 1.
+tests.webpack.js:2191:59
+
+        </td>
       </tr>
       <tr class="pass">
         <td>Passed in 0s</td>
@@ -209,7 +271,7 @@
         <td>Hamsters Logger</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0.001s</td>
+        <td>Passed in 0s</td>
         <td>LogBook Info should save to info array</td>
         <td>Hamsters Logger</td>
       </tr>
@@ -244,7 +306,7 @@
         <td>Hamsters Pool</td>
       </tr>
       <tr class="pass">
-        <td>Passed in 0s</td>
+        <td>Passed in 0.001s</td>
         <td>Threads should be an array</td>
         <td>Hamsters Pool</td>
       </tr>
@@ -274,19 +336,14 @@
         <td>Hamsters Wheel</td>
       </tr>
       <tr class="system-out">
-        <td colspan="3"><strong>System output:</strong><br />PhantomJS 2.1.1 (Linux 0.0.0) INFO: 'Hamsters.js v5.1.2 Info: Hamsters.js v5.1.2 initialized using up to 16 threads. @ 1544391359471'
-<br />PhantomJS 2.1.1 (Linux 0.0.0) LOG: Object{data: [63]}
-<br />PhantomJS 2.1.1 (Linux 0.0.0) LOG: Object{data: [63]}
-<br />PhantomJS 2.1.1 (Linux 0.0.0) LOG: Object{data: [63]}
-<br />PhantomJS 2.1.1 (Linux 0.0.0) LOG: Object{data: [63]}
-<br />PhantomJS 2.1.1 (Linux 0.0.0) LOG: Object{data: [63]}
-<br />PhantomJS 2.1.1 (Linux 0.0.0) LOG: Object{data: [63]}
-<br />PhantomJS 2.1.1 (Linux 0.0.0) LOG: Object{data: [63]}
-<br />PhantomJS 2.1.1 (Linux 0.0.0) LOG: Object{data: [63]}
-<br />PhantomJS 2.1.1 (Linux 0.0.0) LOG: Object{data: [63]}
-<br />PhantomJS 2.1.1 (Linux 0.0.0) ERROR: 'Hamsters.js v5.1.2 Error: Hamsters are better than gerbals @ 1544391359541'
-<br />PhantomJS 2.1.1 (Linux 0.0.0) INFO: 'Hamsters.js v5.1.2 Info: Hamsters are better than gerbals @ 1544391359542'
-<br />PhantomJS 2.1.1 (Linux 0.0.0) WARN: 'Hamsters.js v5.1.2 Warning: Hamsters are better than gerbals @ 1544391359543'
+        <td colspan="3"><strong>System output:</strong><br />PhantomJS 2.1.1 (Linux 0.0.0) INFO: 'Hamsters.js v5.1.2 Info: 4 Logical Threads Detected, Spawning 4 Hamsters @ 1544395349507'
+<br />PhantomJS 2.1.1 (Linux 0.0.0) ERROR: 'Hamsters.js v5.1.2 Error: undefined @ 1544395349514'
+<br />PhantomJS 2.1.1 (Linux 0.0.0) ERROR: 'Hamsters.js v5.1.2 Error: undefined @ 1544395354516'
+<br />PhantomJS 2.1.1 (Linux 0.0.0) ERROR: 'Hamsters.js v5.1.2 Error: undefined @ 1544395359518'
+<br />PhantomJS 2.1.1 (Linux 0.0.0) ERROR: 'Hamsters.js v5.1.2 Error: undefined @ 1544395364537'
+<br />PhantomJS 2.1.1 (Linux 0.0.0) ERROR: 'Hamsters.js v5.1.2 Error: Hamsters are better than gerbals @ 1544395394567'
+<br />PhantomJS 2.1.1 (Linux 0.0.0) INFO: 'Hamsters.js v5.1.2 Info: Hamsters are better than gerbals @ 1544395394570'
+<br />PhantomJS 2.1.1 (Linux 0.0.0) WARN: 'Hamsters.js v5.1.2 Warning: Hamsters are better than gerbals @ 1544395394571'
 </td>
       </tr>
     </table>

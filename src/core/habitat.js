@@ -25,7 +25,7 @@ class habitat {
     this.importScripts = null;
     this.memoize = false;
     this.persistence = true;
-    this.legacy = true;
+    this.legacy = false;
     this.legacyWheel = hamstersWheel.legacy,
     this.browser = this.isBrowser();
     this.webWorker = this.isWebWorker();

@@ -102,10 +102,11 @@ class pool {
   * @param {string} workerURI - URI for created library blob object 
   */
   spawnHamster() {
+    let newWheel = hamstersHabitat.selectHamsterWheel();
     if (hamstersHabitat.webWorker) {
-      return new hamstersHabitat.SharedWorker(hamstersHabitat.selectHamsterWheel(), 'SharedHamsterWheel');
+      return new hamstersHabitat.SharedWorker(newWheel, 'SharedHamsterWheel');
     }
-    return new hamstersHabitat.Worker(hamstersHabitat.selectHamsterWheel());
+    return new hamstersHabitat.Worker(newWheel);
   }
 
   /**
