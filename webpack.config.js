@@ -4,11 +4,12 @@ const webpack = require('webpack');
 const web = {
   target: 'web',
   devtool: 'sourcemap',
+  context: path.resolve(__dirname, 'src'),
   entry: [
-    './src/hamsters',
+    './hamsters'
   ],
   output: {
-    path: path.resolve('./build'),
+    path: path.resolve(__dirname, 'build'),
     filename: 'hamsters.web.min.js',
     library: 'hamsters',
     libraryTarget: 'var'
@@ -31,15 +32,17 @@ const web = {
 const node = {
   target: 'node',
   devtool: 'sourcemap',
+  context: path.resolve(__dirname, 'src'),
   entry: [
-    './src/hamsters',
+    './hamsters'
   ],
   output: {
-    path: path.resolve('./build'),
+    path: path.resolve(__dirname, 'build'),
     filename: 'hamsters.node.min.js',
     library: 'hamsters',
     libraryTarget: 'commonjs2'
   },
+  plugins: webpack.plugins,
   module: {
     loaders: [
       {
