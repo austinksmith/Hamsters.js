@@ -138,12 +138,9 @@ class wheel {
       }
       self.params = params;
       self.rtn = {
-        data: [],
-        threadStart: Date.now(),
-        threadEnd: null
+        data: []
       };
       params.hamstersJob();
-      rtn.threadEnd = Date.now();
       resolve(rtn);
     }, 4); //4ms delay (HTML5 spec minimum), simulate threading
   }

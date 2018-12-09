@@ -43,7 +43,7 @@ class memoizer {
   fetchItemFromCache(cacheItem) {
   	let cachedResult = null;
     let key = null;
-    for(key of Object.keys(this.cache)) {
+    for(key of Object.keys(this.cacheEntries)) {
       if((cacheItem[key].fn === cacheItem.fn) && (cacheItem[key].input === cacheItem.data)) {
         cachedResult = cacheItem[key].input;
       }

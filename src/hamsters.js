@@ -42,7 +42,6 @@ class hamstersjs {
   * @param {object} startOptions - Provided library functionality options
   */
   initializeLibrary(startOptions) {
-    this.logger.info(`Preparing the hamster wheels & readying hamsters`);
     if (typeof startOptions !== 'undefined') {
       this.processStartOptions(startOptions);
     }
@@ -50,6 +49,7 @@ class hamstersjs {
       hamstersPool.spawnHamsters(this.habitat.persistence, this.maxThreads);
     }
     delete this.init;
+    this.logger.info(`Hamsters.js v${this.version} initialized using up to ${this.maxThreads} threads.`);
   }
 
   /**
