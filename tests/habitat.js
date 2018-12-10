@@ -15,50 +15,88 @@ import hamstersData from '../src/core/data';
 
 describe("Hamsters Habitat", () => {
 
-  it("Habitat Node should be boolean", () => {
+  it("Logical Threads should be detected", () => {
+    expect(hamstersHabitat['logicalThreads']).not.toBe(null);
+    expect(hamstersHabitat['logicalThreads']).toEqual(4);
+  });
+
+  it("Persistence should be boolean", () => {
+    expect(hamstersHabitat['persistence']).toMatch(/true|false/);
+  });
+
+  it("Memoize should be boolean", () => {
+    expect(hamstersHabitat['memoize']).toMatch(/true|false/);
+  });
+
+  it("ImportScripts should be null", () => {
+    expect(hamstersHabitat['importScripts']).toBe(null);
+  });
+
+  it("Debug should be boolean", () => {
+    expect(hamstersHabitat['debug']).toMatch(/true|false/);
+  });
+
+  it("Node should be boolean", () => {
     expect(hamstersHabitat['node']).toMatch(/true|false/);
   });
   
-  it("Habitat Browser should be boolean", () => {
+  it("Browser should be boolean", () => {
     expect(hamstersHabitat['browser']).toMatch(/true|false/);
   });
+
+  it("isIE10 should be boolean", () => {
+    expect(hamstersHabitat['isIE10']).toMatch(/true|false/);
+  });
   
-  it("Habitat Atomics should be boolean", () => {
+  it("Atomics should be boolean", () => {
     expect(hamstersHabitat['atomics']).toMatch(/true|false/);
   });
 
-  it("Habitat Legacy should be boolean", () => {
+  it("Legacy should be boolean", () => {
     expect(hamstersHabitat['legacy']).toMatch(/true|false/);
   });
 
-  it("Habitat WebWorker should be boolean", () => {
+  it("WebWorker should be boolean", () => {
     expect(hamstersHabitat['webWorker']).toMatch(/true|false/);
   });
 
-  it("Habitat SharedWorker should be an object or function", () => {
-    const options = ['object', 'function'];
-    expect(options.indexOf(typeof hamstersHabitat['Worker'])).not.toBe(-1);
-  });
-
-  it("Habitat Worker should be an object or function", () => {
-    const options = ['object', 'function'];
-    expect(options.indexOf(typeof hamstersHabitat['sharedWorker'])).not.toBe(-1);
-  });
-
-  it("Habitat Shell should be boolean", () => {
+  it("Shell should be boolean", () => {
     expect(hamstersHabitat['shell']).toMatch(/true|false/);
   });
   
-  it("Habitat Atomics should be boolean", () => {
+  it("Transferrable should be boolean", () => {
     expect(hamstersHabitat['transferrable']).toMatch(/true|false/);
   });
 
-  it("Habitat Proxies should be boolean", () => {
+  it("Proxies should be boolean", () => {
     expect(hamstersHabitat['proxies']).toMatch(/true|false/);
   });
 
-  it("Habitat Logical Threads should be detected", () => {
-    expect(hamstersHabitat['logicalThreads']).not.toBe(null);
+  it("reactNative should be boolean", () => {
+    expect(hamstersHabitat['reactNative']).toMatch(/true|false/);
+  });
+
+  it("LegacyWheel should be an object or function", () => {
+    const options = ['object', 'function'];
+    expect(hamstersHabitat['legacyWheel']).not.toBe(null);
+    expect(options.indexOf(typeof hamstersHabitat['legacyWheel'])).not.toBe(-1);
+  });
+  
+  it("Worker should be an object or function", () => {
+    const options = ['object', 'function'];
+    expect(hamstersHabitat['Worker']).not.toBe(null);
+    expect(options.indexOf(typeof hamstersHabitat['Worker'])).not.toBe(-1);
+  });
+
+  it("SharedWorker should be an object or function", () => {
+    const options = ['object', 'function'];
+    expect(hamstersHabitat['sharedWorker']).not.toBe(null);
+    expect(options.indexOf(typeof hamstersHabitat['sharedWorker'])).not.toBe(-1);
+  });
+
+  it("SelectHamsterWheel should be a function", () => {
+    const options = ['function'];
+    expect(typeof hamstersHabitat.selectHamsterWheel).toEqual('function');
   });
 
 });

@@ -69,7 +69,7 @@ class pool {
   * @param {number} id - Id of thread to track
   */
   keepTrackOfThread(task, id) {
-    task.workers.push(id); //Keep track of threads poold to current task
+    task.workers.push(id); //Keep track of threads scoped to current task
     this.running.push(id); //Keep track of all currently running threads
   }
 
@@ -78,8 +78,7 @@ class pool {
   * @param {number} id - Id of task to register
   */
   registerTask(id) {
-    let index = this.tasks.push(id);
-    return this.tasks[(index - 1)];
+    this.tasks.push(id);
   }
 
   /**
@@ -96,8 +95,7 @@ class pool {
 
   /**
   * @function spawnHamster - Spawns a new thread for execution
-  * @param {function} wheel - Results from select hamster wheel
-  * @param {string} workerURI - URI for created library blob object 
+  * @return {object} WebWorker - New WebWorker thread using selected scaffold
   */
   spawnHamster() {
     let newWheel = hamstersHabitat.selectHamsterWheel();

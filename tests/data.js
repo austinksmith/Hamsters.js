@@ -10,9 +10,15 @@
 ***********************************************************************************/
 
 import hamstersData from '../src/core/data';
-import hamstersLogger from '../src/core/logger';
 
 describe("Hamsters Data", () => {
+
+  it("randomArray should generate a random array", function() {
+    hamstersData.randomArray(100, function(randomArray) {
+      expect(Array.isArray(randomArray)).toBe(true);
+      expect(randomArray.length).toEqual(100);
+    });
+  });
 
   it("aggregateArrays should aggregate array of subarrays", function() {
     expect(hamstersData.aggregateArrays([[1],[2]])).toEqual([1,2]);
@@ -20,6 +26,7 @@ describe("Hamsters Data", () => {
 
   it("splitArrays should split array into subarrays", function() {
     expect(hamstersData.splitArrays([1,2], 2)).toEqual([[1],[2]]);
+    expect(hamstersData.splitArrays([1,2, 3, 4], 4)).toEqual([[1],[2], [3], [4]]);
   });
 
   it("createBlob should create dataBlob", function() {
@@ -32,7 +39,17 @@ describe("Hamsters Data", () => {
       console.log('one hamster to rule them all');
     });
     expect(dataBlobURI).not.toEqual(null);
+    expect(typeof dataBlobURI).toEqual('string');
   });
+
+  it("prepareJob should convert function to string", function() {
+    let preparedJob = hamstersData.prepareJob(function() {
+      console.log('pay no attention to the hamster behind the curtain');
+    });
+    expect((typeof preparedJob)).toBe('string');
+    expect(preparedJob.indexOf('console.log')).not.toBe(-1);
+  });
+
 
   describe("sortOutput options", () => {
     let sortOptions = ['asc', 'desc', 'ascAlpha', 'descAlpha'];
@@ -53,21 +70,6 @@ describe("Hamsters Data", () => {
         expect(sorted).not.toEqual(selection);
       });
     }
-  });
-
-  it("randomArray should generate a random array", function() {
-    hamstersData.randomArray(100, function(randomArray) {
-      expect(Array.isArray(randomArray)).toBe(true);
-      expect(randomArray.length).toEqual(100);
-    });
-  });
-
-  it("prepareJob should convert function to string", function() {
-    let preparedJob = hamstersData.prepareJob(function() {
-      console.log('pay no attention to the hamster behind the curtain');
-    });
-    expect((typeof preparedJob)).toBe('string');
-    expect(preparedJob.indexOf('console.log')).not.toBe(-1);
   });
 
 });

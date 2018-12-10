@@ -32,7 +32,6 @@ class data {
     this.prepareJob = this.prepareFunction;
     this.feedHamster = this.messageWorker;
     this.prepareMeal = this.prepareHamsterFood;
-    this.workerURI = null;
   }
 
   /**
