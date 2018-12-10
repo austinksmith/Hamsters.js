@@ -95,6 +95,9 @@ class logger {
       if(logBook.hasOwnProperty(key)) {
         tmpEntries = logBook[key];
         eventTypeResults = this.findStringInLogBook(tmpEntries, searchString);
+        for (var i = eventTypeResults.length - 1; i >= 0; i--) {
+          searchResults.push(eventTypeResults[i])
+        }
       }
     }
     return searchResults;
@@ -105,7 +108,7 @@ class logger {
     if(eventType) {
       finalResults = this.findStringInLogBook(this.logBook[eventType], searchString);
     } else {
-      finalResults = this.findStringInLogBookAllTypes(this.logBook);
+      finalResults = this.findStringInLogBookAllTypes(this.logBook, searchString);
     }
     return {
       total: finalResults.length,
