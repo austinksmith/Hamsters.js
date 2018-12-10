@@ -32,15 +32,15 @@ module.exports = (config) => {
     singleRun: false,
     autoWatch: true,
     // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
-    reporters: ['dots', 'progress', 'html', 'coverage'],
+    reporters: ['dots', 'progress', 'html', 'coverage', 'junit'],
     htmlReporter: {
       outputFile: 'report/jasmine.html',
       // Optional
       pageTitle: 'Hamsters.js Jasmine Output',
       subPageTitle: '',
-      groupSuites: true,
-      useCompactStyle: true,
-      useLegacyStyle: true
+      groupSuites: false,
+      useCompactStyle: false,
+      useLegacyStyle: false
     },
     webpack: {
       cache: false,

@@ -77,11 +77,11 @@ class logger {
     return this.logBook;
   }
 
-  findStringInLogBook(logBookEntries, string) {
+  findStringInLogBook(logBookEntries, searchString) {
     let searchResults = [];
     let i = 0;
     for (i; i < logBookEntries.length; i++) {
-      if(logBookEntries[i].indexOf(string) !== -1) {
+      if(logBookEntries[i].indexOf(searchString) !== -1) {
         searchResults.push(logBookEntries[i]);
       }
     }
@@ -103,7 +103,7 @@ class logger {
   searchLogBook(searchString, eventType) {
     let finalResults = [];
     if(eventType) {
-      finalResults = this.findStringInLogBook(this.logBook[eventType], string);
+      finalResults = this.findStringInLogBook(this.logBook[eventType], searchString);
     } else {
       finalResults = this.findStringInLogBookAllTypes(this.logBook);
     }

@@ -10,6 +10,7 @@
 ***********************************************************************************/
 
 import hamstersData from '../src/core/data';
+import hamstersLogger from '../src/core/logger';
 
 describe("Hamsters Data", () => {
 
@@ -28,7 +29,7 @@ describe("Hamsters Data", () => {
 
   it("generateBlob should generate blob with object url", function() {
     let dataBlobURI = hamstersData.generateWorkerBlob(function() {
-      console.log('one hamster government');
+      console.log('one hamster to rule them all');
     });
     expect(dataBlobURI).not.toEqual(null);
   });
