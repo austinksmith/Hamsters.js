@@ -65,14 +65,12 @@
       params = incomingMessage.data;
       rtn = {
         data: [],
-        dataType: (params.dataType ? params.dataType.toLowerCase() : null),
-        threadStart: Date.now()
+        dataType: (params.dataType ? params.dataType.toLowerCase() : null)
       };
       if(params.importScripts) {
         self.importScripts(params.importScripts);
       }
       new Function(params.hamstersJob)();
-      rtn.threadEnd = Date.now();
       postMessage(prepareReturn(rtn), prepareTransferBuffers(rtn));
     };
 
