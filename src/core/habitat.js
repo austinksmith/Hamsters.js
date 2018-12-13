@@ -25,7 +25,7 @@ class habitat {
     this.importScripts = null;
     this.memoize = false;
     this.persistence = true;
-    this.legacy = false;
+    this.legacy = this.isLegacyEnvironment();
     this.legacyWheel = hamstersWheel.legacy,
     this.browser = this.isBrowser();
     this.webWorker = this.isWebWorker();
@@ -65,14 +65,14 @@ class habitat {
   * @function locateWorkerObject - Attempts to find a global Worker object
   */
   locateWorkerObject() {
-    return typeof Worker !== 'undefined' ? Worker : null;
+    return typeof Worker !== 'undefined' ? Worker : false;
   }
 
   /**
   * @function locateSharedWorkerObject - Attempts to find a global SharedWorker object
   */
   locateSharedWorkerObject() {
-    return typeof SharedWorker !== 'undefined' ? SharedWorker : null;
+    return typeof SharedWorker !== 'undefined' ? SharedWorker : false;
   }
 
   /**
@@ -121,29 +121,39 @@ class habitat {
   * @function isLegacyEnvironment - Detects if execution environment is a legacy environment
   */
   isLegacyEnvironment() {
+    let isLegacy = false;
     // Force legacy mode for known devices that don't support threading
     if (this.browser && !this.isReactNative()) {
-      let userAgent = navigator.userAgent;
-      let lacksWorkerSupport = (typeof this.Worker === 'undefined');
-      let legacyAgents = ['Kindle/3.0', 'Mobile/8F190', 'IEMobile'];
-      if (lacksWorkerSupport || legacyAgents.indexOf(userAgent) !== -1 || this.isIE10) {
-        this.legacy = true;
-      }
+      isLegacy = this.isLegacyDevice();
     }
     // Detect sharedWorker support for use within webworkers
     if (this.isWebWorker() && typeof this.SharedWorker !== 'undefined') {
-      try {
-        let workerBlob = hamstersData.generateBlob();
-        let SharedHamster = new this.SharedWorker(workerBlob, 'SharedHamsterWheel');
-      } catch (e) {
-        this.legacy = true;
-      }
+      isLegacy = !this.supportsSharedWorkers();
     }
-    // Final check, if we're in a shell environment or we have no worker object use legacy mode
-    if(!this.legacy) {
-      this.legacy = this.isShell() || !this.locateWorkerObject();
+    return isLegacy || !!!this.locateWorkerObject();
+  }
+
+  isLegacyDevice() {
+    let legacyDevice = false;
+    let userAgent = navigator.userAgent;
+    let lacksWorkerSupport = (typeof this.Worker === 'undefined');
+    let legacyAgents = ['Kindle/3.0', 'Mobile/8F190', 'IEMobile'];
+    if (lacksWorkerSupport || legacyAgents.indexOf(userAgent) !== -1) {
+      legacyDevice = true;
     }
-    return this.legacy;
+    return legacyDevice;
+  }
+
+  supportsSharedWorkers() {
+    let supports = false;
+    try {
+      let workerBlob = hamstersData.generateBlob();
+      let SharedHamster = new this.SharedWorker(workerBlob, 'SharedHamsterWheel');
+      supports = true;
+    } catch (e) {
+      supports = false;
+    }
+    return supports;
   }
 
   /**

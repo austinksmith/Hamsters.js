@@ -46,7 +46,7 @@ class hamstersjs {
       this.processStartOptions(startOptions);
     }
     if(!this.habitat.legacy && this.habitat.persistence === true) {
-      hamstersPool.spawnHamsters(this.habitat.persistence, this.maxThreads);
+      hamstersPool.spawnHamsters(this.maxThreads);
     }
     this.logger.info(`Hamsters.js v${this.version} initialized using up to ${this.maxThreads} threads.`);
     delete this.init;
