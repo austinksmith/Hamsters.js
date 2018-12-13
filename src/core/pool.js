@@ -83,11 +83,10 @@ class pool {
 
   /**
   * @function spawnHamsters - Spawns multiple new threads for execution
-  * @param {boolean} persistence - Whether persistence mode is enabled or not
   * @param {function} wheel - Results from select hamster wheel
   * @param {number} maxThreds - Max number of threads for this client
   */
-  spawnHamsters(persistence, maxThreads) {
+  spawnHamsters(maxThreads) {
     for (maxThreads; maxThreads > 0; maxThreads--) {
       this.threads.push(this.spawnHamster());
     }

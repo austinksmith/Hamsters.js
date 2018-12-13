@@ -10,10 +10,24 @@
 ***********************************************************************************/
 
 import hamstersHabitat from '../src/core/habitat';
-import hamstersData from '../src/core/data';
-
 
 describe("Hamsters Habitat", () => {
+
+  it("determineGlobalThreads should return a number", () => {
+    expect(typeof hamstersHabitat.determineGlobalThreads()).toBe("number");
+  });
+
+  it("isLegacyEnvironment should return false", () => {
+    expect(hamstersHabitat.isLegacyEnvironment()).toEqual(false);
+  });
+
+  it("isLegacyDevice should return boolean", () => {
+    expect(hamstersHabitat.isLegacyDevice()).toMatch(/true|false/);
+  });
+
+  it("supportsSharedWorkers should be boolean", () => {
+    expect(hamstersHabitat.supportsSharedWorkers()).toMatch(/true|false/);
+  });
 
   it("Logical Threads should be detected", () => {
     expect(hamstersHabitat['logicalThreads']).not.toBe(null);
@@ -95,7 +109,6 @@ describe("Hamsters Habitat", () => {
   });
 
   it("SelectHamsterWheel should be a function", () => {
-    const options = ['function'];
     expect(typeof hamstersHabitat.selectHamsterWheel).toEqual('function');
   });
 

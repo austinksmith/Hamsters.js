@@ -31,25 +31,6 @@ class data {
     this.getOutput = this.prepareOutput;
     this.prepareJob = this.prepareFunction;
     this.feedHamster = this.messageWorker;
-    this.prepareMeal = this.prepareHamsterFood;
-  }
-
-  /**
-  * @function prepareHamsterFood - Prepares message to send to thread(s)
-  * @param {object} task - Task to process
-  */
-  prepareHamsterFood(task) {
-    let hamsterFood = task.input;
-    for (var key in task.input) {
-      if (task.input.hasOwnProperty(key) && key !== 'array') {
-        hamsterFood[key] = task.input[key];
-      }
-    }
-    hamsterFood.array = task.input.array;
-    if (task.hamstersJob && !hamsterFood.hamstersJob) {
-      hamsterFood.hamstersJob = task.hamstersJob;
-    }
-    return hamsterFood;
   }
 
   /**
