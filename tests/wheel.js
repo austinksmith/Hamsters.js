@@ -9,13 +9,20 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-'use strict';
+import hamstersWheel from '../src/core/wheel';
 
-const majorVersion = 5;
-const minorVersion = 1;
-const patchVersion = 2;
-const hamstersVersion = `${majorVersion}.${minorVersion}.${patchVersion}`;
+describe("Hamsters Wheel", () => {
 
-if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamstersVersion;
-}
+  it("WebWorker scaffold should be a function", () => {
+    expect((typeof hamstersWheel.worker)).toEqual('function');
+  });
+
+  it("Regular scaffold should be a function", () => {
+    expect((typeof hamstersWheel.regular)).toEqual('function');
+  });
+
+  it("Legacy scaffold should be a function", () => {
+    expect((typeof hamstersWheel.legacy)).toEqual('function');
+  });
+
+});

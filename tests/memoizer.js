@@ -9,13 +9,20 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-'use strict';
+import hamstersMemoizer from '../src/core/memoizer';
 
-const majorVersion = 5;
-const minorVersion = 1;
-const patchVersion = 2;
-const hamstersVersion = `${majorVersion}.${minorVersion}.${patchVersion}`;
+describe("Hamsters Memoizer", () => {
 
-if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamstersVersion;
-}
+  it("cacheEntries should be an array", () => {
+    expect(hamstersMemoizer.cacheEntries).toEqual([]);
+  });
+
+  it("maxCacheEntries should be set", () => {
+    expect(hamstersMemoizer.maxCacheEntries).not.toBe(null);
+  });
+
+  it("itemCached should return boolean", () => {
+    expect(hamstersMemoizer.itemCached({}, [])).toMatch(/true|false/);
+  });
+
+});

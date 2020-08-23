@@ -1,17 +1,24 @@
-/*
-* Title: Hamsters.js
-* Description: Javascript library to add multi-threading support to javascript by exploiting concurrent web workers
-* Author: Austin K. Smith
-* Contact: austin@asmithdev.com
-* Copyright: 2015 Austin K. Smith - austin@asmithdev.com
-* License: Artistic License 2.0
-*/
+/* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
 
-/* jshint esversion: 6 */
+/***********************************************************************************
+* Title: Hamsters.js                                                               *
+* Description: 100% Vanilla Javascript Multithreading & Parallel Execution Library *
+* Author: Austin K. Smith                                                          *
+* Contact: austin@asmithdev.com                                                    *  
+* Copyright: 2015 Austin K. Smith - austin@asmithdev.com                           * 
+* License: Artistic License 2.0                                                    *
+***********************************************************************************/
 
 'use strict';
 
+import hamstersVersion from './version';
+
 class logger {
+
+  /**
+  * @constructor
+  * @function constructor - Sets properties for this class
+  */
   constructor() {
     this.logBook = {
       error: [], 
@@ -21,31 +28,42 @@ class logger {
     this.info = this.infoLog;
     this.warning = this.warningLog;
     this.error = this.errorLog;
+    this.errorFromThread = this.errorFromThread;
     this.saveLogEntry = this.saveToLogBook;
     this.getLogEntries = this.fetchLogBook;
+    this.createAndSaveStampedMessage = this.generateTimeStampedMessage;
     this.searchLogEntries = this.searchLogBook;
   }
 
   infoLog(message) {
-    let timeStamp = Date.now();
-    let timeStampedMessage = `Hamsters.js Info: ${message} @ ${timeStamp}`;
-    this.saveLogEntry('info', timeStampedMessage);
+    let timeStampedMessage = this.createAndSaveStampedMessage('Info', message);
     console.info(timeStampedMessage);
   }
 
   warningLog(message) {
-    let timeStamp = Date.now();
-    let timeStampedMessage = `Hamsters.js Warning: ${message} @ ${timeStamp}`;
-    this.saveLogEntry('warning', timeStampedMessage);
-    console.warning(timeStampedMessage);
+    let timeStampedMessage = this.createAndSaveStampedMessage('Warning', message);
+    console.warn(timeStampedMessage);
   }
 
   errorLog(message, reject) {
-    let timeStamp = Date.now();
-    let timeStampedMessage = `Hamsters.js Error: ${message} @ ${timeStamp}`;
-    this.saveLogEntry('error', timeStampedMessage);
+    let timeStampedMessage = this.createAndSaveStampedMessage('Error', message);
     console.error(timeStampedMessage);
-    reject(timeStampedMessage);
+    if(reject) {
+      reject(timeStampedMessage);
+    } else {
+      return timeStampedMessage;
+    }
+  }
+
+  generateTimeStampedMessage(type, message) {
+    let record = `Hamsters.js v${hamstersVersion} ${type}: ${message} @ ${Date.now()}`
+    this.saveLogEntry(type.toLowerCase(), record);
+    return record;
+  }
+
+  errorFromThread(error, reject) {
+    let errorMessage = `#${error.lineno} in ${error.filename}: ${error.message}`;
+    this.errorLog(errorMessage, reject);
   }
 
   saveToLogBook(eventType, message) {
@@ -59,35 +77,38 @@ class logger {
     return this.logBook;
   }
 
-  findStringInArray(array, string) {
-    let results = [];
-    for (var i = 0; i < array.length; i++) {
-      if(array[i].indexOf(string) !== -1) {
-        results.push(array[i]);
+  findStringInLogBook(logBookEntries, searchString) {
+    let searchResults = [];
+    let i = 0;
+    for (i; i < logBookEntries.length; i++) {
+      if(logBookEntries[i].indexOf(searchString) !== -1) {
+        searchResults.push(logBookEntries[i]);
       }
     }
-    return results;
+    return searchResults;
   }
 
-  searchLogBook(string, eventType) {
-    let finalResults = [];
-    let tmpEntries;
-    let eventTypeResults;
-    if(eventType) {
-      tmpEntries = this.logBook[eventType];
-      finalResults = this.findStringInArray(tmpEntries, string);
-    } else {
-      for(var key in this.logBook) {
-        if(this.logBook.hasOwnProperty(key)) {
-          tmpEntries = this.logBook[key];
-          eventTypeResults = this.findStringInArray(tmpEntries, string);
-          if(eventTypeResults.length !== 0) {
-            finalResults = [finalResults, eventTypeResults].reduce(function(a, b) {
-              return a.concat(b);
-            });
-          }
+  findStringInLogBookAllTypes(logBook, searchString) {
+    let searchResults = [];
+    let key, eventTypeResults, tmpEntries = null;
+    for(key in logBook) {
+      if(logBook.hasOwnProperty(key)) {
+        tmpEntries = logBook[key];
+        eventTypeResults = this.findStringInLogBook(tmpEntries, searchString);
+        for (var i = eventTypeResults.length - 1; i >= 0; i--) {
+          searchResults.push(eventTypeResults[i])
         }
       }
+    }
+    return searchResults;
+  }
+
+  searchLogBook(searchString, eventType) {
+    let finalResults = [];
+    if(eventType) {
+      finalResults = this.findStringInLogBook(this.logBook[eventType], searchString);
+    } else {
+      finalResults = this.findStringInLogBookAllTypes(this.logBook, searchString);
     }
     return {
       total: finalResults.length,
@@ -96,8 +117,8 @@ class logger {
   }   
 }
 
-var hamsterLogger = new logger();
+var hamstersLogger = new logger();
 
 if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamsterLogger;
+  module.exports = hamstersLogger;
 }

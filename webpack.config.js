@@ -1,19 +1,20 @@
 const path = require('path');
 const webpack = require('webpack');
 
-
-var browser = {
+const web = {
   target: 'web',
   devtool: 'sourcemap',
+  context: path.resolve(__dirname, 'src'),
   entry: [
-    './src/hamsters',
+    './hamsters'
   ],
   output: {
-    path: path.resolve('./build'),
-    filename: 'hamsters.min.js',
+    path: path.resolve(__dirname, 'build'),
+    filename: 'hamsters.web.min.js',
     library: 'hamsters',
     libraryTarget: 'var'
   },
+  plugins: webpack.plugins,
   module: {
     loaders: [
       {
@@ -22,38 +23,41 @@ var browser = {
         loader: 'babel',
         query: {
           presets: ['es2015'],
-        },
+        }
       }
-    ],
+    ]
   }
 };
 
-// var server = {
-//   target: 'node',
-//   devtool: 'sourcemap',
-//   entry: [
-//     './src/hamsters',
-//   ],
-//   output: {
-//     path: path.resolve('./build'),
-//     filename: 'hamsters.node.min.js',
-//     library: 'hamsters',
-//     libraryTarget: 'var'
-//   },
-//   module: {
-//     loaders: [
-//       {
-//         test: [/\.js?$/],
-//         exclude: path.resolve(__dirname, 'node_modules'),
-//         loader: 'babel',
-//         query: {
-//           presets: ['es2015'],
-//         },
-//       }
-//     ],
-//   }
-// };
+const node = {
+  target: 'node',
+  devtool: 'sourcemap',
+  context: path.resolve(__dirname, 'src'),
+  entry: [
+    './hamsters'
+  ],
+  output: {
+    path: path.resolve(__dirname, 'build'),
+    filename: 'hamsters.node.min.js',
+    library: 'hamsters',
+    libraryTarget: 'commonjs2'
+  },
+  plugins: webpack.plugins,
+  module: {
+    loaders: [
+      {
+        test: [/\.js?$/],
+        exclude: path.resolve(__dirname, 'node_modules'),
+        loader: 'babel',
+        query: {
+          presets: ['es2015'],
+        }
+      }
+    ]
+  }
+};
 
 module.exports = [
-  browser
+  web,
+  node
 ];

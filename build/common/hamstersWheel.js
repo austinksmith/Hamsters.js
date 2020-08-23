@@ -1,4 +1,4 @@
-/* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
+/* jshint esversion: 5, curly: true, eqeqeq: true, forin: true */
 
 /***********************************************************************************
 * Title: Hamsters.js                                                               *
@@ -9,66 +9,19 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-'use strict';
+(function () {
 
-class wheel {
-
-  /**
-  * @constructor
-  * @function constructor - Sets properties for this class
-  */
-  constructor() {
-    this.worker = this.workerScaffold;
-    this.regular = this.regularScaffold;
-    this.legacy = this.legacyScaffold;
-  }
-
-  /**
-  * @function workerScaffold - Provides worker body for library functionality when used within a worker [threads inside threads]
-  */
-  workerScaffold() {
-    'use strict';
+   'use strict';
 
     if(typeof self === 'undefined') {
-      self = (global || window || this);
-    }
-
-    self.params = {};
-    self.rtn = {};
-
-    addEventListener('connect', (incomingConnection) => {
-      const port = incomingConnection.ports[0];
-      port.start();
-      port.addEventListener('message', (incomingMessage) => {
-        params = incomingMessage.data;
-        rtn = {
-          data: [],
-          dataType: params.dataType
-        };
-        if(params.importScripts) {
-          self.importScripts(params.importScripts);
-        }
-        eval("(" + params.hamstersJob + ")")();
-        port.postMessage(rtn);
-      }, false);
-    }, false);
-  }
-
-  /**
-  * @function workerScaffold - Provides worker body for library functionality
-  */
-  regularScaffold() {
-    'use strict';
-
-    if(typeof self === 'undefined') {
-      let self = (global || window || this);
+      var self = (global || window || this);
     }
 
     self.params = {};
     self.rtn = {};
 
     function prepareReturn(returnObject) {
-      let dataType = returnObject.dataType;
+      var dataType = returnObject.dataType;
       if(dataType) {
         returnObject.data = typedArrayFromBuffer(dataType, returnObject.data);
       }
@@ -76,7 +29,7 @@ class wheel {
     }
 
     function typedArrayFromBuffer(dataType, buffer) {
-      const types = {
+      var types = {
         'uint32': Uint32Array,
         'uint16': Uint16Array,
         'uint8': Uint8Array,
@@ -94,8 +47,8 @@ class wheel {
     }
 
     function prepareTransferBuffers(hamsterFood) {
-      let buffers = [];
-      let key = null;
+      var buffers = [];
+      var key = null;
       for (key in hamsterFood) {
         if (hamsterFood.hasOwnProperty(key) && hamsterFood[key]) {
           if(hamsterFood[key].buffer) {
@@ -119,29 +72,6 @@ class wheel {
       }
       new Function(params.hamstersJob)();
       postMessage(prepareReturn(rtn), prepareTransferBuffers(rtn));
-    }
-  }
+    };
 
-  /**
-  * @function legacyScaffold - Provides library functionality for legacy devices
-  */
-  legacyScaffold(params, resolve) {
-    setTimeout(() => {
-      if(typeof self === 'undefined') {
-        var self = (global || window || this);
-      }
-      self.params = params;
-      self.rtn = {
-        data: []
-      };
-      params.hamstersJob();
-      resolve(rtn);
-    }, 4); //4ms delay (HTML5 spec minimum), simulate threading
-  }
-};
-
-var hamstersWheel = new wheel();
-
-if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamstersWheel;
-}
+}());
