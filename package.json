@@ -8,7 +8,8 @@
   "scripts": {
     "build": "rm -rf ./build && webpack --config ./hamsters.webpack.config.js",
     "test": "karma start --reporters html",
-    "postinstall": "opencollective postinstall"
+    "postinstall": "opencollective postinstall",
+    "push changes": "git push origin && git push github && git push bitbucket"
   },
   "license": "Artistic-2.0",
   "repository": {
