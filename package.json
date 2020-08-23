@@ -9,7 +9,7 @@
     "build": "rm -rf ./build && webpack --config ./hamsters.webpack.config.js",
     "test": "karma start --reporters html",
     "postinstall": "opencollective postinstall",
-    "push": "git push origin && git push github && git push bitbucket"
+    "push": "git push origin && git push gitlab && git push bitbucket"
   },
   "license": "Artistic-2.0",
   "repository": {
