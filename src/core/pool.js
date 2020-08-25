@@ -101,6 +101,9 @@ class pool {
     if (hamstersHabitat.webWorker) {
       return new hamstersHabitat.SharedWorker(newWheel, 'SharedHamsterWheel');
     }
+    if(hamstersHabitat.node && typeof hamstersHabitat.parentPort !== 'undefined') {
+      return new hamstersHabitat.Worker(newWheel, { eval: true });
+    }
     return new hamstersHabitat.Worker(newWheel);
   }
 
@@ -218,6 +221,10 @@ class pool {
       hamster.port.onmessage = onThreadResponse;
       hamster.port.onmessageerror = onThreadError;
       hamster.port.onerror = onThreadError;
+    } else if(hamstersHabitat.node && typeof hamstersHabitat.parentPort !== 'undefined') {
+      hamster.parentPort.onmessage = onThreadResponse;
+      hamstersHabitat.parentPort.onmessageerror = onThreadError;
+      hamstersHabitat.onerror = onThreadError;
     } else {
       hamster.onmessage = onThreadResponse;
       hamster.onmessageerror = onThreadError;
