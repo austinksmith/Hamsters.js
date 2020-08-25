@@ -47,21 +47,6 @@
     }
 
     function prepareTransferBuffers(hamsterFood) {
-      var buffers = [];
-      var key = null;
-      for (key in hamsterFood) {
-        if (hamsterFood.hasOwnProperty(key) && hamsterFood[key]) {
-          if(hamsterFood[key].buffer) {
-            buffers.push(hamsterFood[key].buffer);
-          } else if(Array.isArray(hamsterFood[key]) && typeof ArrayBuffer !== 'undefined') {
-            buffers.push(new ArrayBuffer(hamsterFood[key]));
-          }
-        }
-      }
-      return buffers;
-    }
-
-    function prepareTransferBuffers(hamsterFood) {
       let buffers = [];
       let key, newBuffer;
       for (key of Object.keys(hamsterFood)) {
@@ -94,9 +79,9 @@
         self.importScripts(params.importScripts);
       }
       new Function(params.hamstersJob)();
-      let preparedTransfer = prepareTransferBuffers(rtn);
+      let preparedTransfer = prepareTransferBuffers(prepareReturn(rtn));
       postMessage(prepareReturn(preparedTransfer['hamsterFood']), preparedTransfer['buffers']);
     }
   }
-    
+
 }());

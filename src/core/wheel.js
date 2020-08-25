@@ -126,8 +126,8 @@ class wheel {
         self.importScripts(params.importScripts);
       }
       new Function(params.hamstersJob)();
-      let preparedTransfer = prepareTransferBuffers(rtn);
-      postMessage(prepareReturn(preparedTransfer['hamsterFood']), preparedTransfer['buffers']);
+      let preparedTransfer = prepareTransferBuffers(prepareReturn(rtn));
+      postMessage(preparedTransfer['hamsterFood'], preparedTransfer['buffers']);
     }
   }
 
