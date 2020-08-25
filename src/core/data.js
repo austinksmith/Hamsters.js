@@ -38,17 +38,21 @@ class data {
   * @param {worker} hamster - Thread to message
   * @param {object} hamsterFood - Message to send to thread
   */  
-  messageWorker(hamster, hamsterFood, habitat) {
-    if(habitat.reactNative) {
+  messageWorker(hamster, hamsterFood) {
+    if(hamstersHabitat.reactNative) {
       return hamster.postMessage(JSON.stringify(hamsterFood));
     }
-    if (habitat.ie10) {
+    if (hamstersHabitat.ie10) {
       return hamster.postMessage(hamsterFood);
     }
-    if (habitat.webWorker) {
+    if (hamstersHabitat.webWorker) {
       return hamster.port.postMessage(hamsterFood);
     }
-    return hamster.postMessage(hamsterFood, this.prepareTransferBuffers(hamsterFood, habitat.transferrable));
+    if(hamstersHabitat.node && typeof hamstersHabitat.parentPort !== 'undefined') {
+      return hamsters.parentPort.postMessage(hamstersFood);
+    }
+    let preparedTransfer = this.prepareTransferBuffers(hamsterFood);
+    return hamster.postMessage(preparedTransfer['hamsterFood'], preparedTransfer['buffers']);
   }
 
   /**
@@ -57,17 +61,25 @@ class data {
   */
   prepareTransferBuffers(hamsterFood, transferrable) {
     let buffers = [];
-    let key = null;
-    if(transferrable) {
+    let key, newBuffer;
+    if(hamstersHabitat.transferrable) {
       for (key of Object.keys(hamsterFood)) {
+        newBuffer = null;
         if(hamsterFood[key].buffer) {
-          buffers.push(hamsterFood[key].buffer);
+          newBuffer = hamsterFood[key].buffer;
         } else if(Array.isArray(hamsterFood[key]) && typeof ArrayBuffer !== 'undefined') {
-          buffers.push(new ArrayBuffer(hamsterFood[key]));
+          newBuffer = new ArrayBuffer(hamsterFood[key]);
+        }
+        if(newBuffer) {
+          buffers.push(newBuffer);
+          hamsterFood[key] = newBuffer;
         }
       }
     }
-    return buffers;
+    return {
+      hamsterFood: hamsterFood,
+      buffers: buffers
+    };
   }
 
   /**
