@@ -61,6 +61,29 @@
       return buffers;
     }
 
+    function prepareTransferBuffers(hamsterFood) {
+      let buffers = [];
+      let key, newBuffer;
+      for (key of Object.keys(hamsterFood)) {
+        newBuffer = null;
+        if (hamsterFood[key]) {
+          if(hamsterFood[key].buffer) {
+            newBuffer = hamsterFood[key].buffer;
+          } else if(Array.isArray(hamsterFood[key]) && typeof ArrayBuffer !== 'undefined') {
+            newBuffer = new ArrayBuffer(hamsterFood[key]);
+          }
+        }
+        if(newBuffer) {
+          buffers.push(newBuffer);
+          hamsterFood[key] = newBuffer;
+        }
+      }
+      return {
+        hamsterFood: hamsterFood,
+        buffers: buffers
+      };
+    }
+
     self.onmessage = function(incomingMessage) {
       params = incomingMessage.data;
       rtn = {
@@ -71,7 +94,9 @@
         self.importScripts(params.importScripts);
       }
       new Function(params.hamstersJob)();
-      postMessage(prepareReturn(rtn), prepareTransferBuffers(rtn));
-    };
-
+      let preparedTransfer = prepareTransferBuffers(rtn);
+      postMessage(prepareReturn(preparedTransfer['hamsterFood']), preparedTransfer['buffers']);
+    }
+  }
+    
 }());

@@ -127,7 +127,7 @@ class wheel {
       }
       new Function(params.hamstersJob)();
       let preparedTransfer = prepareTransferBuffers(rtn);
-      postMessage(preparedTransfer['hamsterFood'], preparedTransfer['buffers']);
+      postMessage(prepareReturn(preparedTransfer['hamsterFood']), preparedTransfer['buffers']);
     }
   }
 
