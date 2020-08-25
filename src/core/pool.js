@@ -56,8 +56,8 @@ class pool {
   * @param {boolean} persistence - Whether persistence mode is enabled or not
   * @param {function} wheel - Results from select hamster wheel
   */
-  grabHamster(threadId, habitat) {
-    if(habitat.persistence) {
+  grabHamster(threadId) {
+    if(hamstersHabitat.persistence) {
       return this.threads[threadId];
     }
     return this.spawnHamster();
@@ -131,16 +131,16 @@ class pool {
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
-  runTask(hamster, array, task, scope, resolve, reject) {
+  runTask(hamster, array, task, resolve, reject) {
   	let threadId = this.running.length;
     let hamsterFood = this.prepareMeal(array, task);
     this.registerTask(task.id);
     this.keepTrackOfThread(task, threadId);
-    if(scope.habitat.legacy) {
-      scope.habitat.legacyWheel(hamsterFood, resolve, reject);
+    if(hamstersHabitat.legacy) {
+      hamstersHabitat.legacyWheel(hamsterFood, resolve, reject);
     } else {
-      this.trainHamster(task.count, task, hamster, scope, resolve, reject);
-      scope.data.feedHamster(hamster, hamsterFood, scope.habitat);
+      this.trainHamster(task.count, task, hamster, resolve, reject);
+      hamstersData.feedHamster(hamster, hamsterFood);
     }
     task.count += 1; //Increment count, thread is running
   }
@@ -154,12 +154,12 @@ class pool {
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
-  hamsterWheel(array, task, scope, resolve, reject) {
-    if(scope.maxThreads === this.running.length) {
-      return this.addWorkToPending(array, task, scope, resolve, reject);
+  hamsterWheel(array, task, resolve, reject) {
+    if(hamstersHabitat.maxThreads === this.running.length) {
+      return this.addWorkToPending(array, task, resolve, reject);
     }
-    let hamster = this.grabHamster(this.running.length, scope.habitat);
-    return this.runTask(hamster, array, task, scope, resolve, reject);
+    let hamster = this.grabHamster(this.running.length);
+    return this.runTask(hamster, array, task, resolve, reject);
   }
 
   /**
@@ -187,7 +187,7 @@ class pool {
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
-  trainHamster(threadId, task, hamster, scope, resolve, reject) {
+  trainHamster(threadId, task, hamster, resolve, reject) {
     let pool = this;
     // Handle successful response from a thread
     function onThreadResponse(message) {
@@ -195,7 +195,7 @@ class pool {
       pool.running.splice(pool.running.indexOf(threadId), 1); //Remove thread from running pool
     	task.workers.splice(task.workers.indexOf(threadId), 1); //Remove thread from task running pool
       // String only communcation for rn...in 2k18
-      if(scope.habitat.reactNative) {
+      if(hamstersHabitat.reactNative) {
         task.output[threadId] = JSON.parse(results.data);
       } else {
         task.output[threadId] = results.data;
@@ -205,7 +205,7 @@ class pool {
       }
       if (pool.pending.length !== 0) {
         pool.processQueue(pool.pending.shift(), hamster);
-      } else if (!scope.habitat.persistence && !scope.habitat.webWorker) {
+      } else if (!hamstersHabitat.persistence && !hamstersHabitat.webWorker) {
         hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
       }
     }
@@ -232,18 +232,18 @@ class pool {
   * @param {function} wheel - Scaffold to execute login within
   * @param {number} maxThreads - Maximum number of threads for this client
   */
-  scheduleTask(task, scope) {
+  scheduleTask(task) {
   	return new Promise((resolve, reject) => {
       let threadArrays = [];
       if(task.input.array && task.threads !== 1) {
-        threadArrays = scope.data.splitArrays(task.input.array, task.threads); //Divide our array into equal array sizes
+        threadArrays = hamstersData.splitArrays(task.input.array, task.threads); //Divide our array into equal array sizes
       }
       let i = 0;
       while (i < task.threads) {
       	if(threadArrays && task.threads !== 1) {
-        	this.hamsterWheel(threadArrays[i], task, scope, resolve, reject);
+        	this.hamsterWheel(threadArrays[i], task, resolve, reject);
 		    } else {
-        	this.hamsterWheel(task.input.array, task, scope, resolve, reject);
+        	this.hamsterWheel(task.input.array, task, resolve, reject);
 		    }
         i += 1;
       }

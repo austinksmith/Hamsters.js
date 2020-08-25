@@ -30,8 +30,8 @@ describe("Hamsters Habitat", () => {
   });
 
   it("Logical Threads should be detected", () => {
-    expect(hamstersHabitat['logicalThreads']).not.toBe(null);
-    expect(hamstersHabitat['logicalThreads']).toEqual(4);
+    expect(hamstersHabitat['maxThreads']).not.toBe(null);
+    expect(hamstersHabitat['maxThreads']).toEqual(4);
   });
 
   it("Persistence should be boolean", () => {

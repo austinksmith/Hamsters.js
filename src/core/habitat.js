@@ -23,10 +23,11 @@ class habitat {
   constructor() {
     this.debug = false;
     this.importScripts = null;
+    this.maxThreads = this.determineGlobalThreads();
     this.memoize = false;
     this.persistence = true;
     this.legacy = this.isLegacyEnvironment();
-    this.legacyWheel = hamstersWheel.legacy,
+    this.legacyWheel = hamstersWheel.legacy;
     this.browser = this.isBrowser();
     this.webWorker = this.isWebWorker();
     this.node = this.isNode();
@@ -36,7 +37,6 @@ class habitat {
     this.atomics = this.supportsAtomicOperations();
     this.proxies = this.supportsProxies();
     this.isIE10 = !this.isNode() && !this.isReactNative() && this.isInternetExplorer(10);
-    this.logicalThreads = this.determineGlobalThreads();
     this.Worker = this.locateWorkerObject();
     this.sharedWorker = this.locateSharedWorkerObject();
     this.selectHamsterWheel = this.selectHamsterWheel;
