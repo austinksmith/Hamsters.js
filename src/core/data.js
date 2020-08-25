@@ -48,7 +48,7 @@ class data {
     if (hamstersHabitat.webWorker) {
       return hamster.port.postMessage(hamsterFood);
     }
-    let preparedTransfer = this.prepareTransferBuffers(hamsterFood, hamstersHabitat.transferrable);
+    let preparedTransfer = this.prepareTransferBuffers(hamsterFood);
     return hamster.postMessage(preparedTransfer['hamsterFood'], preparedTransfer['buffers']);
   }
 
@@ -58,19 +58,18 @@ class data {
   */
   prepareTransferBuffers(hamsterFood, transferrable) {
     let buffers = [];
-    let key = null;
-    let newBuffer = null;
-    if(transferrable) {
+    let key, newBuffer;
+    if(hamstersHabitat.transferrable) {
       for (key of Object.keys(hamsterFood)) {
-        if (hamsterFood.indexOf(key.toLowerCase()) !== -1) {
-          if(hamsterFood[key].buffer) {
-            newBuffer = hamsterFood[key].buffer;
-          } else if(Array.isArray(hamsterFood[key]) && typeof ArrayBuffer !== 'undefined') {
-            newBuffer = new ArrayBuffer(hamsterFood[key]);
-          }
-          if(newBuffer) {
-            hamsterFood[key] = newBuffer;
-          }
+        newBuffer = null;
+        if(hamsterFood[key].buffer) {
+          newBuffer = hamsterFood[key].buffer;
+        } else if(Array.isArray(hamsterFood[key]) && typeof ArrayBuffer !== 'undefined') {
+          newBuffer = new ArrayBuffer(hamsterFood[key]);
+        }
+        if(newBuffer) {
+          buffers.push(newBuffer);
+          hamsterFood[key] = newBuffer;
         }
       }
     }
