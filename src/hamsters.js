@@ -58,7 +58,7 @@ class hamstersjs {
         'browser', 'shell', 
         'node', 'debug',
         'persistence', 'importscripts',
-        'maxThreads'
+        'maxThreads', 'parentPort'
       ];
       let key = null;
       for (key of Object.keys(startOptions)) {

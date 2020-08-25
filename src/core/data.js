@@ -48,6 +48,9 @@ class data {
     if (hamstersHabitat.webWorker) {
       return hamster.port.postMessage(hamsterFood);
     }
+    if(hamstersHabitat.node && typeof hamstersHabitat.parentPort !== 'undefined') {
+      return hamsters.parentPort.postMessage(hamstersFood);
+    }
     let preparedTransfer = this.prepareTransferBuffers(hamsterFood);
     return hamster.postMessage(preparedTransfer['hamsterFood'], preparedTransfer['buffers']);
   }
