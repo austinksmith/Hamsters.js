@@ -32,9 +32,9 @@ class hamstersjs {
     this.pool = hamstersPool;
     this.logger = hamstersLogger;
     this.memoizer = hamstersMemoizer;
-    this.run = this.hamstersRun;
-    this.promise = this.hamstersPromise;
-    this.init = this.initializeLibrary;
+    this.run = hamstersRun;
+    this.promise = hamstersPromise;
+    this.init = initializeLibrary;
   }
 
   /**
@@ -76,7 +76,7 @@ class hamstersjs {
       }
     }
     // Ensure legacy mode is disabled when we pass a third party worker library
-    if(typeof this.habitat.Worker === 'function' && startOptions['legacy'] !== true) {
+    if(typeof this.habitat['Worker'] === 'function' && startOptions['legacy'] !== true) {
       this.habitat.legacy = false;
     }
   }
@@ -89,27 +89,31 @@ class hamstersjs {
   * @param {object} scope - Reference to main library context
   * @return {object} new Hamsters.js task
   */
-  hamstersTask(params, functionToRun, scope) {
-    this.id = scope.pool.tasks.length;
-    this.count = 0;
-    this.aggregate = (params.aggregate || false);
-    this.output = [];
-    this.workers = [];
-    this.memoize = (params.memoize || false);
-    this.dataType = (params.dataType ? params.dataType.toLowerCase() : null);
-    this.input = params;
+  hamstersTask(params, functionToRun) {
+    let newHamstersTaskId = this.pool.tasks.length;
+    let newHamstersTask = {
+      id: newHamstersTaskId,
+      count: 0,
+      aggregate: (params.aggregate || false),
+      output: [],
+      workers: [],
+      memoize: (params.memoize || false),
+      dataType: (params.dataType ? params.dataType.toLowerCase() : null),
+      input: params
+    };
     // Do not modify function if we're running on the main thread for legacy fallback
     if(scope.habitat.legacy) {
-      this.threads = 1;
-      this.input.hamstersJob = functionToRun;
+      newHamstersTask.threads = 1;
+      newHamstersTask.input.hamstersJob = functionToRun;
     } else {
-      this.threads = (params.threads || 1);
-      this.input.hamstersJob = scope.data.prepareJob(functionToRun);
+      newHamstersTask.threads = (params.threads || 1);
+      newHamstersTask.input.hamstersJob = this.data.prepareJob(functionToRun);
     }
+    return newHamstersTask;
   }
 
   scheduleTask(task, resolve, reject) {
-    this.pool.scheduleTask(task, this).then((results) => {
+    this.pool.scheduleTask(task).then((results) => {
       return resolve(results);
     }).catch((error) => {
       return hamstersLogger.error(error.messsage, reject);
@@ -125,7 +129,7 @@ class hamstersjs {
   */
   hamstersPromise(params, functionToRun) {
     return new Promise((resolve, reject) => {
-      let task = new this.hamstersTask(params, functionToRun, this);
+      let task = this.hamstersTask(params, functionToRun);
       this.scheduleTask(task, resolve, reject);
     });
   }
@@ -140,7 +144,7 @@ class hamstersjs {
   * @return {array} Results from functionToRun.
   */
   hamstersRun(params, functionToRun, onSuccess, onError) {
-    let task = new this.hamstersTask(params, functionToRun, this);
+    let task = this.hamstersTask(params, functionToRun);
     this.scheduleTask(task, onSuccess, onError);
   }
 }
