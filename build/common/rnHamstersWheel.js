@@ -1,4 +1,4 @@
-/* jshint esversion: 5, curly: true, eqeqeq: true, forin: true */
+/* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
 
 /***********************************************************************************
 * Title: Hamsters.js                                                               *
@@ -11,50 +11,45 @@
 
 import { self } from 'react-native-threads';
 
-(function () {
+self.params = {};
+self.rtn = {};
 
-   'use strict';
+var typedArrayFromBuffer = function(dataType, buffer) {
+  var types = {
+    'uint32': Uint32Array,
+    'uint16': Uint16Array,
+    'uint8': Uint8Array,
+    'uint8clamped': Uint8ClampedArray,
+    'int32': Int32Array,
+    'int16': Int16Array,
+    'int8': Int8Array,
+    'float32': Float32Array,
+    'float64': Float64Array
+  };
+  if (!types[dataType]) {
+    return buffer;
+  }
+  return new types[dataType](buffer);
+};
 
-    self.params = {};
-    self.rtn = {};
+var prepareReturn = function(returnObject) {
+  var dataType = returnObject.dataType;
+  if(dataType) {
+    returnObject.data = typedArrayFromBuffer(dataType, returnObject.data);
+  }
+  return JSON.stringify(returnObject);
+};
 
-    self.onmessage = function(incomingMessage) {
-      params = JSON.parse(incomingMessage.data);
-      rtn = {
-        data: [],
-        dataType: (params.dataType ? params.dataType.toLowerCase() : null)
-      };
-      if(params.importScripts) {
-        self.importScripts(params.importScripts);
-      }
-      new Function(params.hamstersJob)();
-      postMessage(prepareReturn(rtn));
-    };
+self.onmessage = function(incomingMessage) {
+  params = JSON.parse(incomingMessage.data);
+  rtn = {
+    data: [],
+    dataType: (params.dataType ? params.dataType.toLowerCase() : null)
+  };
+  if(params.importScripts) {
+    self.importScripts(params.importScripts);
+  }
+  new Function(params.hamstersJob)();
+  postMessage(prepareReturn(rtn));
+};
 
-    function prepareReturn(returnObject) {
-      var dataType = returnObject.dataType;
-      if(dataType) {
-        returnObject.data = typedArrayFromBuffer(dataType, returnObject.data);
-      }
-      return JSON.stringify(returnObject);
-    }
-
-    function typedArrayFromBuffer(dataType, buffer) {
-      var types = {
-        'uint32': Uint32Array,
-        'uint16': Uint16Array,
-        'uint8': Uint8Array,
-        'uint8clamped': Uint8ClampedArray,
-        'int32': Int32Array,
-        'int16': Int16Array,
-        'int8': Int8Array,
-        'float32': Float32Array,
-        'float64': Float64Array
-      };
-      if (!types[dataType]) {
-        return buffer;
-      }
-      return new types[dataType](buffer);
-    }
-
-}());
