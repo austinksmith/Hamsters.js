@@ -37,7 +37,7 @@ class wheel {
     self.rtn = {};
 
     addEventListener('connect', (incomingConnection) => {
-      const port = incomingConnection.ports[0];
+      let port = incomingConnection.ports[0];
       port.start();
       port.addEventListener('message', (incomingMessage) => {
         params = incomingMessage.data;
@@ -46,7 +46,7 @@ class wheel {
           dataType: params.dataType
         };
         if(params.importScripts) {
-          self.importScripts(params.importScripts);
+          self.importScripts(self.params.importScripts);
         }
         eval("(" + params.hamstersJob + ")")();
         port.postMessage(rtn);
@@ -93,27 +93,20 @@ class wheel {
       return new types[dataType](buffer);
     }
 
+    /**
+    * @function prepareTransferBuffers - Prepares transferrable buffers for faster message passing
+    * @param {object} hamsterFood - Message to send to thread
+    */
     function prepareTransferBuffers(hamsterFood) {
-      let buffers = [];
-      let key, newBuffer;
-      for (key of Object.keys(hamsterFood)) {
-        newBuffer = null;
-        if (hamsterFood[key]) {
-          if(hamsterFood[key].buffer) {
-            newBuffer = hamsterFood[key].buffer;
-          } else if(Array.isArray(hamsterFood[key]) && typeof ArrayBuffer !== 'undefined') {
-            newBuffer = new ArrayBuffer(hamsterFood[key]);
+      let key, buffers = [];
+      for(key in hamsterFood) {
+        if(hamsterFood.hasOwnProperty(key)) {
+          if(typeof hamsterFood[key].buffer !== 'undefined') {
+            buffers.push(hamsterFood[key].buffer);
           }
         }
-        if(newBuffer) {
-          buffers.push(newBuffer);
-          hamsterFood[key] = newBuffer;
-        }
       }
-      return {
-        hamsterFood: hamsterFood,
-        buffers: buffers
-      };
+      return buffers;
     }
 
     self.onmessage = function(incomingMessage) {
@@ -126,8 +119,8 @@ class wheel {
         self.importScripts(params.importScripts);
       }
       new Function(params.hamstersJob)();
-      let preparedTransfer = prepareTransferBuffers(prepareReturn(rtn));
-      postMessage(preparedTransfer['hamsterFood'], preparedTransfer['buffers']);
+      rtn = prepareReturn(rtn);
+      postMessage(rtn, prepareTransferBuffers(rtn));
     }
   }
 
@@ -137,7 +130,7 @@ class wheel {
   legacyScaffold(params, resolve) {
     setTimeout(() => {
       if(typeof self === 'undefined') {
-        var self = (global || window || this);
+        let self = (global || window || this);
       }
       self.params = params;
       self.rtn = {

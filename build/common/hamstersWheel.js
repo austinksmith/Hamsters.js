@@ -8,28 +8,42 @@
 * Copyright: 2015 Austin K. Smith - austin@asmithdev.com                           * 
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
+  'use strict';
 
-(function() {
+  const { parentPort } = require('worker_threads');
 
- 'use strict';
 
   if(typeof self === 'undefined') {
-    var self = (global || window || this);
+    let self = (global || window || this);
   }
 
   self.params = {};
   self.rtn = {};
 
-  function prepareReturn(returnObject) {
-    var dataType = returnObject.dataType;
+  self.onmessage = (incomingMessage) => {
+    params = incomingMessage.data;
+    rtn = {
+      data: [],
+      dataType: (params.dataType ? params.dataType.toLowerCase() : null)
+    };
+    if(params.importScripts) {
+      self.importScripts(self.params.importScripts);
+    }
+    new Function(params.hamstersJob)();
+    // let preparedTransfer = prepareTransferBuffers();
+    parentPort.postMessage(prepareReturn(prepareReturn(rtn));
+  };
+
+  prepareReturn = (returnObject) => {
+    let dataType = returnObject.dataType;
     if(dataType) {
       returnObject.data = typedArrayFromBuffer(dataType, returnObject.data);
     }
     return returnObject;
-  }
+  };
 
-  function typedArrayFromBuffer(dataType, buffer) {
-    var types = {
+  typedArrayFromBuffer = (dataType, buffer) => {
+    const types = {
       'uint32': Uint32Array,
       'uint16': Uint16Array,
       'uint8': Uint8Array,
@@ -44,9 +58,9 @@
       return buffer;
     }
     return new types[dataType](buffer);
-  }
+  };
 
-  function prepareTransferBuffers(hamsterFood) {
+  prepareTransferBuffers = (hamsterFood) => {
     let buffers = [];
     let key, newBuffer;
     for (key of Object.keys(hamsterFood)) {
@@ -67,19 +81,4 @@
       hamsterFood: hamsterFood,
       buffers: buffers
     };
-  }
-
-  self.onmessage = function(incomingMessage) {
-    params = incomingMessage.data;
-    rtn = {
-      data: [],
-      dataType: (params.dataType ? params.dataType.toLowerCase() : null)
-    };
-    if(params.importScripts) {
-      self.importScripts(params.importScripts);
-    }
-    new Function(params.hamstersJob)();
-    let preparedTransfer = prepareTransferBuffers(prepareReturn(rtn));
-    postMessage(prepareReturn(preparedTransfer['hamsterFood']), preparedTransfer['buffers']);
-  }
-}());
+  };

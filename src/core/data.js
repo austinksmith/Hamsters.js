@@ -51,35 +51,23 @@ class data {
     if(hamstersHabitat.node && typeof hamstersHabitat.parentPort !== 'undefined') {
       return hamsters.parentPort.postMessage(hamstersFood);
     }
-    let preparedTransfer = this.prepareTransferBuffers(hamsterFood);
-    return hamster.postMessage(preparedTransfer['hamsterFood'], preparedTransfer['buffers']);
+    return hamster.postMessage(hamsterFood, this.prepareTransferBuffers(hamsterFood));
   }
 
   /**
   * @function prepareTransferBuffers - Prepares transferrable buffers for faster message passing
   * @param {object} hamsterFood - Message to send to thread
   */
-  prepareTransferBuffers(hamsterFood, transferrable) {
-    let buffers = [];
-    let key, newBuffer;
-    if(hamstersHabitat.transferrable) {
-      for (key of Object.keys(hamsterFood)) {
-        newBuffer = null;
-        if(hamsterFood[key].buffer) {
-          newBuffer = hamsterFood[key].buffer;
-        } else if(Array.isArray(hamsterFood[key]) && typeof ArrayBuffer !== 'undefined') {
-          newBuffer = new ArrayBuffer(hamsterFood[key]);
-        }
-        if(newBuffer) {
-          buffers.push(newBuffer);
-          hamsterFood[key] = newBuffer;
+  prepareTransferBuffers(hamsterFood) {
+    let key, buffers = [];
+    for(key in hamsterFood) {
+      if(hamsterFood.hasOwnProperty(key)) {
+        if(typeof hamsterFood[key].buffer !== 'undefined') {
+          buffers.push(hamsterFood[key].buffer);
         }
       }
     }
-    return {
-      hamsterFood: hamsterFood,
-      buffers: buffers
-    };
+    return buffers;
   }
 
   /**
