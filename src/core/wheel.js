@@ -27,11 +27,7 @@ class wheel {
   * @function workerScaffold - Provides worker body for library functionality when used within a worker [threads inside threads]
   */
   workerScaffold() {
-    'use strict';
-
-    if(typeof self === 'undefined') {
-      self = (global || window || this);
-    }
+    var self = (self || window || global || this);
 
     self.params = {};
     self.rtn = {};
@@ -58,24 +54,12 @@ class wheel {
   * @function workerScaffold - Provides worker body for library functionality
   */
   regularScaffold() {
-    'use strict';
-
-    if(typeof self === 'undefined') {
-      let self = (global || window || this);
-    }
+    var self = (self || window || global || this);
 
     self.params = {};
     self.rtn = {};
 
-    function prepareReturn(returnObject) {
-      let dataType = returnObject.dataType;
-      if(dataType) {
-        returnObject.data = typedArrayFromBuffer(dataType, returnObject.data);
-      }
-      return returnObject;
-    }
-
-    function typedArrayFromBuffer(dataType, buffer) {
+    const typedArrayFromBuffer = (dataType, buffer) => {
       const types = {
         'uint32': Uint32Array,
         'uint16': Uint16Array,
@@ -91,13 +75,17 @@ class wheel {
         return buffer;
       }
       return new types[dataType](buffer);
-    }
+    };
 
-    /**
-    * @function prepareTransferBuffers - Prepares transferrable buffers for faster message passing
-    * @param {object} hamsterFood - Message to send to thread
-    */
-    function prepareTransferBuffers(hamsterFood) {
+    const prepareReturn = (returnObject) => {
+      let dataType = returnObject.dataType;
+      if(dataType) {
+        returnObject.data = typedArrayFromBuffer(dataType, returnObject.data);
+      }
+      return returnObject;
+    };
+
+    const prepareTransferBuffers = (hamsterFood) => {
       let key, buffers = [];
       for(key in hamsterFood) {
         if(hamsterFood.hasOwnProperty(key)) {
@@ -107,9 +95,9 @@ class wheel {
         }
       }
       return buffers;
-    }
+    };
 
-    self.onmessage = function(incomingMessage) {
+    self.onmessage = (incomingMessage) => {
       params = incomingMessage.data;
       rtn = {
         data: [],
@@ -121,7 +109,7 @@ class wheel {
       new Function(params.hamstersJob)();
       rtn = prepareReturn(rtn);
       postMessage(rtn, prepareTransferBuffers(rtn));
-    }
+    };
   }
 
   /**
@@ -129,9 +117,7 @@ class wheel {
   */
   legacyScaffold(params, resolve) {
     setTimeout(() => {
-      if(typeof self === 'undefined') {
-        let self = (global || window || this);
-      }
+      var self = (self || window || global || this);
       self.params = params;
       self.rtn = {
         data: []

@@ -30,8 +30,7 @@
       self.importScripts(self.params.importScripts);
     }
     new Function(params.hamstersJob)();
-    // let preparedTransfer = prepareTransferBuffers();
-    parentPort.postMessage(prepareReturn(prepareReturn(rtn));
+    parentPort.postMessage(prepareReturn(rtn));
   };
 
   prepareReturn = (returnObject) => {
