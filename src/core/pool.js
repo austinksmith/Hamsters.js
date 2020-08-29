@@ -102,8 +102,7 @@ class pool {
       return new hamstersHabitat.SharedWorker(newWheel, 'SharedHamsterWheel');
     }
     if(hamstersHabitat.node && typeof hamstersHabitat.parentPort !== 'undefined') {
-      console.log(newWheel);
-      return new hamstersHabitat.Worker();
+      return new hamstersHabitat.Worker(newWheel, { eval: true });
     }
     return new hamstersHabitat.Worker(newWheel);
   }
