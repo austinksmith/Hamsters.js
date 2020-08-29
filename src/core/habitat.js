@@ -191,7 +191,7 @@ class habitat {
       return hamstersWheel.worker;
     }
     if (this.node) {
-      return hamstersWheel.regular;
+      return './node_modules/hamsters.js/build/common/hamstersWheel.js';
     }
     return hamstersData.generateWorkerBlob(hamstersWheel.regular);
   }
