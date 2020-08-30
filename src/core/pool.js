@@ -102,9 +102,9 @@ class pool {
     if (hamstersHabitat.webWorker) {
       return new hamstersHabitat.SharedWorker(newWheel, 'SharedHamsterWheel');
     }
-    // if(hamstersHabitat.node && typeof hamstersHabitat.parentPort !== 'undefined') {
-    //   return new hamstersHabitat.Worker();
-    // }
+    if(hamstersHabitat.node && typeof hamstersHabitat.parentPort !== 'undefined') {
+      return new hamstersHabitat.Worker();
+    }
     return new hamstersHabitat.Worker(newWheel);
   }
 
@@ -172,7 +172,7 @@ class pool {
   * @param {function} resolve - onSuccess method
   */
   returnOutputAndRemoveTask(task, resolve) {
-    let output = hamstersData.getOutput(task, hamstersHabitat.transferrable);
+    let output = hamstersData.getOutput(task);
     if (task.sort) {
       output = hamstersData.sortOutput(output, task.sort);
     }
@@ -259,8 +259,4 @@ class pool {
   }
 }
 
-var hamstersPool = new pool();
-
-if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamstersPool;
-}
+export default new pool();

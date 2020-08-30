@@ -6,7 +6,7 @@
   "version": "5.2.3",
   "main": "build/hamsters.node.min.js",
   "scripts": {
-    "build": "rm -rf ./build && webpack --config ./hamsters.webpack.config.js && npm run copy-common",
+    "build": "npm run test && rm -rf ./build && webpack --config ./hamsters.webpack.config.js && npm run copy-common",
     "copy-common": "mkdir ./build/common && cp -a ./src/core/common/. ./build/common/",
     "test": "karma start --reporters dots",
     "push": "git push origin && git push gitlab && git push bitbucket"

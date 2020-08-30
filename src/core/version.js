@@ -11,11 +11,17 @@
 
 'use strict';
 
-const majorVersion = 5;
-const minorVersion = 2;
-const patchVersion = 3;
-const hamstersVersion = `${majorVersion}.${minorVersion}.${patchVersion}`;
+class version {
+	constructor() {
+		this.majorVersion = 5;
+		this.minorVersion = 2;
+		this.patchVersion = 3;
+		this.current = this.getHamstersVersion();
+	}
 
-if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamstersVersion;
+	getHamstersVersion() {
+		return `${this.majorVersion}.${this.minorVersion}.${this.patchVersion}`;
+	}
 }
+
+export default new version();

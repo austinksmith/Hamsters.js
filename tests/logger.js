@@ -27,9 +27,9 @@ describe("Hamsters Logger", () => {
     expect(hamstersLogger.logBook.warning.length).toEqual(0);
   });
 
-  it("LogBook Info should be an empty array", () => {
-    expect(hamstersLogger.logBook.info).toEqual([]);
-    expect(hamstersLogger.logBook.info.length).toEqual(0);
+  it("LogBook Info should be a non empty array", () => {
+    expect(hamstersLogger.logBook.info[0]).toContain('Initialized using');
+    expect(hamstersLogger.logBook.info.length).toEqual(1);
   });
 
   it("LogBook Error should save to error array", () => {
@@ -39,9 +39,9 @@ describe("Hamsters Logger", () => {
   });
 
   it("LogBook Info should save to info array", () => {
-    expect(hamstersLogger.logBook.info.length).toEqual(0);
-    hamstersLogger.info('The hamster we need but dont deserve');
     expect(hamstersLogger.logBook.info.length).toEqual(1);
+    hamstersLogger.info('The hamster we need but dont deserve');
+    expect(hamstersLogger.logBook.info.length).toEqual(2);
   });
 
   it("LogBook Warning should save to warning array", () => {

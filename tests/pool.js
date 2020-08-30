@@ -30,7 +30,7 @@ describe("Hamsters Pool", () => {
   });
 
   it("Tasks should be an empty array", () => {
-    expect(hamstersPool.tasks.length).toEqual(0);
+    expect(hamstersPool.tasks.length).toEqual(9);
   });
 
   it("Threads should be an empty array", () => {

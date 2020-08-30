@@ -12,7 +12,6 @@
 'use strict';
 
 class wheel {
-
   /**
   * @constructor
   * @function constructor - Sets properties for this class
@@ -121,10 +120,6 @@ class wheel {
       resolve(rtn);
     }, 4); //4ms delay (HTML5 spec minimum), simulate threading
   }
-};
-
-var hamstersWheel = new wheel();
-
-if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamstersWheel;
 }
+
+export default new wheel();

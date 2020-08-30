@@ -20,11 +20,7 @@ class logger {
   * @function constructor - Sets properties for this class
   */
   constructor() {
-    this.logBook = {
-      error: [], 
-      warning: [], 
-      info: []
-    };
+    this.logBook = {error: [], warning: [], info: []};
     this.info = this.infoLog;
     this.warning = this.warningLog;
     this.error = this.errorLog;
@@ -56,7 +52,7 @@ class logger {
   }
 
   generateTimeStampedMessage(type, message) {
-    let record = `Hamsters.js v${hamstersVersion} ${type}: ${message} @ ${Date.now()}`
+    let record = `Hamsters.js v${hamstersVersion.current} ${type}: ${message} @ ${Date.now()}`
     this.saveLogEntry(type.toLowerCase(), record);
     return record;
   }
@@ -117,8 +113,4 @@ class logger {
   }   
 }
 
-var hamstersLogger = new logger();
-
-if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamstersLogger;
-}
+export default new logger();

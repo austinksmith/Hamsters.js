@@ -71,8 +71,4 @@ class memoizer {
   }
 }
 
-var hamstersMemoizer = new memoizer();
-
-if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamstersMemoizer;
-}
+export default new memoizer();

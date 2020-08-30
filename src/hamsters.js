@@ -18,8 +18,6 @@ import hamstersData from './core/data';
 import hamstersLogger from './core/logger';
 import hamstersMemoizer from './core/memoizer';
 
-let hamsters = null;
-
 class hamstersjs {
 
   /**
@@ -27,7 +25,7 @@ class hamstersjs {
   * @function constructor - Sets properties for this class
   */
   constructor() {
-    this.version = hamstersVersion;
+    this.version = hamstersVersion.current;
     this.init = this.initializeLibrary;
   }
 
@@ -152,10 +150,4 @@ class hamstersjs {
   }
 }
 
-if(!hamsters) {
-  hamsters = new hamstersjs();
-}
-
-if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamsters;
-}
+export default new hamstersjs();

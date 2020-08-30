@@ -99,8 +99,8 @@ class data {
   * @param {string} dataType - Typed array type for this task
   * @param {object} buffer - Buffer to convert
   */
-  processDataType(dataType, buffer, transferrable) {
-    if(transferrable) {
+  processDataType(dataType, buffer) {
+    if(hamstersHabitat.transferrable) {
       return this.typedArrayFromBuffer(dataType, buffer);
     }
     return buffer;
@@ -110,9 +110,12 @@ class data {
   * @function prepareOutput - Prepares final task output
   * @param {task} buffer - Task to prepare output for
   */
-  prepareOutput(task, transferrable) {
-    if(task.aggregate && task.threads !== 1) {
-      return this.aggregateThreadOutputs(task.output, task.dataType, transferrable);
+  prepareOutput(task) {
+    if(task.threads === 1) {
+      return task.output[0];
+    }
+    if(task.aggregate) {
+      return this.aggregateThreadOutputs(task.output, task.dataType);
     }
     return task.output;
   }
@@ -218,8 +221,8 @@ class data {
   * @param {array} input - Array of arrays to aggregate
   * @param {string} dataType - Data type to use for typed array
   */
-  aggregateThreadOutputs(input, dataType, transferrable) {
-    if(!dataType || !transferrable) {
+  aggregateThreadOutputs(input, dataType) {
+    if(!dataType || !hamstersHabitat.transferrable) {
       return input.reduce(function(a, b) {
         return a.concat(b);
       });
@@ -230,7 +233,7 @@ class data {
     for (i; i < len; i += 1) {
       bufferLength += input[i].length;
     }
-    let output = this.processDataType(dataType, bufferLength, transferrable);
+    let output = this.processDataType(dataType, bufferLength);
     let offset = 0;
     for (i = 0; i < len; i += 1) {
       output.set(input[i], offset);
@@ -261,8 +264,4 @@ class data {
   }
 }
 
-var hamstersData = new data();
-
-if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamstersData;
-}
+export default new data();

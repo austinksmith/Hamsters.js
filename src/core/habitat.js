@@ -198,8 +198,4 @@ class habitat {
   }
 }
 
-var hamstersHabitat = new habitat();
-
-if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamstersHabitat;
-}
+export default new habitat();

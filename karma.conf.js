@@ -29,8 +29,8 @@ module.exports = (config) => {
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
     logLevel: config.LOG_DEBUG,
     captureTimeout: 60000,
-    singleRun: false,
-    autoWatch: true,
+    singleRun: true,
+    autoWatch: false,
     // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
     reporters: ['dots', 'progress', 'html', 'coverage', 'junit'],
     htmlReporter: {
