@@ -18,6 +18,8 @@ import hamstersData from './core/data';
 import hamstersLogger from './core/logger';
 import hamstersMemoizer from './core/memoizer';
 
+let hamsters = null;
+
 class hamstersjs {
 
   /**
@@ -51,14 +53,11 @@ class hamstersjs {
     if (typeof startOptions !== 'undefined') {
       // Add options to override library environment behavior
       let habitatKeys = [
-        'worker', 'sharedworker',
-        'legacy', 'webworker',
-        'reactnative', 'atomics',
-        'proxies', 'transferrable',
-        'browser', 'shell', 
-        'node', 'debug',
-        'persistence', 'importscripts',
-        'maxThreads', 'parentPort'
+        'worker', 'sharedworker', 'legacy',
+        'webworker', 'reactnative', 'atomics',
+        'proxies', 'transferrable', 'browser',
+        'shell', 'node', 'debug', 'persistence',
+        'importscripts', 'maxthreads', 'messageport'
       ];
       let key = null;
       for (key of Object.keys(startOptions)) {
@@ -153,7 +152,9 @@ class hamstersjs {
   }
 }
 
-var hamsters = new hamstersjs();
+if(!hamsters) {
+  hamsters = new hamstersjs();
+}
 
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
   module.exports = hamsters;

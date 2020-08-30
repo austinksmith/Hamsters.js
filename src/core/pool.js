@@ -15,6 +15,7 @@ import hamstersData from './data';
 import hamstersHabitat from './habitat';
 import hamstersLogger from './logger';
 
+
 class pool {
 	
   /**
@@ -101,10 +102,9 @@ class pool {
     if (hamstersHabitat.webWorker) {
       return new hamstersHabitat.SharedWorker(newWheel, 'SharedHamsterWheel');
     }
-    if(hamstersHabitat.node && typeof hamstersHabitat.parentPort !== 'undefined') {
-      console.log(newWheel);
-      return new hamstersHabitat.Worker();
-    }
+    // if(hamstersHabitat.node && typeof hamstersHabitat.parentPort !== 'undefined') {
+    //   return new hamstersHabitat.Worker();
+    // }
     return new hamstersHabitat.Worker(newWheel);
   }
 
@@ -259,8 +259,8 @@ class pool {
   }
 }
 
-var hamsterPool = new pool();
+var hamstersPool = new pool();
 
 if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamsterPool;
+  module.exports = hamstersPool;
 }

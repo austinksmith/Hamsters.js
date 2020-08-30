@@ -9,8 +9,6 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-const { parentPort } = require('worker_threads');
-
 this.params = {};
 this.rtn = {};
 
@@ -52,7 +50,7 @@ const prepareTransferBuffers = (hamsterFood) => {
   return buffers;
 };
 
-self.onmessage = (incomingMessage) => {
+this.onmessage = (incomingMessage) => {
   params = incomingMessage.data;
   rtn = {
     data: [],
@@ -63,6 +61,6 @@ self.onmessage = (incomingMessage) => {
   }
   new Function(params.hamstersJob)();
   rtn = prepareReturn(rtn);
-  parentPort.postMessage(rtn, prepareTransferBuffers(rtn));
+  postMessage(rtn, prepareTransferBuffers(rtn));
 };
 

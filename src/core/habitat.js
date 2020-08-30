@@ -23,6 +23,7 @@ class habitat {
   constructor() {
     this.debug = false;
     this.importScripts = null;
+    this.MessagePort = null;
     this.maxThreads = this.determineGlobalThreads();
     this.memoize = false;
     this.persistence = true;

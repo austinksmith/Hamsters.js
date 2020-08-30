@@ -38,7 +38,7 @@ var prepareReturn = function(returnObject) {
   return JSON.stringify(returnObject);
 };
 
-self.onmessage = function(incomingMessage) {
+this.onmessage = function(incomingMessage) {
   params = JSON.parse(incomingMessage.data);
   rtn = {
     data: [],

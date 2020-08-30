@@ -48,8 +48,8 @@ class data {
     if (hamstersHabitat.webWorker) {
       return hamster.port.postMessage(hamsterFood);
     }
-    if(hamstersHabitat.node && typeof hamstersHabitat.parentPort !== 'undefined') {
-      return hamsters.parentPort.postMessage(hamstersFood);
+    if(hamstersHabitat.node) {
+      return hamster.postMessage(hamsterFood);
     }
     return hamster.postMessage(hamsterFood, this.prepareTransferBuffers(hamsterFood));
   }
