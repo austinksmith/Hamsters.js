@@ -27,10 +27,8 @@ class wheel {
   * @function workerScaffold - Provides worker body for library functionality when used within a worker [threads inside threads]
   */
   workerScaffold() {
-    var self = (self || window || global || this);
-
-    self.params = {};
-    self.rtn = {};
+    this.params = {};
+    this.rtn = {};
 
     addEventListener('connect', (incomingConnection) => {
       let port = incomingConnection.ports[0];
@@ -42,7 +40,7 @@ class wheel {
           dataType: params.dataType
         };
         if(params.importScripts) {
-          self.importScripts(self.params.importScripts);
+          this.importScripts(params.importScripts);
         }
         eval("(" + params.hamstersJob + ")")();
         port.postMessage(rtn);
@@ -54,10 +52,8 @@ class wheel {
   * @function workerScaffold - Provides worker body for library functionality
   */
   regularScaffold() {
-    var self = (self || window || global || this);
-
-    self.params = {};
-    self.rtn = {};
+    this.params = {};
+    this.rtn = {};
 
     const typedArrayFromBuffer = (dataType, buffer) => {
       const types = {
@@ -97,14 +93,14 @@ class wheel {
       return buffers;
     };
 
-    self.onmessage = (incomingMessage) => {
+    this.onmessage = (incomingMessage) => {
       params = incomingMessage.data;
       rtn = {
         data: [],
         dataType: (params.dataType ? params.dataType.toLowerCase() : null)
       };
       if(params.importScripts) {
-        self.importScripts(params.importScripts);
+        this.importScripts(params.importScripts);
       }
       new Function(params.hamstersJob)();
       rtn = prepareReturn(rtn);
@@ -117,9 +113,8 @@ class wheel {
   */
   legacyScaffold(params, resolve) {
     setTimeout(() => {
-      var self = (self || window || global || this);
-      self.params = params;
-      self.rtn = {
+      this.params = params;
+      this.rtn = {
         data: []
       };
       params.hamstersJob();

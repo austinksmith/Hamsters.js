@@ -11,10 +11,8 @@
 
 const { parentPort } = require('worker_threads');
 
-var self = (self || this || window || global);
-
-self.params = {};
-self.rtn = {};
+this.params = {};
+this.rtn = {};
 
 const prepareReturn = (returnObject) => {
   let dataType = returnObject.dataType;
@@ -61,7 +59,7 @@ self.onmessage = (incomingMessage) => {
     dataType: (params.dataType ? params.dataType.toLowerCase() : null)
   };
   if(params.importScripts) {
-    self.importScripts(self.params.importScripts);
+    this.importScripts(params.importScripts);
   }
   new Function(params.hamstersJob)();
   rtn = prepareReturn(rtn);

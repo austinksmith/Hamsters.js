@@ -9,10 +9,8 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-import { self } from 'react-native-threads';
-
-self.params = {};
-self.rtn = {};
+this.params = {};
+this.rtn = {};
 
 var typedArrayFromBuffer = function(dataType, buffer) {
   var types = {
@@ -47,7 +45,7 @@ self.onmessage = function(incomingMessage) {
     dataType: (params.dataType ? params.dataType.toLowerCase() : null)
   };
   if(params.importScripts) {
-    self.importScripts(params.importScripts);
+    this.importScripts(params.importScripts);
   }
   new Function(params.hamstersJob)();
   postMessage(prepareReturn(rtn));
