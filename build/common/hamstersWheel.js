@@ -44,7 +44,7 @@ const prepareTransferBuffers = (hamsterFood) => {
   let key, buffers = [];
   for(key in hamsterFood) {
     if(hamsterFood.hasOwnProperty(key)) {
-      if(typeof hamsterFood[key].buffer !== 'undefined') {
+      if(hamsterFood[key] && typeof hamsterFood[key].buffer !== 'undefined') {
         buffers.push(hamsterFood[key].buffer);
       }
     }

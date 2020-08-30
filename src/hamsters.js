@@ -47,7 +47,7 @@ class hamstersjs {
   * @param {object} startOptions - Provided library functionality options
   */
   processStartOptions(startOptions) {
-    let legacyMode= false;
+    let legacyMode = false;
     if (typeof startOptions !== 'undefined') {
       // Add options to override library environment behavior
       let habitatKeys = [
