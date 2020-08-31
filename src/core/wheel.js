@@ -122,4 +122,4 @@ class wheel {
   }
 }
 
-export default new wheel();
+export const hamstersWheel =  new wheel();

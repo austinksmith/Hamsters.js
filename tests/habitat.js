@@ -9,7 +9,7 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-import hamstersHabitat from '../src/core/habitat';
+import { hamstersHabitat } from '../src/core/habitat';
 
 describe("Hamsters Habitat", () => {
 

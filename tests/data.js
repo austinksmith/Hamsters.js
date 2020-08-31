@@ -9,7 +9,7 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-import hamstersData from '../src/core/data';
+import { hamstersData } from '../src/core/data';
 
 describe("Hamsters Data", () => {
 

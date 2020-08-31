@@ -9,7 +9,7 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-import hamstersMemoizer from '../src/core/memoizer';
+import { hamstersMemoizer } from '../src/core/memoizer';
 
 describe("Hamsters Memoizer", () => {
 

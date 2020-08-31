@@ -9,7 +9,7 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-import hamsters from '../src/hamsters';
+import { hamsters } from '../src/hamsters';
 
 describe("Hamsters.js", () => {
   it("Init should initialize library and be removed", () => {

@@ -24,4 +24,4 @@ class version {
 	}
 }
 
-export default new version();
+export const hamstersVersion = new version();

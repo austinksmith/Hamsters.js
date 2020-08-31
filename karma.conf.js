@@ -14,16 +14,16 @@ module.exports = (config) => {
     browsers: ['PhantomJS'],
     files: [
       { 
-        pattern: 'tests.webpack.js', 
-        watched: false 
+        pattern: 'tests.webpack.js',
+        watched: false
       },
       'node_modules/babel-polyfill/dist/polyfill.js'
     ],
     frameworks: [
-      'jasmine',
+      'jasmine'
     ],
     preprocessors: {
-      'tests.webpack.js': ['webpack'],
+      'tests.webpack.js': ['webpack']
     },
     colors: true,
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG

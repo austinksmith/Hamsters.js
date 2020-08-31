@@ -11,8 +11,8 @@
 
 'use strict';
 
-import hamstersHabitat from './habitat';
-import hamstersLogger from './logger';
+import { hamstersHabitat } from './habitat';
+import { hamstersLogger } from './logger';
 
 class data {
 
@@ -264,4 +264,4 @@ class data {
   }
 }
 
-export default new data();
+export const hamstersData = new data();

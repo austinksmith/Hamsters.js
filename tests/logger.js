@@ -9,7 +9,7 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-import hamstersLogger from '../src/core/logger';
+import { hamstersLogger } from '../src/core/logger';
 
 describe("Hamsters Logger", () => {
 

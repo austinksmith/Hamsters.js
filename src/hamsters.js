@@ -11,12 +11,12 @@
 
 'use strict';
 
-import hamstersVersion from './core/version';
-import hamstersHabitat from './core/habitat';
-import hamstersPool from './core/pool';
-import hamstersData from './core/data';
-import hamstersLogger from './core/logger';
-import hamstersMemoizer from './core/memoizer';
+import { hamstersVersion } from './core/version';
+import { hamstersHabitat } from './core/habitat';
+import { hamstersPool } from './core/pool';
+import { hamstersData } from './core/data';
+import { hamstersLogger } from './core/logger';
+import { hamstersMemoizer } from './core/memoizer';
 
 class hamstersjs {
 
@@ -150,4 +150,4 @@ class hamstersjs {
   }
 }
 
-export default new hamstersjs();
+export let hamsters = new hamstersjs();

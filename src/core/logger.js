@@ -11,7 +11,7 @@
 
 'use strict';
 
-import hamstersVersion from './version';
+import { hamstersVersion } from './version';
 
 class logger {
 
@@ -113,4 +113,4 @@ class logger {
   }   
 }
 
-export default new logger();
+export const hamstersLogger = new logger();

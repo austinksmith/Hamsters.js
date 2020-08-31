@@ -11,9 +11,9 @@
 
 'use strict';
 
-import hamstersData from './data';
-import hamstersHabitat from './habitat';
-import hamstersLogger from './logger';
+import { hamstersData } from './data';
+import { hamstersHabitat } from './habitat';
+import { hamstersLogger } from './logger';
 
 
 class pool {
@@ -259,4 +259,4 @@ class pool {
   }
 }
 
-export default new pool();
+export const hamstersPool = new pool();

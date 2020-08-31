@@ -71,4 +71,4 @@ class memoizer {
   }
 }
 
-export default new memoizer();
+export const hamstersMemoizer = new memoizer();

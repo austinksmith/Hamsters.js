@@ -9,7 +9,7 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-import hamstersPool from '../src/core/pool';
+import { hamstersPool } from '../src/core/pool';
 
 describe("Hamsters Pool", () => {
 

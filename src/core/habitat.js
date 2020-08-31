@@ -11,8 +11,8 @@
 
 'use strict';
 
-import hamstersData from './data';
-import hamstersWheel from './wheel';
+import { hamstersData } from './data';
+import { hamstersWheel } from './wheel';
 
 class habitat {
 
@@ -198,4 +198,4 @@ class habitat {
   }
 }
 
-export default new habitat();
+export let hamstersHabitat = new habitat();

@@ -9,7 +9,7 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-import hamstersWheel from '../src/core/wheel';
+import { hamstersWheel } from '../src/core/wheel';
 
 describe("Hamsters Wheel", () => {
 
