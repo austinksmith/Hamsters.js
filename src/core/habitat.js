@@ -33,7 +33,7 @@ class habitat {
     this.node = this.isNode();
     this.reactNative = this.isReactNative();
     this.shell = this.isShell();
-    this.transferrable = this.supportsTransferrableObjects();
+    this.transferable = this.supportstransferableObjects();
     this.atomics = this.supportsAtomicOperations();
     this.proxies = this.supportsProxies();
     this.isIE10 = !this.isNode() && !this.isReactNative() && this.isInternetExplorer(10);
@@ -147,7 +147,7 @@ class habitat {
   supportsSharedWorkers() {
     let supports = false;
     try {
-      let workerBlob = hamstersData.generateBlob();
+      let workerBlob = this.data.generateBlob();
       let SharedHamster = new this.SharedWorker(workerBlob, 'SharedHamsterWheel');
       supports = true;
     } catch (e) {
@@ -157,9 +157,9 @@ class habitat {
   }
 
   /**
-  * @function supportsTransferrableObjects - Detects if execution environment supports typed arrays
+  * @function supportstransferableObjects - Detects if execution environment supports typed arrays
   */
-  supportsTransferrableObjects() {
+  supportstransferableObjects() {
     return typeof Uint8Array !== 'undefined';
   }
 

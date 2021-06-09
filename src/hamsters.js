@@ -27,6 +27,24 @@ class hamstersjs {
   constructor() {
     this.version = hamstersVersion;
     this.init = this.initializeLibrary;
+    this.habitat = hamstersHabitat;
+    this.maxThreads = this.habitat.maxThreads;
+    this.data = hamstersData;
+    this.pool = hamstersPool;
+    this.logger = hamstersLogger;
+    this.memoizer = hamstersMemoizer;
+    this.run = this.hamstersRun.bind(this);
+    this.promise = this.hamstersPromise.bind(this);
+    this.habitatKeys = [
+      'worker','sharedworker',
+      'legacy','proxies',
+      'reactnative','atomics',
+      'transferable','browser',
+      'shell','node','debug',
+      'persistence','importscripts',
+      'maxThreads', 'parentPort',
+      'webworker',
+    ];
   }
 
   /**
@@ -35,11 +53,12 @@ class hamstersjs {
   */
   initializeLibrary(startOptions) {
     this.processStartOptions(startOptions);
-    if(!hamstersHabitat.legacy && hamstersHabitat.persistence === true) {
-      hamstersPool.spawnHamsters(hamstersHabitat.maxThreads);
+    if(!this.habitat.legacy && this.habitat.persistence === true) {
+      hamstersPool.spawnHamsters(this.habitat.maxThreads);
     }
-    hamstersLogger.info(`Initialized using up to ${hamstersHabitat.maxThreads} threads.`);
+    hamstersLogger.info(`Initialized using up to ${this.habitat.maxThreads} threads.`);
     delete this.init;
+    delete this.habitatKeys;
   }
 
   /**
@@ -47,43 +66,19 @@ class hamstersjs {
   * @param {object} startOptions - Provided library functionality options
   */
   processStartOptions(startOptions) {
-    let legacyMode= false;
     if (typeof startOptions !== 'undefined') {
-      // Add options to override library environment behavior
-      let habitatKeys = [
-        'worker', 'sharedworker',
-        'legacy', 'webworker',
-        'reactnative', 'atomics',
-        'proxies', 'transferrable',
-        'browser', 'shell', 
-        'node', 'debug',
-        'persistence', 'importscripts',
-        'maxThreads', 'parentPort'
-      ];
-      let key = null;
-      for (key of Object.keys(startOptions)) {
-        if (habitatKeys.indexOf(key.toLowerCase()) !== -1) {
-          hamstersHabitat[key] = startOptions[key];
+      for (var key of Object.keys(startOptions)) {
+        if (this.habitatKeys.indexOf(key.toLowerCase()) !== -1) {
+          this.habitat[key] = startOptions[key];
         } else {
           this[key] = startOptions[key];
         }
       }
-      if(startOptions['legacy'] === true) {
-        legacyMode = true;
-      }
     }
     // Ensure legacy mode is disabled when we pass a third party worker library
-    if(typeof hamstersHabitat['Worker'] === 'function' && !legacyMode) {
-      hamstersHabitat.legacy = false;
+    if(typeof this.habitat['Worker'] === 'function') {
+      this.habitat.legacy = false;
     }
-    // Finished initializing, add methods & imports
-    this.habitat = hamstersHabitat;
-    this.maxThreads = hamstersHabitat.maxThreads;
-    this.data = hamstersData;
-    this.logger = hamstersLogger;
-    this.memoizer = hamstersMemoizer;
-    this.run = this.hamstersRun;
-    this.promise = this.hamstersPromise;
   }
 
   /**
@@ -94,10 +89,11 @@ class hamstersjs {
   * @return {object} new Hamsters.js task
   */
   hamstersTask(params, functionToRun) {
-    let newHamstersTaskId = hamstersPool.tasks.length;
-    let newHamstersTask = {
-      id: newHamstersTaskId,
+    params.hamstersJob = (this.habitat.legacy ? functionToRun : this.data.prepareJob(functionToRun));
+    return {
+      id: this.pool.tasks.length,
       count: 0,
+      threads: (this.habitat.legacy ? 1 : (params.threads || 1)),
       aggregate: (params.aggregate || false),
       output: [],
       workers: [],
@@ -105,22 +101,13 @@ class hamstersjs {
       dataType: (params.dataType ? params.dataType.toLowerCase() : null),
       input: params
     };
-    // Do not modify function if we're running on the main thread for legacy fallback
-    if(hamstersHabitat.legacy) {
-      newHamstersTask.threads = 1;
-      newHamstersTask.input.hamstersJob = functionToRun;
-    } else {
-      newHamstersTask.threads = (params.threads || 1);
-      newHamstersTask.input.hamstersJob = hamstersData.prepareJob(functionToRun);
-    }
-    return newHamstersTask;
   }
 
   scheduleTask(task, resolve, reject) {
-    hamstersPool.scheduleTask(task).then((results) => {
+    this.pool.scheduleTask(task).then((results) => {
       return resolve(results);
     }).catch((error) => {
-      return hamstersLogger.error(error.messsage, reject);
+      return this.logger.error(error.messsage, reject);
     });
   }
 

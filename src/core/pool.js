@@ -102,7 +102,6 @@ class pool {
       return new hamstersHabitat.SharedWorker(newWheel, 'SharedHamsterWheel');
     }
     if(hamstersHabitat.node && typeof hamstersHabitat.parentPort !== 'undefined') {
-      console.log(newWheel);
       return new hamstersHabitat.Worker();
     }
     return new hamstersHabitat.Worker(newWheel);
@@ -172,7 +171,7 @@ class pool {
   * @param {function} resolve - onSuccess method
   */
   returnOutputAndRemoveTask(task, resolve) {
-    let output = hamstersData.getOutput(task, hamstersHabitat.transferrable);
+    let output = hamstersData.getOutput(task, hamstersHabitat.transferable);
     if (task.sort) {
       output = hamstersData.sortOutput(output, task.sort);
     }

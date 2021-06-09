@@ -78,8 +78,8 @@ describe("Hamsters Habitat", () => {
     expect(hamstersHabitat['shell']).toMatch(/true|false/);
   });
   
-  it("Transferrable should be boolean", () => {
-    expect(hamstersHabitat['transferrable']).toMatch(/true|false/);
+  it("transferable should be boolean", () => {
+    expect(hamstersHabitat['transferable']).toMatch(/true|false/);
   });
 
   it("Proxies should be boolean", () => {

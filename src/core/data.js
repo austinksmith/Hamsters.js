@@ -56,13 +56,13 @@ class data {
   }
 
   /**
-  * @function prepareTransferBuffers - Prepares transferrable buffers for faster message passing
+  * @function prepareTransferBuffers - Prepares transferable buffers for faster message passing
   * @param {object} hamsterFood - Message to send to thread
   */
-  prepareTransferBuffers(hamsterFood, transferrable) {
+  prepareTransferBuffers(hamsterFood, transferable) {
     let buffers = [];
     let key, newBuffer;
-    if(hamstersHabitat.transferrable) {
+    if(hamstersHabitat.transferable) {
       for (key of Object.keys(hamsterFood)) {
         newBuffer = null;
         if(hamsterFood[key].buffer) {
@@ -83,7 +83,7 @@ class data {
   }
 
   /**
-  * @function prepareFunction - Prepares transferrable buffers for faster message passing
+  * @function prepareFunction - Prepares transferable buffers for faster message passing
   * @param {function} functionBody - Message to send to thread
   */
   prepareFunction(functionBody) {
@@ -111,8 +111,8 @@ class data {
   * @param {string} dataType - Typed array type for this task
   * @param {object} buffer - Buffer to convert
   */
-  processDataType(dataType, buffer, transferrable) {
-    if(transferrable) {
+  processDataType(dataType, buffer, transferable) {
+    if(transferable) {
       return this.typedArrayFromBuffer(dataType, buffer);
     }
     return buffer;
@@ -122,9 +122,9 @@ class data {
   * @function prepareOutput - Prepares final task output
   * @param {task} buffer - Task to prepare output for
   */
-  prepareOutput(task, transferrable) {
+  prepareOutput(task, transferable) {
     if(task.aggregate && task.threads !== 1) {
-      return this.aggregateThreadOutputs(task.output, task.dataType, transferrable);
+      return this.aggregateThreadOutputs(task.output, task.dataType, transferable);
     }
     return task.output;
   }
@@ -230,8 +230,8 @@ class data {
   * @param {array} input - Array of arrays to aggregate
   * @param {string} dataType - Data type to use for typed array
   */
-  aggregateThreadOutputs(input, dataType, transferrable) {
-    if(!dataType || !transferrable) {
+  aggregateThreadOutputs(input, dataType, transferable) {
+    if(!dataType || !transferable) {
       return input.reduce(function(a, b) {
         return a.concat(b);
       });
@@ -242,7 +242,7 @@ class data {
     for (i; i < len; i += 1) {
       bufferLength += input[i].length;
     }
-    let output = this.processDataType(dataType, bufferLength, transferrable);
+    let output = this.processDataType(dataType, bufferLength, transferable);
     let offset = 0;
     for (i = 0; i < len; i += 1) {
       output.set(input[i], offset);

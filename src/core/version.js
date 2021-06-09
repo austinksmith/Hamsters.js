@@ -12,8 +12,8 @@
 'use strict';
 
 const majorVersion = 5;
-const minorVersion = 1;
-const patchVersion = 3;
+const minorVersion = 2;
+const patchVersion = 1;
 const hamstersVersion = `${majorVersion}.${minorVersion}.${patchVersion}`;
 
 if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
