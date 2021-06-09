@@ -24,46 +24,44 @@ You can find a view examples of the library in action using the links below.
 
 [Collatz Conjecture](https://www.hamsters.io/examples/collatzconjecture)
 
-[Square Root](https://www.hamsters.io/examples/squareroot)
+[Square Root](https://www.hamsters.io/examples/square-root)
 
-# How to use Hamsters.js
 
-You can find information on how to make use of the library using the wiki links below.
+# Installing Hamsters
 
-[Installing Hamsters.js](https://www.hamsters.io/wiki#installing-hamsters)
+[HTML](https://www.hamsters.io/wiki/html)
 
-[Getting Started](https://www.hamsters.io/wiki#getting-started)
+[ReactNative](https://www.hamsters.io/wiki/react-native)
 
-[Restructoring Standard Functions](https://www.hamsters.io/wiki#restructuring-standard-functions)
+[Node.js](https://www.hamsters.io/wiki/node)
 
-[Promises](https://www.hamsters.io/wiki#promises)
 
-[Sorting](https://www.hamsters.io/wiki#sorting)
+# Using Hamsters
 
-[Persistence](https://www.hamsters.io/wiki#persistence)
+[Initializing](https://www.hamsters.io/wiki/initializing)
 
-[Memoization](https://www.hamsters.io/wiki#memoization)
+[The Basics](https://www.hamsters.io/wiki/basics)
 
-[Transferable  Objects](https://www.hamsters.io/wiki#transferable-objects)
+[Restructoring Standard Functions](https://www.hamsters.io/wiki/restructuring)
 
-[Limitations](https://www.hamsters.io/wiki#limitations)
+[Promises](https://www.hamsters.io/wiki/promises)
 
-[Performance Considerations](https://www.hamsters.io/wiki#performance-considerations)
+[Sorting](https://www.hamsters.io/wiki/sorting)
 
-[Debugging](https://www.hamsters.io/wiki#debugging)
+[Persistence](https://www.hamsters.io/wiki/persistence)
 
-[Tested Devices & Browsers](https://www.hamsters.io/wiki#tested-devices-amp-browsers)
+[Transferable  Objects](https://www.hamsters.io/wiki/transferables)
+
+[Debugging](https://www.hamsters.io/wiki/debugging)
+
+[Limitations](https://www.hamsters.io/wiki/limitations)
 
 
 # Support Hamsters.js
 
-Your support makes projects like this possible.
+Any support you can provide means a world of difference for projects like Hamsters.js, creating high quality software can be a time consuming and expensive process, especially a project as ambitious as this one.
 
-## Contributors
-
-This project exists thanks to all the people who contribute. [Contribute to Hamsters.js](CONTRIBUTING.md)
-<a href="https://github.com/austinksmith/Hamsters.js/graphs/contributors"><img src="https://opencollective.com/hamstersjs/contributors.svg?width=890" /></a>
-
+Please support continued efforts to provide updates like optimizing for the latest and greatest features and computer hardware. Multiple donation types are accepted including OpenCollective, PayPal, and various crypto currencies on the [Hamsters.js donation page](https://www.hamsters.io/donate)
 
 ## Backers
 
