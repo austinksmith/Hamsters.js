@@ -28,11 +28,11 @@ class hamstersjs {
     this.version = hamstersVersion;
     this.init = this.initializeLibrary;
     this.habitat = hamstersHabitat;
-    this.maxThreads = this.habitat.maxThreads;
     this.data = hamstersData;
     this.pool = hamstersPool;
     this.logger = hamstersLogger;
     this.memoizer = hamstersMemoizer;
+    this.scheduleTask = this.scheduleTask;
     this.run = this.hamstersRun.bind(this);
     this.promise = this.hamstersPromise.bind(this);
     this.habitatKeys = [
@@ -56,9 +56,8 @@ class hamstersjs {
     if(!this.habitat.legacy && this.habitat.persistence === true) {
       hamstersPool.spawnHamsters(this.habitat.maxThreads);
     }
+    this.maxThreads = this.habitat.maxThreads;
     hamstersLogger.info(`Initialized using up to ${this.habitat.maxThreads} threads.`);
-    delete this.init;
-    delete this.habitatKeys;
   }
 
   /**
@@ -120,8 +119,7 @@ class hamstersjs {
   */
   hamstersPromise(params, functionToRun) {
     return new Promise((resolve, reject) => {
-      let task = this.hamstersTask(params, functionToRun);
-      this.scheduleTask(task, resolve, reject);
+      this.scheduleTask(this.hamstersTask(params, functionToRun), resolve, reject);
     });
   }
 
@@ -135,8 +133,7 @@ class hamstersjs {
   * @return {array} Results from functionToRun.
   */
   hamstersRun(params, functionToRun, onSuccess, onError) {
-    let task = this.hamstersTask(params, functionToRun);
-    this.scheduleTask(task, onSuccess, onError);
+    this.scheduleTask(this.hamstersTask(params, functionToRun), onSuccess, onError);
   }
 }
 

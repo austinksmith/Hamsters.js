@@ -24,7 +24,6 @@ class data {
     this.randomArray = this.randomArray;
     this.aggregateArrays = this.aggregateThreadOutputs;
     this.splitArrays = this.splitArrayIntoSubArrays;
-    this.createBlob = this.createDataBlob;
     this.generateWorkerBlob = this.generateWorkerBlob;
     this.processDataType = this.processDataType;
     this.sortOutput = this.sortArray;
@@ -83,27 +82,15 @@ class data {
   }
 
   /**
-  * @function prepareFunction - Prepares transferable buffers for faster message passing
+  * @function prepareFunction - Prepares function for thread, strips whitespace
   * @param {function} functionBody - Message to send to thread
   */
   prepareFunction(functionBody) {
-    functionBody = String(functionBody);
-    if (!hamstersHabitat.webWorker) {
-      let startingIndex = (functionBody.indexOf("{") + 1);
-      let endingIndex = (functionBody.length - 1);
-      return functionBody.substring(startingIndex, endingIndex);
+    if(hamstersHabitat.webWorker) {
+      return functionBody;
     }
-    return functionBody;
-  }
-
-  /**
-  * @function generateWorkerBlob - Creates blob uri for flexible scaffold loading
-  * @param {function} workerLogic - Scaffold to use within worker thread
-  */
-  generateWorkerBlob(workerLogic) {
-    let hamsterBlob = this.createDataBlob('(' + String(workerLogic) + ')();');
-    let dataBlobURL = URL.createObjectURL(hamsterBlob);
-    return dataBlobURL;
+    let functionString = String(functionBody);
+    return functionString.substring((functionString.indexOf("{") + 1), (functionString.length -1));
   }
 
   /**
@@ -123,10 +110,12 @@ class data {
   * @param {task} buffer - Task to prepare output for
   */
   prepareOutput(task, transferable) {
-    if(task.aggregate && task.threads !== 1) {
+    if(task.threads === 1) {
+      return task.output[0];
+    }
+    if(task.aggregate) {
       return this.aggregateThreadOutputs(task.output, task.dataType, transferable);
     }
-    return task.output;
   }
 
   /**
@@ -157,58 +146,20 @@ class data {
   */
   typedArrayFromBuffer(dataType, buffer) {
     const types = {
-      'uint32': Uint32Array,
-      'uint16': Uint16Array,
-      'uint8': Uint8Array,
-      'uint8clamped': Uint8ClampedArray,
-      'int32': Int32Array,
-      'int16': Int16Array,
-      'int8': Int8Array,
-      'float32': Float32Array,
-      'float64': Float64Array
+      'Uint32': Uint32Array,
+      'Uint16': Uint16Array,
+      'Uint8': Uint8Array,
+      'Uint8clamped': Uint8ClampedArray,
+      'Int32': Int32Array,
+      'Int16': Int16Array,
+      'Int8': Int8Array,
+      'Float32': Float32Array,
+      'Float64': Float64Array
     };
     if(!types[dataType]) {
       return dataType;
     }
     return new types[dataType](buffer);
-  }
-
-
-  /**
-  * @function createDataBlob - Attempts to locate data blob builder, vender prefixes galore
-  */
-  locateBlobBuilder() {
-    if(typeof BlobBuilder !== 'undefined') {
-      return BlobBuilder;
-    }
-    if(typeof WebKitBlobBuilder !== 'undefined') {
-      return WebKitBlobBuilder;
-    }
-    if(typeof MozBlobBuilder !== 'undefined') {
-      return MozBlobBuilder;
-    }
-    if(typeof MSBlobBuilder !== 'undefined') {
-      return MSBlobBuilder;
-    }
-    return hamstersLogger.error('Environment does not support data blobs!');
-  }
-
-  /**
-  * @function createDataBlob - Creates new data blob from textContent
-  * @param {string} textContent - Provided text content for blob
-  */
-  createDataBlob(textContent) {
-    if(typeof Blob === 'undefined') {
-      let BlobMaker = this.locateBlobBuilder();
-      let blob = new BlobMaker();
-      blob.append([textContent], {
-        type: 'application/javascript'
-      });
-      return blob.getBlob();
-    }
-    return new Blob([textContent], {
-      type: 'application/javascript'
-    });
   }
 
   /**

@@ -20,11 +20,6 @@ describe("Hamsters Data", () => {
     });
   });
 
-  it("locateBlobBuilder should return string", () => {
-    let builder = hamstersData.locateBlobBuilder();
-    expect(typeof builder).toBe('string');
-  });
-
   it("prepareJob should convert function to string", () => {
     let preparedJob = hamstersData.prepareJob(() => {
       console.log('pay no attention to the hamster behind the curtain');
@@ -42,24 +37,11 @@ describe("Hamsters Data", () => {
     expect(hamstersData.splitArrays([1,2, 3, 4], 4)).toEqual([[1],[2], [3], [4]]);
   });
 
-  it("createBlob should create dataBlob", () => {
-    let dataBlob = hamstersData.createBlob('hamsters just want to have fun');
-    expect((typeof dataBlob)).toEqual('object');
-  });
-
-  it("generateBlob should generate blob with object url", () => {
-    let dataBlobURI = hamstersData.generateWorkerBlob(() => {
-      console.log('one hamster to rule them all');
-    });
-    expect(dataBlobURI).not.toEqual(null);
-    expect(typeof dataBlobURI).toEqual('string');
-  });
-
   it("processDataType should convert buffer into array", () => {
     let tempArray = new Int32Array(1, 2, 3, 4, 5, 6, 7, 8);
     let tempBuffer = tempArray.buffer;
     expect(typeof tempBuffer.reduce).toBe('undefined');
-    let convertedArray = hamstersData.processDataType('int32', tempBuffer, true);
+    let convertedArray = hamstersData.processDataType('Int32', tempBuffer, true);
     expect(typeof convertedArray.reduce).toBe('function');
   });
 

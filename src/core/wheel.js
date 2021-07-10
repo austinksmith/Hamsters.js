@@ -27,12 +27,6 @@ class wheel {
   * @function workerScaffold - Provides worker body for library functionality when used within a worker [threads inside threads]
   */
   workerScaffold() {
-    'use strict';
-
-    if(typeof self === 'undefined') {
-      self = (global || window || this);
-    }
-
     self.params = {};
     self.rtn = {};
 
@@ -45,9 +39,6 @@ class wheel {
           data: [],
           dataType: params.dataType
         };
-        if(params.importScripts) {
-          self.importScripts(params.importScripts);
-        }
         eval("(" + params.hamstersJob + ")")();
         port.postMessage(rtn);
       }, false);
@@ -58,34 +49,43 @@ class wheel {
   * @function workerScaffold - Provides worker body for library functionality
   */
   regularScaffold() {
-    'use strict';
-
-    if(typeof self === 'undefined') {
-      let self = (global || window || this);
-    }
-
     self.params = {};
     self.rtn = {};
-
-    function prepareReturn(returnObject) {
-      let dataType = returnObject.dataType;
-      if(dataType) {
-        returnObject.data = typedArrayFromBuffer(dataType, returnObject.data);
-      }
-      return returnObject;
+    self.preparedTransfer = {};
+    self.onmessage = function(message) {
+      params = message.data;
+      rtn = {
+        data: [],
+        dataType: (typeof params.dataType !== 'undefined' ? params.dataType : null)
+      };
+      putHamsterToWork();
     }
 
-    function typedArrayFromBuffer(dataType, buffer) {
+    var putHamsterToWork = function() {
+      new Function(params.hamstersJob)();
+      returnResponse(rtn);
+    }
+
+    var returnResponse = function(rtn) {
+      if(rtn.dataType) {
+        rtn.data = typedArrayFromBuffer(rtn.dataType, rtn.data);
+        prepareTransferBuffers(rtn, []);
+      } else {
+        return postMessage(rtn);
+      }
+    }
+
+    var typedArrayFromBuffer = function(dataType, buffer) {
       const types = {
-        'uint32': Uint32Array,
-        'uint16': Uint16Array,
-        'uint8': Uint8Array,
-        'uint8clamped': Uint8ClampedArray,
-        'int32': Int32Array,
-        'int16': Int16Array,
-        'int8': Int8Array,
-        'float32': Float32Array,
-        'float64': Float64Array
+        'Uint32': Uint32Array,
+        'Uint16': Uint16Array,
+        'Uint8': Uint8Array,
+        'Uint8clamped': Uint8ClampedArray,
+        'Int32': Int32Array,
+        'Int16': Int16Array,
+        'Int8': Int8Array,
+        'Float32': Float32Array,
+        'Float64': Float64Array
       };
       if (!types[dataType]) {
         return buffer;
@@ -93,41 +93,18 @@ class wheel {
       return new types[dataType](buffer);
     }
 
-    function prepareTransferBuffers(hamsterFood) {
-      let buffers = [];
-      let key, newBuffer;
-      for (key of Object.keys(hamsterFood)) {
-        newBuffer = null;
-        if (hamsterFood[key]) {
-          if(hamsterFood[key].buffer) {
-            newBuffer = hamsterFood[key].buffer;
-          } else if(Array.isArray(hamsterFood[key]) && typeof ArrayBuffer !== 'undefined') {
-            newBuffer = new ArrayBuffer(hamsterFood[key]);
+    var prepareTransferBuffers = function(rtn, buffers) {
+      Object.keys(rtn).forEach(function(key) {
+        var item = rtn[key];
+        if(typeof item.buffer !== 'undefined') {
+          buffers.push(item.buffer);
+        } else {
+          if(Array.isArray(rtn[key]) && typeof ArrayBuffer !== 'undefined') {
+            buffers.push(new ArrayBuffer(rtn[key]));
           }
         }
-        if(newBuffer) {
-          buffers.push(newBuffer);
-          hamsterFood[key] = newBuffer;
-        }
-      }
-      return {
-        hamsterFood: hamsterFood,
-        buffers: buffers
-      };
-    }
-
-    self.onmessage = function(incomingMessage) {
-      params = incomingMessage.data;
-      rtn = {
-        data: [],
-        dataType: (params.dataType ? params.dataType.toLowerCase() : null)
-      };
-      if(params.importScripts) {
-        self.importScripts(params.importScripts);
-      }
-      new Function(params.hamstersJob)();
-      let preparedTransfer = prepareTransferBuffers(prepareReturn(rtn));
-      postMessage(preparedTransfer['hamsterFood'], preparedTransfer['buffers']);
+      });
+      return postMessage(rtn, buffers);
     }
   }
 
@@ -136,17 +113,15 @@ class wheel {
   */
   legacyScaffold(params, resolve) {
     setTimeout(() => {
-      if(typeof self === 'undefined') {
-        var self = (global || window || this);
-      }
-      self.params = params;
-      self.rtn = {
+      this.params = params;
+      this.rtn = {
         data: []
       };
       params.hamstersJob();
       resolve(rtn);
     }, 4); //4ms delay (HTML5 spec minimum), simulate threading
   }
+
 };
 
 var hamstersWheel = new wheel();

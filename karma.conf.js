@@ -13,9 +13,9 @@ module.exports = (config) => {
     // - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
     browsers: ['PhantomJS'],
     files: [
-      { 
+      {
         pattern: 'tests.webpack.js', 
-        watched: false 
+        watched: true
       },
       'node_modules/babel-polyfill/dist/polyfill.js'
     ],

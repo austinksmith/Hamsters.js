@@ -21,10 +21,6 @@ describe("Hamsters Habitat", () => {
     expect(hamstersHabitat.isLegacyEnvironment()).toEqual(false);
   });
 
-  it("isLegacyDevice should return boolean", () => {
-    expect(hamstersHabitat.isLegacyDevice()).toMatch(/true|false/);
-  });
-
   it("supportsSharedWorkers should be boolean", () => {
     expect(hamstersHabitat.supportsSharedWorkers()).toMatch(/true|false/);
   });
@@ -95,6 +91,19 @@ describe("Hamsters Habitat", () => {
     expect(hamstersHabitat['legacyWheel']).not.toBe(null);
     expect(options.indexOf(typeof hamstersHabitat['legacyWheel'])).not.toBe(-1);
   });
+
+  it("locateBlobBuilder should return string", () => {
+    let builder = hamstersHabitat.locateBlobBuilder();
+    expect(typeof builder).toBe('string');
+  });
+
+  it("generateBlob should generate blob with object url", () => {
+    let dataBlobURI = hamstersHabitat.generateWorkerBlob(() => {
+      console.log('one hamster to rule them all');
+    });
+    expect(dataBlobURI).not.toEqual(null);
+    expect(typeof dataBlobURI).toEqual('string');
+  });
   
   it("Worker should be an object or function", () => {
     const options = ['object', 'function'];
@@ -108,8 +117,8 @@ describe("Hamsters Habitat", () => {
     expect(options.indexOf(typeof hamstersHabitat['sharedWorker'])).not.toBe(-1);
   });
 
-  it("SelectHamsterWheel should be a function", () => {
-    expect(typeof hamstersHabitat.selectHamsterWheel).toEqual('function');
+  it("SelectHamsterWheel should have a value", () => {
+    expect(typeof hamstersHabitat.selectHamsterWheel).not.toBe(null);
   });
 
 });

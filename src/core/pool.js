@@ -97,14 +97,13 @@ class pool {
   * @return {object} WebWorker - New WebWorker thread using selected scaffold
   */
   spawnHamster() {
-    let newWheel = hamstersHabitat.selectHamsterWheel();
     if (hamstersHabitat.webWorker) {
-      return new hamstersHabitat.SharedWorker(newWheel, 'SharedHamsterWheel');
+      return new hamstersHabitat.SharedWorker(hamstersHabitat.hamsterWheel, 'SharedHamsterWheel');
     }
     if(hamstersHabitat.node && typeof hamstersHabitat.parentPort !== 'undefined') {
-      return new hamstersHabitat.Worker();
+      return new hamstersHabitat.Worker(hamstersHabitat.hamsterWheel);
     }
-    return new hamstersHabitat.Worker(newWheel);
+    return new hamstersHabitat.Worker(hamstersHabitat.hamsterWheel);
   }
 
   /**
@@ -142,7 +141,7 @@ class pool {
     if(hamstersHabitat.legacy) {
       hamstersHabitat.legacyWheel(hamsterFood, resolve, reject);
     } else {
-      this.trainHamster(task.count, task, hamster, resolve, reject);
+      this.trainHamster(this, task.count, task, hamster, resolve, reject);
       hamstersData.feedHamster(hamster, hamsterFood);
     }
     task.count += 1; //Increment count, thread is running
@@ -175,10 +174,15 @@ class pool {
     if (task.sort) {
       output = hamstersData.sortOutput(output, task.sort);
     }
-    this.tasks[task.id] = null; //Clean up our task, not needed any longer
     resolve({
       data: output
     });
+    this.tasks[task.id] = null; //Clean up our task, not needed any longer
+  }
+
+  removeFromRunning(task, threadId) {
+    this.running.splice(this.running.indexOf(threadId), 1); //Remove thread from running pool
+    task.workers.splice(task.workers.indexOf(threadId), 1); //Remove thread from task running pool
   }
 
   /**
@@ -190,30 +194,23 @@ class pool {
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
-  trainHamster(threadId, task, hamster, resolve, reject) {
-    let pool = this;
+  trainHamster(pool, threadId, task, hamster, resolve, reject) {
     // Handle successful response from a thread
-    function onThreadResponse(message) {
-      let results = message.data;
-      pool.running.splice(pool.running.indexOf(threadId), 1); //Remove thread from running pool
-    	task.workers.splice(task.workers.indexOf(threadId), 1); //Remove thread from task running pool
-      // String only communcation for rn...in 2k18
-      if(hamstersHabitat.reactNative) {
-        task.output[threadId] = JSON.parse(results.data);
-      } else {
-        task.output[threadId] = results.data;
-      }
+    let onThreadResponse = function(message) {
+      pool.removeFromRunning(task, threadId);
+      task.output[threadId] = (hamstersHabitat.reactNative ? JSON.parse(message.data.data) : message.data.data);
       if (task.workers.length === 0 && task.count === task.threads) {
         pool.returnOutputAndRemoveTask(task, resolve);
       }
       if (pool.pending.length !== 0) {
-        pool.processQueue(pool.pending.shift(), hamster);
-      } else if (!hamstersHabitat.persistence && !hamstersHabitat.webWorker) {
+        return pool.processQueue(pool.pending.shift(), hamster);
+      }
+      if (!hamstersHabitat.persistence && !hamstersHabitat.webWorker) {
         hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
       }
     }
     // Handle error response from a thread
-    function onThreadError(error) {
+    let onThreadError = function(error) {
       hamstersLogger.errorFromThread(error, reject);
     }
     // Register on message/error handlers
