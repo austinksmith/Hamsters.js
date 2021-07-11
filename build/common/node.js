@@ -1,4 +1,4 @@
-/* jshint esversion: 5, curly: true, eqeqeq: true, forin: true */
+/* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
 
 /***********************************************************************************
 * Title: Hamsters.js                                                               *
@@ -9,33 +9,33 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
+const { Worker, parentPort } = require('worker_threads');
+
 (function() {
-  self.params = {};
-  self.rtn = {};
-  self.onmessage = function(message) {
-    self.params = message.data;
-    self.rtn = {
+
+  global.rtn = {};
+  global.params = {};
+
+  parentPort.once('message', (message) => {
+    global.params = message;
+    global.rtn = {
       data: [],
       dataType: (typeof params.dataType !== 'undefined' ? params.dataType : null)
     };
-    putHamsterToWork();
-  }
-
-  var putHamsterToWork = function() {
-    new Function(params.hamstersJob)();
+    eval(params.hamstersJob);
     returnResponse(rtn);
-  }
+  });
 
-  var returnResponse = function(rtn) {
+  const returnResponse = function(rtn) {
     if(rtn.dataType) {
       rtn.data = typedArrayFromBuffer(rtn.dataType, rtn.data);
       prepareTransferBuffers(rtn, []);
     } else {
-      return postMessage(rtn);
+      return parentPort.postMessage(rtn);
     }
   }
 
-  var typedArrayFromBuffer = function(dataType, buffer) {
+  const typedArrayFromBuffer = function(dataType, buffer) {
     const types = {
       'Uint32': Uint32Array,
       'Uint16': Uint16Array,
@@ -53,9 +53,9 @@
     return new types[dataType](buffer);
   }
 
-  var prepareTransferBuffers = function(rtn, buffers) {
+  const prepareTransferBuffers = function(rtn, buffers) {
     Object.keys(rtn).forEach(function(key) {
-      var item = rtn[key];
+      let item = rtn[key];
       if(typeof item.buffer !== 'undefined') {
         buffers.push(item.buffer);
       } else {
@@ -64,6 +64,6 @@
         }
       }
     });
-    return postMessage(rtn, buffers);
+    return parentPort.postMessage(rtn, buffers);
   }
 }());

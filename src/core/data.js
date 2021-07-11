@@ -24,7 +24,6 @@ class data {
     this.randomArray = this.randomArray;
     this.aggregateArrays = this.aggregateThreadOutputs;
     this.splitArrays = this.splitArrayIntoSubArrays;
-    this.generateWorkerBlob = this.generateWorkerBlob;
     this.processDataType = this.processDataType;
     this.sortOutput = this.sortArray;
     this.getOutput = this.prepareOutput;
@@ -47,8 +46,8 @@ class data {
     if (hamstersHabitat.webWorker) {
       return hamster.port.postMessage(hamsterFood);
     }
-    if(hamstersHabitat.node && typeof hamstersHabitat.parentPort !== 'undefined') {
-      return hamsters.parentPort.postMessage(hamstersFood);
+    if(hamstersHabitat.node) {
+      return hamster.parentPort.postMessage(hamstersFood);
     }
     let preparedTransfer = this.prepareTransferBuffers(hamsterFood);
     return hamster.postMessage(preparedTransfer['hamsterFood'], preparedTransfer['buffers']);

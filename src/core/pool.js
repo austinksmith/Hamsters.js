@@ -197,6 +197,7 @@ class pool {
   trainHamster(pool, threadId, task, hamster, resolve, reject) {
     // Handle successful response from a thread
     let onThreadResponse = function(message) {
+      console.log("WE HAVE A RESPONSE!! ", message);
       pool.removeFromRunning(task, threadId);
       task.output[threadId] = (hamstersHabitat.reactNative ? JSON.parse(message.data.data) : message.data.data);
       if (task.workers.length === 0 && task.count === task.threads) {
@@ -218,7 +219,8 @@ class pool {
       hamster.port.onmessage = onThreadResponse;
       hamster.port.onmessageerror = onThreadError;
       hamster.port.onerror = onThreadError;
-    } else if(hamstersHabitat.node && typeof hamstersHabitat.parentPort !== 'undefined') {
+    } else if(hamstersHabitat.node) {
+      console.log("ITS NODE!! ", hamster.parentPort, hamstersHabitat.parentPort);
       hamster.parentPort.onmessage = onThreadResponse;
       hamstersHabitat.parentPort.onmessageerror = onThreadError;
       hamstersHabitat.onerror = onThreadError;

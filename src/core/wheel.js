@@ -11,6 +11,7 @@
 
 'use strict';
 
+
 class wheel {
 
   /**
@@ -108,18 +109,18 @@ class wheel {
     }
   }
 
+
+
   /**
   * @function legacyScaffold - Provides library functionality for legacy devices
   */
   legacyScaffold(params, resolve) {
-    setTimeout(() => {
-      this.params = params;
-      this.rtn = {
-        data: []
-      };
-      params.hamstersJob();
-      resolve(rtn);
-    }, 4); //4ms delay (HTML5 spec minimum), simulate threading
+    var rtn = {
+      data: [],
+      dataType: (params['dataType'] || null)
+    };
+    params.hamstersJob(params, rtn);
+    resolve(rtn);
   }
 
 };

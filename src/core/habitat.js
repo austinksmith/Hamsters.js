@@ -56,7 +56,6 @@ class habitat {
     if(this.node && typeof os !== 'undefined') {
       max = os.cpus().length;
     }
-    console.log("MAX! ", max);
     return max;
   }
 
@@ -218,13 +217,13 @@ class habitat {
   */
   selectHamsterWheel() {
     if(this.isIE10) {
-      return './common/hamstersWheel.js';
+      return '../common/hamstersWheel.js';
     }
     if(this.reactNative) {
-      return './common/rnHamstersWheel.js';
+      return '../common/reactNative.js';
     }
     if (this.node) {
-      return './node_modules/hamsters.js/build/common/hamstersWheel.js';
+      return './node_modules/hamsters.js/build/common/node.js';
     }
     return this.generateWorkerBlob(hamstersWheel.regular);
   }

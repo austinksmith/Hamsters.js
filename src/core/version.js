@@ -12,7 +12,7 @@
 'use strict';
 
 const majorVersion = 5;
-const minorVersion = 2;
+const minorVersion = 3;
 const patchVersion = 1;
 const hamstersVersion = `${majorVersion}.${minorVersion}.${patchVersion}`;
 
