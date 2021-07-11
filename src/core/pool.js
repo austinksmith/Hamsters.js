@@ -141,8 +141,8 @@ class pool {
     if(hamstersHabitat.legacy) {
       hamstersHabitat.legacyWheel(hamsterFood, resolve, reject);
     } else {
-      this.trainHamster(this, task.count, task, hamster, resolve, reject);
-      hamstersData.feedHamster(hamster, hamsterFood);
+      this.trainHamster(this, hamstersHabitat, task.count, task, hamster, resolve, reject);
+      hamstersData.feedHamster(hamstersHabitat, hamster, hamsterFood);
     }
     task.count += 1; //Increment count, thread is running
   }
@@ -194,38 +194,38 @@ class pool {
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
-  trainHamster(pool, threadId, task, hamster, resolve, reject) {
+  trainHamster(pool, habitat, threadId, task, hamster, resolve, reject) {
     // Handle successful response from a thread
     let onThreadResponse = function(message) {
       pool.removeFromRunning(task, threadId);
-      task.output[threadId] = (hamstersHabitat.reactNative ? JSON.parse(message.data.data) : message.data.data);
+      task.output[threadId] = (habitat.reactNative ? JSON.parse(message.data) : message.data);
       if (task.workers.length === 0 && task.count === task.threads) {
         pool.returnOutputAndRemoveTask(task, resolve);
       }
       if (pool.pending.length !== 0) {
         return pool.processQueue(pool.pending.shift(), hamster);
       }
-      if (!hamstersHabitat.persistence && !hamstersHabitat.webWorker) {
+      if (!habitat.persistence && !habitat.webWorker) {
         hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
       }
     }
     // Handle error response from a thread
     let onThreadError = function(error) {
-      hamstersLogger.errorFromThread(error, reject);
+      reject(error);
     }
     // Register on message/error handlers
-    if (hamstersHabitat.webWorker) {
+    if (habitat.webWorker) {
       hamster.port.onmessage = onThreadResponse;
       hamster.port.onmessageerror = onThreadError;
       hamster.port.onerror = onThreadError;
-    } else if(hamstersHabitat.node) {
-      hamster.parentPort.onmessage = onThreadResponse;
-      hamstersHabitat.parentPort.onmessageerror = onThreadError;
-      hamstersHabitat.onerror = onThreadError;
+    } else if(habitat.node) {
+      hamster.once('message', onThreadResponse);
+      hamster.once('onmessageerror', onThreadError);
+      hamster.once('error', onThreadError);
     } else {
       hamster.onmessage = onThreadResponse;
       hamster.onmessageerror = onThreadError;
-      hamster.onerror = onThreadError;
+      hamster.error = onThreadError;
     }
   }
 

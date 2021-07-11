@@ -11,7 +11,6 @@
 
 'use strict';
 
-import hamstersHabitat from './habitat';
 import hamstersLogger from './logger';
 
 class data {
@@ -36,20 +35,14 @@ class data {
   * @param {worker} hamster - Thread to message
   * @param {object} hamsterFood - Message to send to thread
   */  
-  messageWorker(hamster, hamsterFood) {
+  messageWorker(hamstersHabitat, hamster, hamsterFood) {
     if(hamstersHabitat.reactNative) {
-      return hamster.postMessage(JSON.stringify(hamsterFood));
-    }
-    if (hamstersHabitat.ie10) {
-      return hamster.postMessage(hamsterFood);
+      hamster.postMessage(JSON.stringify(hamsterFood));
     }
     if (hamstersHabitat.webWorker) {
-      return hamster.port.postMessage(hamsterFood);
+      hamster.port.postMessage(hamsterFood);
     }
-    if(hamstersHabitat.node) {
-      return hamster.parentPort.postMessage(hamstersFood);
-    }
-    let preparedTransfer = this.prepareTransferBuffers(hamsterFood);
+    let preparedTransfer = this.prepareTransferBuffers(hamsterFood, []);
     return hamster.postMessage(preparedTransfer['hamsterFood'], preparedTransfer['buffers']);
   }
 
@@ -57,23 +50,17 @@ class data {
   * @function prepareTransferBuffers - Prepares transferable buffers for faster message passing
   * @param {object} hamsterFood - Message to send to thread
   */
-  prepareTransferBuffers(hamsterFood, transferable) {
-    let buffers = [];
-    let key, newBuffer;
-    if(hamstersHabitat.transferable) {
-      for (key of Object.keys(hamsterFood)) {
-        newBuffer = null;
-        if(hamsterFood[key].buffer) {
-          newBuffer = hamsterFood[key].buffer;
-        } else if(Array.isArray(hamsterFood[key]) && typeof ArrayBuffer !== 'undefined') {
-          newBuffer = new ArrayBuffer(hamsterFood[key]);
-        }
-        if(newBuffer) {
-          buffers.push(newBuffer);
-          hamsterFood[key] = newBuffer;
+  prepareTransferBuffers(hamsterFood, buffers) {
+    Object.keys(hamsterFood).forEach(function(key) {
+      let item = hamsterFood[key];
+      if(typeof item.buffer !== 'undefined') {
+        buffers.push(item.buffer);
+      } else {
+        if(Array.isArray(hamsterFood[key]) && typeof ArrayBuffer !== 'undefined') {
+          buffers.push(new ArrayBuffer(hamsterFood[key]));
         }
       }
-    }
+    });
     return {
       hamsterFood: hamsterFood,
       buffers: buffers
@@ -85,9 +72,6 @@ class data {
   * @param {function} functionBody - Message to send to thread
   */
   prepareFunction(functionBody) {
-    if(hamstersHabitat.webWorker) {
-      return functionBody;
-    }
     let functionString = String(functionBody);
     return functionString.substring((functionString.indexOf("{") + 1), (functionString.length -1));
   }

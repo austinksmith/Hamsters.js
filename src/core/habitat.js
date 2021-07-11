@@ -24,8 +24,6 @@ class habitat {
     this.importScripts = null;
     this.memoize = false;
     this.persistence = true;
-    this.legacy = this.isLegacyEnvironment();
-    this.legacyWheel = hamstersWheel.legacy;
     this.browser = this.isBrowser();
     this.webWorker = this.isWebWorker();
     this.node = this.isNode();
@@ -35,10 +33,12 @@ class habitat {
     this.atomics = this.supportsAtomicOperations();
     this.proxies = this.supportsProxies();
     this.isIE10 = !this.isNode() && !this.isReactNative() && this.isInternetExplorer(10);
-    this.Worker = this.locateWorkerObject();
-    this.sharedWorker = this.locateSharedWorkerObject();
     this.hamsterWheel = this.selectHamsterWheel();
+    this.sharedWorker = this.locateSharedWorkerObject();
     this.locateBlobBuilder = this.locateBlobBuilder;
+    this.legacy = this.isLegacyEnvironment();
+    this.legacyWheel = hamstersWheel.legacy;
+    this.Worker = this.locateWorkerObject();
     this.maxThreads = this.determineGlobalThreads();
   }
 
@@ -137,7 +137,7 @@ class habitat {
   supportsSharedWorkers() {
     let supports = false;
     try {
-      let workerBlob = this.generateWorkerBlob(selectHamsterWheel());
+      let workerBlob = this.generateWorkerBlob(this.hamsterWheel);
       let SharedHamster = new this.SharedWorker(workerBlob, 'SharedHamsterWheel');
       supports = true;
     } catch (e) {

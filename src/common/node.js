@@ -17,8 +17,8 @@ const { Worker, parentPort } = require('worker_threads');
   global.params = {};
 
   parentPort.once('message', (message) => {
-    global.params = message;
-    global.rtn = {
+    params = message;
+    rtn = {
       data: [],
       dataType: (typeof params.dataType !== 'undefined' ? params.dataType : null)
     };
@@ -31,7 +31,7 @@ const { Worker, parentPort } = require('worker_threads');
       rtn.data = typedArrayFromBuffer(rtn.dataType, rtn.data);
       prepareTransferBuffers(rtn, []);
     } else {
-      return parentPort.postMessage(rtn);
+      parentPort.postMessage(rtn);
     }
   }
 

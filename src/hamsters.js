@@ -88,7 +88,7 @@ class hamstersjs {
   * @return {object} new Hamsters.js task
   */
   hamstersTask(params, functionToRun) {
-    params.hamstersJob = (this.habitat.legacy ? functionToRun : this.data.prepareJob(functionToRun));
+    params.hamstersJob = ((this.habitat.legacy || this.habitat.webWorker) ? functionToRun : this.data.prepareJob(functionToRun));
     return {
       id: this.pool.tasks.length,
       count: 0,
@@ -103,10 +103,10 @@ class hamstersjs {
   }
 
   scheduleTask(task, resolve, reject) {
-    this.pool.scheduleTask(task).then((results) => {
-      return resolve(results);
+    return this.pool.scheduleTask(task).then((results) => {
+      resolve(results);
     }).catch((error) => {
-      return this.logger.error(error.messsage, reject);
+      this.logger.error(error.messsage, reject);
     });
   }
 
