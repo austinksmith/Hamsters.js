@@ -47,7 +47,7 @@ class habitat {
   */
   determineGlobalThreads() {
     let max = 4;
-    if(this.browser && !this.shell) {
+    if(this.browser && typeof navigator.hardwareConcurrency !== "undefined") {
       max = navigator.hardwareConcurrency;
       if(this.isFirefox()) {
         max = (max > 20 ? 20 : max);
@@ -119,7 +119,7 @@ class habitat {
   * @function isShell - Detects if execution environment is a shell
   */
   isShell() {
-    return (this.browser && !this.isNode() && !this.isWebWorker() && !this.isReactNative());
+    return ((typeof navigator === "undefined") && !this.isNode() && !this.isWebWorker() && !this.isReactNative());
   }
 
   /**
