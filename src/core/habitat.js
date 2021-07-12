@@ -217,7 +217,7 @@ class habitat {
   */
   selectHamsterWheel() {
     if(this.isIE10) {
-      return '../common/hamstersWheel.js';
+      return '../common/internetExplorer.js';
     }
     if(this.reactNative) {
       return '../common/reactNative.js';
