@@ -97,7 +97,7 @@ class hamstersjs {
       output: [],
       workers: [],
       memoize: (params.memoize || false),
-      dataType: (params.dataType ? params.dataType.toLowerCase() : null),
+      dataType: (params.dataType ? params.dataType : null),
       input: params
     };
   }

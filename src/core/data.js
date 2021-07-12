@@ -23,7 +23,7 @@ class data {
     this.randomArray = this.randomArray;
     this.aggregateArrays = this.aggregateThreadOutputs;
     this.splitArrays = this.splitArrayIntoSubArrays;
-    this.processDataType = this.processDataType;
+    this.processDataType = this.typedArrayFromBuffer;
     this.sortOutput = this.sortArray;
     this.getOutput = this.prepareOutput;
     this.prepareJob = this.prepareFunction;
@@ -77,18 +77,6 @@ class data {
   }
 
   /**
-  * @function processDataType - Converts buffer into new typed array
-  * @param {string} dataType - Typed array type for this task
-  * @param {object} buffer - Buffer to convert
-  */
-  processDataType(dataType, buffer, transferable) {
-    if(transferable) {
-      return this.typedArrayFromBuffer(dataType, buffer);
-    }
-    return buffer;
-  }
-
-  /**
   * @function prepareOutput - Prepares final task output
   * @param {task} buffer - Task to prepare output for
   */
@@ -98,6 +86,8 @@ class data {
     }
     if(task.aggregate) {
       return this.aggregateThreadOutputs(task.output, task.dataType, transferable);
+    } else {
+      return task.output;
     }
   }
 
@@ -140,7 +130,7 @@ class data {
       'Float64': Float64Array
     };
     if(!types[dataType]) {
-      return dataType;
+      return buffer;
     }
     return new types[dataType](buffer);
   }
@@ -176,7 +166,7 @@ class data {
     for (i; i < len; i += 1) {
       bufferLength += input[i].length;
     }
-    let output = this.processDataType(dataType, bufferLength, transferable);
+    let output = this.processDataType(dataType, bufferLength);
     let offset = 0;
     for (i = 0; i < len; i += 1) {
       output.set(input[i], offset);

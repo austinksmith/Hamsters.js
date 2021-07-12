@@ -174,9 +174,7 @@ class pool {
     if (task.sort) {
       output = hamstersData.sortOutput(output, task.sort);
     }
-    resolve({
-      data: output
-    });
+    resolve(output);
     this.tasks[task.id] = null; //Clean up our task, not needed any longer
   }
 
@@ -195,10 +193,16 @@ class pool {
   * @param {function} reject - onError method
   */
   trainHamster(pool, habitat, threadId, task, hamster, resolve, reject) {
-    // Handle successful response from a thread
     let onThreadResponse = function(message) {
       pool.removeFromRunning(task, threadId);
-      task.output[threadId] = (habitat.reactNative ? JSON.parse(message.data) : message.data);
+      if(typeof message.data.data !== "undefined") {
+        task.output[threadId] = message.data.data;
+      } else {
+        task.output[threadId] = message.data;
+      }
+      if(habitat.reactNative) {
+        task.output[threadId] = JSON.parse(task.output[threadId]);
+      }
       if (task.workers.length === 0 && task.count === task.threads) {
         pool.returnOutputAndRemoveTask(task, resolve);
       }
@@ -209,23 +213,18 @@ class pool {
         hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
       }
     }
-    // Handle error response from a thread
-    let onThreadError = function(error) {
-      reject(error);
-    }
-    // Register on message/error handlers
     if (habitat.webWorker) {
       hamster.port.onmessage = onThreadResponse;
-      hamster.port.onmessageerror = onThreadError;
-      hamster.port.onerror = onThreadError;
+      hamster.port.onmessageerror = reject;
+      hamster.port.onerror = reject;
     } else if(habitat.node) {
       hamster.once('message', onThreadResponse);
-      hamster.once('onmessageerror', onThreadError);
-      hamster.once('error', onThreadError);
+      hamster.once('onmessageerror', reject);
+      hamster.once('error', reject);
     } else {
       hamster.onmessage = onThreadResponse;
-      hamster.onmessageerror = onThreadError;
-      hamster.error = onThreadError;
+      hamster.onmessageerror = reject;
+      hamster.error = reject;
     }
   }
 
