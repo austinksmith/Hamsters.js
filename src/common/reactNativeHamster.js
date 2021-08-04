@@ -9,47 +9,37 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-import { self } from 'react-native-threads';
+import { self } from 'react-native-hamsters';
 
 (function () {
-
-   'use strict';
-
     self.params = {};
     self.rtn = {};
 
-    self.onmessage = function(incomingMessage) {
+    self.onmessage = (message) => {
       params = JSON.parse(incomingMessage.data);
       rtn = {
         data: [],
         dataType: (params.dataType ? params.dataType.toLowerCase() : null)
       };
-      if(params.importScripts) {
-        self.importScripts(params.importScripts);
-      }
-      new Function(params.hamstersJob)();
-      postMessage(prepareReturn(rtn));
+      eval(params.hamstersJob);
+      return returnResponse(rtn);
     };
 
-    function prepareReturn(returnObject) {
-      var dataType = returnObject.dataType;
-      if(dataType) {
-        returnObject.data = typedArrayFromBuffer(dataType, returnObject.data);
-      }
-      return JSON.stringify(returnObject);
+    const returnResponse = (rtn) => {
+      return postMessage(JSON.stringify(rtn));
     }
 
-    function typedArrayFromBuffer(dataType, buffer) {
-      var types = {
-        'uint32': Uint32Array,
-        'uint16': Uint16Array,
-        'uint8': Uint8Array,
-        'uint8clamped': Uint8ClampedArray,
-        'int32': Int32Array,
-        'int16': Int16Array,
-        'int8': Int8Array,
-        'float32': Float32Array,
-        'float64': Float64Array
+    const typedArrayFromBuffer = (dataType, buffer) => {
+      const types = {
+        'Uint32': Uint32Array,
+        'Uint16': Uint16Array,
+        'Uint8': Uint8Array,
+        'Uint8clamped': Uint8ClampedArray,
+        'Int32': Int32Array,
+        'Int16': Int16Array,
+        'Int8': Int8Array,
+        'Float32': Float32Array,
+        'Float64': Float64Array
       };
       if (!types[dataType]) {
         return buffer;
@@ -57,4 +47,17 @@ import { self } from 'react-native-threads';
       return new types[dataType](buffer);
     }
 
+    const prepareTransferBuffers = (rtn, buffers) => {
+      Object.keys(rtn).forEach(function(key) {
+        var item = rtn[key];
+        if(typeof item.buffer !== 'undefined') {
+          buffers.push(item.buffer);
+        } else {
+          if(Array.isArray(rtn[key]) && typeof ArrayBuffer !== 'undefined') {
+            buffers.push(new ArrayBuffer(rtn[key]));
+          }
+        }
+      });
+      return postMessage(rtn, buffers);
+    }
 }());

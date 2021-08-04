@@ -198,10 +198,7 @@ class pool {
       if(typeof message.data.data !== "undefined") {
         task.output[threadId] = message.data.data;
       } else {
-        task.output[threadId] = message.data;
-      }
-      if(habitat.reactNative) {
-        task.output[threadId] = JSON.parse(task.output[threadId]);
+        task.output[threadId] = (habitat.reactNative ? JSON.parse(message.data) : message.data);
       }
       if (task.workers.length === 0 && task.count === task.threads) {
         pool.returnOutputAndRemoveTask(task, resolve);

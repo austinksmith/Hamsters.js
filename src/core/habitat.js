@@ -105,14 +105,14 @@ class habitat {
   * @function isWebWorker - Detects if execution environment is a webworker
   */
   isWebWorker() {
-    return (typeof importScripts === "function");
+    return (typeof importScripts === "function" && !this.isNode() && !this.isReactNative());
   }
 
   /**
   * @function isReactNative - Detects if execution environment is reactNative
   */
   isReactNative() {
-    return (!this.isNode() && typeof global === 'object' && !this.browser);
+    return (typeof navigator !== "undefined" && typeof navigator.product !== "undefined" && navigator.product == "ReactNative");
   }
 
   /**
@@ -220,7 +220,7 @@ class habitat {
       return '../common/internetExplorer.js';
     }
     if(this.reactNative) {
-      return '../common/reactNative.js';
+      return 'reactNativeHamster.js';
     }
     if (this.node) {
       return './node_modules/hamsters.js/build/common/node.js';

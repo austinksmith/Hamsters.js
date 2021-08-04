@@ -52,7 +52,7 @@ class wheel {
   regularScaffold() {
     self.params = {};
     self.rtn = {};
-    self.preparedTransfer = {};
+
     self.onmessage = function(message) {
       params = message.data;
       rtn = {

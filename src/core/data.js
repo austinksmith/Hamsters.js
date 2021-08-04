@@ -37,10 +37,10 @@ class data {
   */  
   messageWorker(hamstersHabitat, hamster, hamsterFood) {
     if(hamstersHabitat.reactNative) {
-      hamster.postMessage(JSON.stringify(hamsterFood));
+      return hamster.postMessage(JSON.stringify(hamsterFood));
     }
     if (hamstersHabitat.webWorker) {
-      hamster.port.postMessage(hamsterFood);
+      return hamster.port.postMessage(hamsterFood);
     }
     let preparedTransfer = this.prepareTransferBuffers(hamsterFood, []);
     return hamster.postMessage(preparedTransfer['hamsterFood'], preparedTransfer['buffers']);
