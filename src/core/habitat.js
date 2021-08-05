@@ -220,7 +220,7 @@ class habitat {
       return '../common/internetExplorer.js';
     }
     if(this.reactNative) {
-      return './reactNativeHamster.js';
+      return 'reactNativeHamster.js';
     }
     if (this.node) {
       return './node_modules/hamsters.js/build/common/node.js';
