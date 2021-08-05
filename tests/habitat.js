@@ -99,7 +99,7 @@ describe("Hamsters Habitat", () => {
 
   it("generateBlob should generate blob with object url", () => {
     let dataBlobURI = hamstersHabitat.generateWorkerBlob(() => {
-      console.log('one hamster to rule them all');
+      console.log('History! Science, philosophy, every idea man has ever had about the Universe up for grabs.');
     });
     expect(dataBlobURI).not.toEqual(null);
     expect(typeof dataBlobURI).toEqual('string');

@@ -22,7 +22,7 @@ describe("Hamsters Data", () => {
 
   it("prepareJob should convert function to string", () => {
     let preparedJob = hamstersData.prepareJob(() => {
-      console.log('');
+      console.log('All your cores are belong to me');
     });
     expect(typeof preparedJob).toEqual('string');
     expect(preparedJob.indexOf('console.log')).not.toBe(-1);

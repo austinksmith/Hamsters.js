@@ -63,7 +63,7 @@ describe("Hamsters Pool", () => {
 
   it("prepareMeal should construct params object variables", () => {
     let taskInput = {
-      hamstersJob: `function() { console.log('The world is run by..') }`,
+      hamstersJob: `function() { console.log('The ISOs, they were going to be my gift to the world.') }`,
       array: [1, 2, 3, 4],
       ranVar: 'hamster powered',
       dataType: 'Int32'
