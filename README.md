@@ -10,6 +10,9 @@
 
 [![Backers on Open Collective](https://opencollective.com/hamstersjs/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/hamstersjs/sponsors/badge.svg)](#sponsors)
 
+[![npm version](https://img.shields.io/npm/v/hamsters.js.svg?style=flat-square)](https://www.npmjs.com/package/hamsters.js)
+[![downloads](https://img.shields.io/npm/dm/hamsters.js.svg?style=flat-square)](https://www.npmjs.com/package/hamsters.js)
+
 # Environment Support
 
 * All major browsers IE9+
