@@ -22,7 +22,7 @@ describe("Hamsters Data", () => {
 
   it("prepareJob should convert function to string", () => {
     let preparedJob = hamstersData.prepareJob(() => {
-      console.log('pay no attention to the hamster behind the curtain');
+      console.log('');
     });
     expect(typeof preparedJob).toEqual('string');
     expect(preparedJob.indexOf('console.log')).not.toBe(-1);
@@ -33,8 +33,10 @@ describe("Hamsters Data", () => {
   });
 
   it("splitArrays should split array into subarrays", () => {
-    expect(hamstersData.splitArrays([1,2], 2)).toEqual([[1],[2]]);
-    expect(hamstersData.splitArrays([1,2, 3, 4], 4)).toEqual([[1],[2], [3], [4]]);
+    for(var i = 1; i < 256; i++) {
+      var testArray = Array(i - 1 + 1).fill().map((_, idx) => 1 + idx);
+      expect(hamstersData.splitArrays(testArray, i).length).toEqual(i);
+    }
   });
 
   it("processDataType should convert buffer into array", () => {

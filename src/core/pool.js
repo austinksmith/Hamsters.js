@@ -139,7 +139,7 @@ class pool {
     this.registerTask(task.id);
     this.keepTrackOfThread(task, threadId);
     if(hamstersHabitat.legacy) {
-      hamstersHabitat.legacyWheel(hamsterFood, resolve, reject);
+      hamstersHabitat.legacyWheel(hamstersHabitat, hamsterFood, resolve, reject);
     } else {
       this.trainHamster(this, hamstersHabitat, task.count, task, hamster, resolve, reject);
       hamstersData.feedHamster(hamstersHabitat, hamster, hamsterFood);

@@ -114,12 +114,18 @@ class wheel {
   /**
   * @function legacyScaffold - Provides library functionality for legacy devices
   */
-  legacyScaffold(params, resolve) {
+  legacyScaffold(hamstersHabitat, params, resolve, reject) {
     var rtn = {
       data: [],
       dataType: (params['dataType'] || null)
     };
-    params.hamstersJob(params, rtn);
+    if(hamstersHabitat.reactNative || hamstersHabitat.node) {
+      self.rtn = rtn;
+    }
+    if(hamstersHabitat.node) {
+      global.rtn = rtn;
+    }
+    params.hamstersJob();
     resolve(rtn);
   }
 
