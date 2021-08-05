@@ -21,7 +21,7 @@ import { self } from 'reactNativeHamsters';
         data: [],
         dataType: (params.dataType ? params.dataType.toLowerCase() : null)
       };
-      eval(params.hamstersJob);
+      eval("(" + params.hamstersJob + ")")();
       return returnResponse(rtn);
     };
 

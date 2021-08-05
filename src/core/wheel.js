@@ -32,7 +32,7 @@ class wheel {
     self.rtn = {};
 
     addEventListener('connect', (incomingConnection) => {
-      const port = incomingConnection.ports[0];
+      var port = incomingConnection.ports[0];
       port.start();
       port.addEventListener('message', (incomingMessage) => {
         params = incomingMessage.data;
@@ -77,7 +77,7 @@ class wheel {
     }
 
     var typedArrayFromBuffer = function(dataType, buffer) {
-      const types = {
+      var types = {
         'Uint32': Uint32Array,
         'Uint16': Uint16Array,
         'Uint8': Uint8Array,

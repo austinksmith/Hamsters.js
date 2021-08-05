@@ -75,7 +75,7 @@ class hamstersjs {
       }
     }
     // Ensure legacy mode is disabled when we pass a third party worker library
-    if(typeof this.habitat['Worker'] === 'function') {
+    if(typeof this.habitat['Worker'] === 'function' && !startOptions['legacy']) {
       this.habitat.legacy = false;
     }
   }
