@@ -105,7 +105,7 @@ class habitat {
   * @function isWebWorker - Detects if execution environment is a webworker
   */
   isWebWorker() {
-    return (typeof importScripts === "function" && !this.isNode() && !this.isReactNative());
+    return (typeof importScripts === "function" && !this.isReactNative());
   }
 
   /**
@@ -220,7 +220,7 @@ class habitat {
       return '../common/internetExplorer.js';
     }
     if(this.reactNative) {
-      return 'reactNativeHamster.js';
+      return './reactNativeHamster.js';
     }
     if (this.node) {
       return './node_modules/hamsters.js/build/common/node.js';
