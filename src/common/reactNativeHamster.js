@@ -9,7 +9,7 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-import { self } from 'react-native-hamsters';
+import { self } from 'reactNativeHamsters';
 
 (function () {
     self.params = {};
