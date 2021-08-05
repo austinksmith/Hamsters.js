@@ -22,7 +22,7 @@
 
 You can find a view examples of the library in action using the links below.
 
-[Collatz Conjecture](https://www.hamsters.io/examples/collatzconjecture)
+[Collatz Conjecture](https://www.hamsters.io/examples/collatz-conjecture)
 
 [Square Root](https://www.hamsters.io/examples/square-root)
 
@@ -63,9 +63,9 @@ Any support you can provide means a world of difference for projects like Hamste
 
 Please support continued efforts to provide updates like optimizing for the latest and greatest features and computer hardware. Multiple donation types are accepted including OpenCollective, PayPal, and various crypto currencies on the [Hamsters.js donation page](https://www.hamsters.io/donate)
 
-## Backers
+## Donators
 
-Thank you to all our backers! 🙏 [Back Hamsters.js](https://opencollective.com/hamstersjs#backer)
+Thank you 🙏 [Back Hamsters.js](https://opencollective.com/hamstersjs#backer)
 
 <a href="https://opencollective.com/hamstersjs#backers" target="_blank"><img src="https://opencollective.com/hamstersjs/backers.svg?width=890"></a>
 
