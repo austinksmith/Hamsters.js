@@ -9,7 +9,7 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-import { self } from 'react-native-hamsters';
+import { self } from 'reactNativeHamsters';
 
 (function () {
     self.params = {};
@@ -17,7 +17,6 @@ import { self } from 'react-native-hamsters';
 
     self.onmessage = (message) => {
       params = JSON.parse(incomingMessage.data);
-      console.log("WE HAVE A MESSAGE!!!")
       rtn = {
         data: [],
         dataType: (params.dataType ? params.dataType.toLowerCase() : null)
