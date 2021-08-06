@@ -75,7 +75,11 @@ class hamstersjs {
       }
     }
     // Ensure legacy mode is disabled when we pass a third party worker library
-    if(typeof this.habitat['Worker'] === 'function' && !startOptions['legacy']) {
+    var forceLegacyMode = (typeof startOptions !== 'undefined' && typeof startOptions.legacy !== 'undefined');
+    if(forceLegacyMode) {
+      forceLegacyMode = startOptions.legacy;
+    }
+    if(typeof this.habitat['Worker'] === 'function' && !forceLegacyMode) {
       this.habitat.legacy = false;
     }
   }
