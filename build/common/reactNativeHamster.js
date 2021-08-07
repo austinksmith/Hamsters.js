@@ -17,13 +17,13 @@ import { self } from 'react-native-hamsters';
     self.onmessage = message => {
       params = JSON.parse(message);
       rtn = {
-        data: [],
+        data: []
       };
       eval(params.hamstersJob);
       return returnResponse(rtn);
     };
 
     const returnResponse = rtn => {
-      return postMessage(JSON.stringify(rtn));
+      return self.postMessage(JSON.stringify(rtn));
     }
 }());

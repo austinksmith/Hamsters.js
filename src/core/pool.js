@@ -196,7 +196,7 @@ class pool {
     let onThreadResponse = function(message) {
       pool.removeFromRunning(task, threadId);
       if(habitat.reactNative) {
-        task.output[threadId] = JSON.parse(message);
+        task.output[threadId] = JSON.parse(message).data;
       } else {
         if(typeof message.data.data !== "undefined") {
           task.output[threadId] = message.data.data;

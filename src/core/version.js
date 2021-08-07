@@ -13,7 +13,7 @@
 
 const majorVersion = 5;
 const minorVersion = 3;
-const patchVersion = 6;
+const patchVersion = 7;
 const hamstersVersion = `${majorVersion}.${minorVersion}.${patchVersion}`;
 
 if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
