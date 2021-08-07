@@ -14,50 +14,16 @@ import { self } from 'react-native-hamsters';
 (function () {
     self.params = {};
     self.rtn = {};
-
-    self.onmessage = (message) => {
-      params = JSON.parse(incomingMessage.data);
+    self.onmessage = message => {
+      params = JSON.parse(message);
       rtn = {
-        data: [],
-        dataType: (params.dataType ? params.dataType.toLowerCase() : null)
+        data: []
       };
-      eval("(" + params.hamstersJob + ")")();
+      eval(params.hamstersJob);
       return returnResponse(rtn);
     };
 
-    const returnResponse = (rtn) => {
-      return postMessage(JSON.stringify(rtn));
-    }
-
-    const typedArrayFromBuffer = (dataType, buffer) => {
-      const types = {
-        'Uint32': Uint32Array,
-        'Uint16': Uint16Array,
-        'Uint8': Uint8Array,
-        'Uint8clamped': Uint8ClampedArray,
-        'Int32': Int32Array,
-        'Int16': Int16Array,
-        'Int8': Int8Array,
-        'Float32': Float32Array,
-        'Float64': Float64Array
-      };
-      if (!types[dataType]) {
-        return buffer;
-      }
-      return new types[dataType](buffer);
-    }
-
-    const prepareTransferBuffers = (rtn, buffers) => {
-      Object.keys(rtn).forEach(function(key) {
-        var item = rtn[key];
-        if(typeof item.buffer !== 'undefined') {
-          buffers.push(item.buffer);
-        } else {
-          if(Array.isArray(rtn[key]) && typeof ArrayBuffer !== 'undefined') {
-            buffers.push(new ArrayBuffer(rtn[key]));
-          }
-        }
-      });
-      return postMessage(rtn, buffers);
+    const returnResponse = rtn => {
+      return self.postMessage(JSON.stringify(rtn));
     }
 }());
