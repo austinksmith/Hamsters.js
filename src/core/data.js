@@ -23,6 +23,8 @@ class data {
     this.randomArray = this.randomArray;
     this.aggregateArrays = this.aggregateThreadOutputs;
     this.splitArrays = this.splitArrayIntoSubArrays;
+    this.getSubArrayFromIndex = this.getSubArrayFromIndex;
+    this.getIndexes = this.getSubArrayIndexes;
     this.processDataType = this.typedArrayFromBuffer;
     this.sortOutput = this.sortArray;
     this.getOutput = this.prepareOutput;
@@ -194,6 +196,39 @@ class data {
       }
     }
     return threadArrays;
+  }
+
+  /**
+  * @function splitArrayIntoSubArrays - Splits a single array into multiple equal sized subarrays
+  * @param {array} array - Array to split
+  * @param {number} n - Number of subarrays to create
+  */
+  getSubArrayIndexes(array, n) {
+    let indexes = [];
+    let i = 0;
+    let size = Math.ceil(array.length/n);
+    if(array.slice) {
+      while(i < array.length) {
+        indexes.push({start: i, end: i += size});
+      }
+    } else {
+      while (i < array.length) {
+        indexes.push({start: i, end: i += size});
+      }
+    }
+    return indexes;
+  }
+
+  /**
+  * @function splitArrayIntoSubArrays - Splits a single array into multiple equal sized subarrays
+  * @param {array} array - Array to split
+  * @param {number} n - Number of subarrays to create
+  */
+  getSubArrayFromIndex(index, task) {
+    if(typeof task.input.array.slice === "function") {
+      return task.input.array.slice(index.start, index.end);
+    }
+    return task.input.array.subarray(index.start, index.end);
   }
 }
 

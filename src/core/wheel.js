@@ -119,14 +119,15 @@ class wheel {
       data: [],
       dataType: (params['dataType'] || null)
     };
-    if(hamstersHabitat.reactNative || hamstersHabitat.node) {
+    if(hamstersHabitat.reactNative) {
       self.rtn = rtn;
     }
     if(hamstersHabitat.node) {
-      global.rtn = rtn;
+      eval(params.hamstersJob);
+    } else {
+      params.hamstersJob();
     }
-    params.hamstersJob();
-    resolve(rtn);
+    resolve(rtn.data);
   }
 
 };

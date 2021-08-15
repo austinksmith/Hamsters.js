@@ -26,7 +26,7 @@ const { Worker, parentPort } = require('worker_threads');
     returnResponse(rtn);
   });
 
-  const returnResponse = function(rtn) {
+  const returnResponse = (rtn) => {
     if(rtn.dataType) {
       rtn.data = typedArrayFromBuffer(rtn.dataType, rtn.data);
       prepareTransferBuffers(rtn, []);
@@ -35,7 +35,7 @@ const { Worker, parentPort } = require('worker_threads');
     }
   }
 
-  const typedArrayFromBuffer = function(dataType, buffer) {
+  const typedArrayFromBuffer = (dataType, buffer) => {
     const types = {
       'Uint32': Uint32Array,
       'Uint16': Uint16Array,
@@ -53,7 +53,7 @@ const { Worker, parentPort } = require('worker_threads');
     return new types[dataType](buffer);
   }
 
-  const prepareTransferBuffers = function(rtn, buffers) {
+  const prepareTransferBuffers = (rtn, buffers) => {
     Object.keys(rtn).forEach(function(key) {
       let item = rtn[key];
       if(typeof item.buffer !== 'undefined') {

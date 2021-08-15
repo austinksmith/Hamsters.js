@@ -92,14 +92,18 @@ class hamstersjs {
   * @return {object} new Hamsters.js task
   */
   hamstersTask(params, functionToRun) {
-    params.hamstersJob = ((this.habitat.legacy || this.habitat.webWorker) ? functionToRun : this.data.prepareJob(functionToRun));
+    let taskId = this.pool.tasks.length;
+    let taskThreads = (this.habitat.legacy ? 1 : (params.threads || 1));
+    let taskIndexes = (params.indexes || this.data.getIndexes(params.array, taskThreads));
+    params.hamstersJob = (((this.habitat.legacy || this.habitat.webWorker) && !this.habitat.node) ? functionToRun : this.data.prepareJob(functionToRun));
     return {
-      id: this.pool.tasks.length,
+      id: taskId,
       count: 0,
-      threads: (this.habitat.legacy ? 1 : (params.threads || 1)),
+      threads: taskThreads,
       aggregate: (params.aggregate || false),
       output: [],
       workers: [],
+      indexes: taskIndexes,
       memoize: (params.memoize || false),
       dataType: (params.dataType ? params.dataType : null),
       input: params

@@ -112,10 +112,9 @@ class pool {
   * @param {object} task - Provided library functionality options for this task
   * @return {object} hamsterFood - Prepared message to send to a thread
   */
-  prepareMeal(threadArray, task) {
-    let hamsterFood = {
-    	array: threadArray
-    };
+  prepareMeal(index, task) {
+    const hamsterFood = {};
+    hamsterFood.array = hamstersData.getSubArrayFromIndex(index, task);
     for (var key in task.input) {
       if (task.input.hasOwnProperty(key) && ['array', 'threads'].indexOf(key) === -1) {
         hamsterFood[key] = task.input[key];
@@ -133,9 +132,9 @@ class pool {
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
-  runTask(hamster, array, task, resolve, reject) {
+  runTask(hamster, index, task, resolve, reject) {
   	let threadId = this.running.length;
-    let hamsterFood = this.prepareMeal(array, task);
+    let hamsterFood = this.prepareMeal(index, task);
     this.registerTask(task.id);
     this.keepTrackOfThread(task, threadId);
     if(hamstersHabitat.legacy) {
@@ -156,12 +155,12 @@ class pool {
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
-  hamsterWheel(array, task, resolve, reject) {
+  hamsterWheel(index, task, resolve, reject) {
     if(hamstersHabitat.maxThreads === this.running.length) {
-      return this.addWorkToPending(array, task, resolve, reject);
+      return this.addWorkToPending(index, task, resolve, reject);
     }
     let hamster = this.grabHamster(this.running.length);
-    return this.runTask(hamster, array, task, resolve, reject);
+    return this.runTask(hamster, index, task, resolve, reject);
   }
 
   /**
@@ -183,6 +182,16 @@ class pool {
     task.workers.splice(task.workers.indexOf(threadId), 1); //Remove thread from task running pool
   }
 
+  processReturn(habitat, message, threadId, task) {
+    if(habitat.reactNative) {
+      return task.output[threadId] = JSON.parse(message).data;
+    }
+    if(typeof message.data.data !== "undefined") {
+      return task.output[threadId] = message.data.data;
+    }
+    return task.output[threadId] = message.data;
+  }
+
   /**
   * @function trainHamster - Trains thread in how to behave
   * @param {number} threadId - Internal use id for this thread
@@ -195,22 +204,15 @@ class pool {
   trainHamster(pool, habitat, threadId, task, hamster, resolve, reject) {
     let onThreadResponse = function(message) {
       pool.removeFromRunning(task, threadId);
-      if(habitat.reactNative) {
-        task.output[threadId] = JSON.parse(message).data;
-      } else {
-        if(typeof message.data.data !== "undefined") {
-          task.output[threadId] = message.data.data;
-        } else {
-          task.output[threadId] = message.data;
-        }
-      }
+      pool.processReturn(habitat, message, threadId, task);
       if (task.workers.length === 0 && task.count === task.threads) {
         pool.returnOutputAndRemoveTask(task, resolve);
       }
-      if (pool.pending.length !== 0) {
-        return pool.processQueue(pool.pending.shift(), hamster);
+      let pendingTasks = (pool.pending.length !== 0);
+      if (pendingTasks) {
+        pool.processQueue(pool.pending.shift(), hamster);
       }
-      if (!habitat.persistence && !habitat.webWorker) {
+      if (!pendingTasks && !habitat.persistence && !habitat.webWorker) {
         hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
       }
     }
@@ -218,7 +220,8 @@ class pool {
       hamster.port.onmessage = onThreadResponse;
       hamster.port.onmessageerror = reject;
       hamster.port.onerror = reject;
-    } else if(habitat.node) {
+    }
+    if(habitat.node) {
       hamster.once('message', onThreadResponse);
       hamster.once('onmessageerror', reject);
       hamster.once('error', reject);
@@ -238,17 +241,9 @@ class pool {
   */
   scheduleTask(task) {
   	return new Promise((resolve, reject) => {
-      let threadArrays = [];
-      if(task.input.array && task.threads !== 1) {
-        threadArrays = hamstersData.splitArrays(task.input.array, task.threads); //Divide our array into equal array sizes
-      }
       let i = 0;
       while (i < task.threads) {
-      	if(threadArrays && task.threads !== 1) {
-        	this.hamsterWheel(threadArrays[i], task, resolve, reject);
-		    } else {
-        	this.hamsterWheel(task.input.array, task, resolve, reject);
-		    }
+        this.hamsterWheel(task.indexes[i], task, resolve, reject);
         i += 1;
       }
     });
