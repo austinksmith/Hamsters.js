@@ -117,12 +117,12 @@ class wheel {
   legacyScaffold(hamstersHabitat, params, resolve, reject) {
     var rtn = {
       data: [],
-      dataType: (params['dataType'] || null)
+      dataType: (typeof params.dataType !== "undefined" ? params.dataType : null)
     };
     if(hamstersHabitat.reactNative) {
       self.rtn = rtn;
     }
-    if(hamstersHabitat.node) {
+    if(hamstersHabitat.node || hamstersHabitat.isIE) {
       eval(params.hamstersJob);
     } else {
       params.hamstersJob();

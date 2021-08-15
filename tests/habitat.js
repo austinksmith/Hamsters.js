@@ -54,8 +54,8 @@ describe("Hamsters Habitat", () => {
     expect(hamstersHabitat['browser']).toMatch(/true|false/);
   });
 
-  it("isIE10 should be boolean", () => {
-    expect(hamstersHabitat['isIE10']).toMatch(/true|false/);
+  it("isIE should be boolean", () => {
+    expect(hamstersHabitat.isInternetExplorer()).toMatch(/true|false/);
   });
   
   it("Atomics should be boolean", () => {

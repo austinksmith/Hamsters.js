@@ -32,7 +32,7 @@ class habitat {
     this.transferable = this.supportstransferableObjects();
     this.atomics = this.supportsAtomicOperations();
     this.proxies = this.supportsProxies();
-    this.isIE10 = !this.isNode() && !this.isReactNative() && this.isInternetExplorer(10);
+    this.isIE = this.isInternetExplorer();
     this.hamsterWheel = this.selectHamsterWheel();
     this.sharedWorker = this.locateSharedWorkerObject();
     this.locateBlobBuilder = this.locateBlobBuilder;
@@ -90,8 +90,8 @@ class habitat {
   /**
   * @function isInternetExplorer - Detects if execution environment is internet explorer
   */
-  isInternetExplorer(version) {
-    return (new RegExp('msie' + (!isNaN(version) ? ('\\s'+version) : ''), 'i').test(navigator.userAgent));
+  isInternetExplorer() {
+    return (navigator.userAgent.indexOf("MSIE ") !== -1 || navigator.userAgent.indexOf("Trident/") !== -1);
   }
 
   /**
@@ -216,8 +216,8 @@ class habitat {
   * @function scheduleTask - Determines which scaffold to use for proper execution for various environments
   */
   selectHamsterWheel() {
-    if(this.isIE10) {
-      return '../common/internetExplorer.js';
+    if(this.isIE) {
+      return hamstersWheel.legacy;
     }
     if(this.reactNative) {
       return 'reactNativeHamster.js';

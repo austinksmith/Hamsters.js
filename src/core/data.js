@@ -207,14 +207,8 @@ class data {
     let indexes = [];
     let i = 0;
     let size = Math.ceil(array.length/n);
-    if(array.slice) {
-      while(i < array.length) {
-        indexes.push({start: i, end: i += size});
-      }
-    } else {
-      while (i < array.length) {
-        indexes.push({start: i, end: i += size});
-      }
+    while (i < array.length) {
+      indexes.push({start: i, end: i += size});
     }
     return indexes;
   }

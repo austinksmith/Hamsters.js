@@ -80,7 +80,7 @@ class hamstersjs {
       forceLegacyMode = startOptions.legacy;
     }
     if(typeof this.habitat['Worker'] === 'function' && !forceLegacyMode) {
-      this.habitat.legacy = false;
+      this.habitat.legacy = this.habitat.isIE;
     }
   }
 
@@ -95,7 +95,11 @@ class hamstersjs {
     let taskId = this.pool.tasks.length;
     let taskThreads = (this.habitat.legacy ? 1 : (params.threads || 1));
     let taskIndexes = (params.indexes || this.data.getIndexes(params.array, taskThreads));
-    params.hamstersJob = (((this.habitat.legacy || this.habitat.webWorker) && !this.habitat.node) ? functionToRun : this.data.prepareJob(functionToRun));
+    if((this.habitat.legacy || this.habitat.webWorker) && !this.habitat.node && !this.habitat.isIE) {
+      params.hamstersJob = functionToRun;
+    } else {
+      params.hamstersJob = this.data.prepareJob(functionToRun);
+    }
     return {
       id: taskId,
       count: 0,
