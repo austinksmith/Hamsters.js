@@ -151,7 +151,9 @@ class data {
     if(task.threads === 1) {
       task.input.array = output;
     } else {
-      for (var i = 0; i < output.length; i++) {
+      let i = 0;
+      let outputLength = output.length;
+      for (i; i < outputLength; i++) {
         task.input.array[(index.start + i)] = output[i];
       }
     }
