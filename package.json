@@ -3,7 +3,7 @@
   "author": "Austin K Smith",
   "description": "100% Vanilla Javascript Multithreading & Parallel Execution Library",
   "homepage": "http://www.hamsters.io/",
-  "version": "5.3.9",
+  "version": "7.7.7",
   "main": "build/hamsters.node.min.js",
   "scripts": {
     "build": "rm -rf ./build && webpack --config ./hamsters.webpack.config.js && npm run copy-common",
