@@ -28,17 +28,6 @@ describe("Hamsters Data", () => {
     expect(preparedJob.indexOf('console.log')).not.toBe(-1);
   });
 
-  it("aggregateArrays should aggregate array of subarrays", () => {
-    expect(hamstersData.aggregateArrays([[1],[2]])).toEqual([1,2]);
-  });
-
-  it("splitArrays should split array into subarrays", () => {
-    for(var i = 1; i < 256; i++) {
-      var testArray = Array(i - 1 + 1).fill().map((_, idx) => 1 + idx);
-      expect(hamstersData.splitArrays(testArray, i).length).toEqual(i);
-    }
-  });
-
   it("processDataType should convert buffer into array", () => {
     let tempArray = new Int32Array(1, 2, 3, 4, 5, 6, 7, 8);
     let tempBuffer = tempArray.buffer;

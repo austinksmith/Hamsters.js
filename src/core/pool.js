@@ -140,7 +140,7 @@ class pool {
     if(hamstersHabitat.legacy) {
       hamstersHabitat.legacyWheel(hamstersHabitat, hamsterFood, resolve, reject);
     } else {
-      this.trainHamster(this, hamstersHabitat, task.count, task, hamster, resolve, reject);
+      this.trainHamster(this, hamstersHabitat, index, task, hamster, resolve, reject);
       hamstersData.feedHamster(hamstersHabitat, hamster, hamsterFood);
     }
     task.count += 1; //Increment count, thread is running
@@ -169,7 +169,7 @@ class pool {
   * @param {function} resolve - onSuccess method
   */
   returnOutputAndRemoveTask(task, resolve) {
-    let output = hamstersData.getOutput(task, hamstersHabitat.transferable);
+    let output = hamstersData.getOutput(task);
     if (task.sort) {
       output = hamstersData.sortOutput(output, task.sort);
     }
@@ -182,14 +182,16 @@ class pool {
     task.workers.splice(task.workers.indexOf(threadId), 1); //Remove thread from task running pool
   }
 
-  processReturn(habitat, message, threadId, task) {
+  processReturn(habitat, index, message, task) {
+    let output = message.data;
     if(habitat.reactNative) {
-      return task.output[threadId] = JSON.parse(message).data;
+      output = JSON.parse(message).data;
     }
     if(typeof message.data.data !== "undefined") {
-      return task.output[threadId] = message.data.data;
+      output = message.data.data;
     }
-    return task.output[threadId] = message.data;
+    hamstersData.addThreadOutputWithIndex(task, index, output);
+    // return task.output[task.count] = message.data;
   }
 
   /**
@@ -201,10 +203,10 @@ class pool {
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
-  trainHamster(pool, habitat, threadId, task, hamster, resolve, reject) {
-    let onThreadResponse = function(message) {
-      pool.removeFromRunning(task, threadId);
-      pool.processReturn(habitat, message, threadId, task);
+  trainHamster(pool, habitat, index, task, hamster, resolve, reject) {
+    let onThreadResponse = (message) => {
+      pool.removeFromRunning(task, task.count);
+      pool.processReturn(habitat, index, message, task);
       if (task.workers.length === 0 && task.count === task.threads) {
         pool.returnOutputAndRemoveTask(task, resolve);
       }

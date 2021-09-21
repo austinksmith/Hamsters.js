@@ -104,8 +104,6 @@ class hamstersjs {
       id: taskId,
       count: 0,
       threads: taskThreads,
-      aggregate: (params.aggregate || false),
-      output: [],
       workers: [],
       indexes: taskIndexes,
       memoize: (params.memoize || false),

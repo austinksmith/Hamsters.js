@@ -21,8 +21,6 @@ class data {
   */
   constructor() {
     this.randomArray = this.randomArray;
-    this.aggregateArrays = this.aggregateThreadOutputs;
-    this.splitArrays = this.splitArrayIntoSubArrays;
     this.getSubArrayFromIndex = this.getSubArrayFromIndex;
     this.getIndexes = this.getSubArrayIndexes;
     this.processDataType = this.typedArrayFromBuffer;
@@ -82,15 +80,8 @@ class data {
   * @function prepareOutput - Prepares final task output
   * @param {task} buffer - Task to prepare output for
   */
-  prepareOutput(task, transferable) {
-    if(task.threads === 1) {
-      return task.output[0];
-    }
-    if(task.aggregate) {
-      return this.aggregateThreadOutputs(task.output, task.dataType, transferable);
-    } else {
-      return task.output;
-    }
+  prepareOutput(task) {
+    return task.input.array;
   }
 
   /**
@@ -152,50 +143,18 @@ class data {
   }
 
   /**
-  * @function aggregateThreadOutputs - Joins individual thread outputs into single result
+  * @function addThreadOutputWithIndex - Joins individual thread outputs into single result
   * @param {array} input - Array of arrays to aggregate
   * @param {string} dataType - Data type to use for typed array
   */
-  aggregateThreadOutputs(input, dataType, transferable) {
-    if(!dataType || !transferable) {
-      return input.reduce(function(a, b) {
-        return a.concat(b);
-      });
-    }
-    let i = 0;
-    let len = input.length;
-    let bufferLength = 0;
-    for (i; i < len; i += 1) {
-      bufferLength += input[i].length;
-    }
-    let output = this.processDataType(dataType, bufferLength);
-    let offset = 0;
-    for (i = 0; i < len; i += 1) {
-      output.set(input[i], offset);
-      offset += input[i].length;
-    }
-    return output;
-  }
-
-  /**
-  * @function splitArrayIntoSubArrays - Splits a single array into multiple equal sized subarrays
-  * @param {array} array - Array to split
-  * @param {number} n - Number of subarrays to create
-  */
-  splitArrayIntoSubArrays(array, n) {
-    let i = 0;
-    let threadArrays = [];
-    let size = Math.ceil(array.length/n);
-    if(array.slice) {
-      while(i < array.length) {
-        threadArrays.push(array.slice(i, i += size));
-      }
+  addThreadOutputWithIndex(task, index, output) {
+    if(task.threads === 1) {
+      task.input.array = output;
     } else {
-      while (i < array.length) {
-        threadArrays.push(array.subarray(i, i += size));
+      for (var i = 0; i < output.length; i++) {
+        task.input.array[(index.start + i)] = output[i];
       }
     }
-    return threadArrays;
   }
 
   /**
