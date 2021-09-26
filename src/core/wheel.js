@@ -52,37 +52,45 @@ class wheel {
   regular() {
     self.params = {};
     self.rtn = {};
-
     self.onmessage = function(message) {
       params = message.data;
       rtn = {
         data: [],
         dataType: (typeof params.dataType !== 'undefined' ? params.dataType : null)
       };
-      putHamsterToWork();
+      new Function(params.hamstersJob)();
+      if(rtn.dataType) {
+        rtn.data = typedArrayFromBuffer(rtn.dataType, rtn.data);
+      }
+      returnResponse(rtn);
     }
 
-    var putHamsterToWork = function() {
-      new Function(params.hamstersJob)();
-      returnResponse(rtn, []);
+    var typedArrayFromBuffer = (dataType, buffer) => {
+      var types = {
+        'Uint32': Uint32Array,
+        'Uint16': Uint16Array,
+        'Uint8': Uint8Array,
+        'Uint8clamped': Uint8ClampedArray,
+        'Int32': Int32Array,
+        'Int16': Int16Array,
+        'Int8': Int8Array,
+        'Float32': Float32Array,
+        'Float64': Float64Array
+      };
+      if (!types[dataType]) {
+        return buffer;
+      }
+      return new types[dataType](buffer);
     }
 
     var returnResponse = function(rtn, buffers) {
-      Object.keys(rtn).forEach(function(key) {
-        var item = rtn[key];
-        if(typeof item.buffer !== 'undefined') {
-          buffers.push(item.buffer);
-        } else {
-          if(Array.isArray(rtn[key]) && typeof ArrayBuffer !== 'undefined') {
-            buffers.push(new ArrayBuffer(rtn[key]));
-          }
-        }
-      });
-      postMessage(rtn, buffers);
+      if(typeof rtn.data.buffer !== 'undefined') {
+        postMessage(rtn, [rtn.data.buffer]);
+      } else {
+        postMessage(rtn);
+      }
     }
   }
-
-
 
   /**
   * @function legacyScaffold - Provides library functionality for legacy devices

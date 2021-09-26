@@ -23,13 +23,15 @@ const { Worker, parentPort } = require('worker_threads');
       dataType: (typeof params.dataType !== 'undefined' ? params.dataType : null)
     };
     eval(params.hamstersJob);
+    if(rtn.dataType) {
+      rtn.data = typedArrayFromBuffer(rtn.dataType, rtn.data);
+    }
     returnResponse(rtn);
   });
 
-  const returnResponse = (rtn) => {
-    if(rtn.dataType) {
-      rtn.data = typedArrayFromBuffer(rtn.dataType, rtn.data);
-      prepareTransferBuffers(rtn, []);
+  const returnResponse = function(rtn, buffers) {
+    if(typeof rtn.data.buffer !== 'undefined') {
+      parentPort.postMessage(rtn, [rtn.data.buffer]);
     } else {
       parentPort.postMessage(rtn);
     }
@@ -53,17 +55,4 @@ const { Worker, parentPort } = require('worker_threads');
     return new types[dataType](buffer);
   }
 
-  const prepareTransferBuffers = (rtn, buffers) => {
-    Object.keys(rtn).forEach(function(key) {
-      let item = rtn[key];
-      if(typeof item.buffer !== 'undefined') {
-        buffers.push(item.buffer);
-      } else {
-        if(Array.isArray(rtn[key]) && typeof ArrayBuffer !== 'undefined') {
-          buffers.push(new ArrayBuffer(rtn[key]));
-        }
-      }
-    });
-    return parentPort.postMessage(rtn, buffers);
-  }
 }());
