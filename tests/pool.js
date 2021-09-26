@@ -45,22 +45,6 @@ describe("Hamsters Pool", () => {
     expect(hamstersPool.pending.length).toEqual(0);
   });
 
-  it("addWorkToPending should queue work item for later use", () => {
-    let tmpTask = {id: 0, threads: 1};
-    let tmpArray = [1, 2];
-    let wheel = function() {};
-    let resolve = function() {};
-    let reject = function() {}
-    hamstersPool.addWorkToPending(tmpArray, tmpTask, false, wheel, resolve, reject);
-    let pendingWorkItem = hamstersPool.pending[0];
-    expect(pendingWorkItem[0]).toEqual(tmpArray);
-    expect(pendingWorkItem[1]).toEqual(tmpTask);
-    expect(pendingWorkItem[2]).toEqual(false);
-    expect(typeof pendingWorkItem[3]).toEqual('function');
-    expect(typeof pendingWorkItem[4]).toEqual('function');
-    expect(typeof pendingWorkItem[5]).toEqual('function');
-  });
-
   it("prepareMeal should construct params object variables", () => {
     let taskInput = {
       hamstersJob: `function() { console.log('The ISOs, they were going to be my gift to the world.') }`,

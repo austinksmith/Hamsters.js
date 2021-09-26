@@ -25,27 +25,27 @@ class logger {
       warning: [], 
       info: []
     };
-    this.info = this.infoLog;
-    this.warning = this.warningLog;
-    this.error = this.errorLog;
-    this.errorFromThread = this.errorFromThread;
-    this.saveLogEntry = this.saveToLogBook;
-    this.getLogEntries = this.fetchLogBook;
-    this.createAndSaveStampedMessage = this.generateTimeStampedMessage;
-    this.searchLogEntries = this.searchLogBook;
+    this.info;
+    this.warning;
+    this.error;
+    this.errorFromThread;
+    this.saveLogEntry;
+    this.getLogEntries;
+    this.createAndSaveStampedMessage;
+    this.searchLogEntries;
   }
 
-  infoLog(message) {
+  info(message) {
     let timeStampedMessage = this.createAndSaveStampedMessage('Info', message);
     console.info(timeStampedMessage);
   }
 
-  warningLog(message) {
+  warning(message) {
     let timeStampedMessage = this.createAndSaveStampedMessage('Warning', message);
     console.warn(timeStampedMessage);
   }
 
-  errorLog(message, reject) {
+  error(message, reject) {
     let timeStampedMessage = this.createAndSaveStampedMessage('Error', message);
     console.error(timeStampedMessage);
     if(reject) {
@@ -55,7 +55,7 @@ class logger {
     }
   }
 
-  generateTimeStampedMessage(type, message) {
+  createAndSaveStampedMessage(type, message) {
     let record = `Hamsters.js v${hamstersVersion} ${type}: ${message} @ ${Date.now()}`
     this.saveLogEntry(type.toLowerCase(), record);
     return record;
@@ -66,11 +66,11 @@ class logger {
     this.errorLog(errorMessage, reject);
   }
 
-  saveToLogBook(eventType, message) {
+  saveLogEntry(eventType, message) {
     this.logBook[eventType].push(message);
   }
 
-  fetchLogBook(eventType) {
+  getLogEntries(eventType) {
     if(eventType) {
       return this.logBook[eventType];
     }
@@ -103,7 +103,7 @@ class logger {
     return searchResults;
   }
 
-  searchLogBook(searchString, eventType) {
+  searchLogEntries(searchString, eventType) {
     let finalResults = [];
     if(eventType) {
       finalResults = this.findStringInLogBook(this.logBook[eventType], searchString);

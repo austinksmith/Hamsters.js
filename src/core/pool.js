@@ -26,11 +26,11 @@ class pool {
 	  this.threads = [];
     this.running = [];
     this.pending = [];
-    this.fetchHamster = this.grabHamster;
+    this.fetchHamster;
   }
 
   /**
-  * @function grabHamster - Adds task to queue waiting for available thread
+  * @function fetchHamster - Adds task to queue waiting for available thread
   * @param {object} array - Provided data to execute logic on
   * @param {object} task - Provided library functionality options for this task
   * @param {boolean} persistence - Whether persistence mode is enabled or not
@@ -38,25 +38,30 @@ class pool {
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
-  addWorkToPending(array, task, persistence, wheel, resolve, reject) {
-  	this.pending.push(arguments);
+  addWorkToPending(index, task, resolve, reject) {
+  	this.pending.push({
+      index,
+      task,
+      resolve,
+      reject
+    });
   }
 
   /**
-  * @function grabHamster - Invokes processing of next item in queue
+  * @function fetchHamster - Invokes processing of next item in queue
   * @param {object} item - Task to process
   */
   processQueue(item, hamster) {
-  	return this.runTask(hamster, item[0], item[1], item[2], item[3], item[4]);
+  	return this.runTask(hamster, ...item);
   }
 
   /**
-  * @function grabHamster - Keeps track of threads running, scoped globally and to task
+  * @function fetchHamster - Keeps track of threads running, scoped globally and to task
   * @param {number} threadId - Id of thread
   * @param {boolean} persistence - Whether persistence mode is enabled or not
   * @param {function} wheel - Results from select hamster wheel
   */
-  grabHamster(threadId) {
+  fetchHamster(threadId) {
     if(hamstersHabitat.persistence) {
       return this.threads[threadId];
     }
@@ -159,7 +164,7 @@ class pool {
     if(hamstersHabitat.maxThreads === this.running.length) {
       return this.addWorkToPending(index, task, resolve, reject);
     }
-    let hamster = this.grabHamster(this.running.length);
+    let hamster = this.fetchHamster(this.running.length);
     return this.runTask(hamster, index, task, resolve, reject);
   }
 
@@ -169,11 +174,11 @@ class pool {
   * @param {function} resolve - onSuccess method
   */
   returnOutputAndRemoveTask(task, resolve) {
-    let output = hamstersData.getOutput(task);
     if (task.sort) {
-      output = hamstersData.sortOutput(output, task.sort);
+      resolve(hamstersData.sortOutput(task.input.array, task.sort));
+    } else {
+      resolve(task.input.array);
     }
-    resolve(output);
     this.tasks[task.id] = null; //Clean up our task, not needed any longer
   }
 
@@ -190,8 +195,11 @@ class pool {
     if(typeof message.data.data !== "undefined") {
       output = message.data.data;
     }
-    hamstersData.addThreadOutputWithIndex(task, index, output);
-    // return task.output[task.count] = message.data;
+    if(task.threads !== 1) {
+      hamstersData.addThreadOutputWithIndex(task, index, output);
+    } else {
+      task.input.array = output;
+    }
   }
 
   /**
@@ -205,17 +213,16 @@ class pool {
   */
   trainHamster(pool, habitat, index, task, hamster, resolve, reject) {
     let onThreadResponse = (message) => {
-      pool.removeFromRunning(task, task.count);
       pool.processReturn(habitat, index, message, task);
+      pool.removeFromRunning(task, task.count);
       if (task.workers.length === 0 && task.count === task.threads) {
         pool.returnOutputAndRemoveTask(task, resolve);
       }
-      let pendingTasks = (pool.pending.length !== 0);
-      if (pendingTasks) {
-        pool.processQueue(pool.pending.shift(), hamster);
+      if (pool.pending.length !== 0) {
+        return pool.processQueue(pool.pending.shift(), hamster);
       }
-      if (!pendingTasks && !habitat.persistence && !habitat.webWorker) {
-        hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
+      if(!habitat.persistence) {
+        return hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
       }
     }
     if (habitat.webWorker) {

@@ -13,27 +13,12 @@ import hamstersData from '../src/core/data';
 
 describe("Hamsters Data", () => {
 
-  it("randomArray should generate a random array", () => {
-    hamstersData.randomArray(100, (randomArray) => {
-      expect(Array.isArray(randomArray)).toBe(true);
-      expect(randomArray.length).toEqual(100);
-    });
-  });
-
-  it("prepareJob should convert function to string", () => {
-    let preparedJob = hamstersData.prepareJob(() => {
+  it("prepareFunction should convert function to string", () => {
+    let preparedJob = hamstersData.prepareFunction(() => {
       console.log('All your cores are belong to me');
     });
     expect(typeof preparedJob).toEqual('string');
     expect(preparedJob.indexOf('console.log')).not.toBe(-1);
-  });
-
-  it("processDataType should convert buffer into array", () => {
-    let tempArray = new Int32Array(1, 2, 3, 4, 5, 6, 7, 8);
-    let tempBuffer = tempArray.buffer;
-    expect(typeof tempBuffer.reduce).toBe('undefined');
-    let convertedArray = hamstersData.processDataType('Int32', tempBuffer, true);
-    expect(typeof convertedArray.reduce).toBe('function');
   });
 
   describe("sortOutput options", () => {

@@ -20,14 +20,11 @@ class data {
   * @function constructor - Sets properties for this class
   */
   constructor() {
-    this.randomArray = this.randomArray;
-    this.getSubArrayFromIndex = this.getSubArrayFromIndex;
-    this.getIndexes = this.getSubArrayIndexes;
-    this.processDataType = this.typedArrayFromBuffer;
-    this.sortOutput = this.sortArray;
-    this.getOutput = this.prepareOutput;
-    this.prepareJob = this.prepareFunction;
-    this.feedHamster = this.messageWorker;
+    this.getSubArrayFromIndex;
+    this.getSubArrayIndexes;
+    this.sortOutput;
+    this.prepareFunction;
+    this.feedHamster;
   }
 
   /**
@@ -35,7 +32,7 @@ class data {
   * @param {worker} hamster - Thread to message
   * @param {object} hamsterFood - Message to send to thread
   */  
-  messageWorker(hamstersHabitat, hamster, hamsterFood) {
+  feedHamster(hamstersHabitat, hamster, hamsterFood) {
     if(hamstersHabitat.reactNative) {
       return hamster.postMessage(JSON.stringify(hamsterFood));
     }
@@ -77,19 +74,11 @@ class data {
   }
 
   /**
-  * @function prepareOutput - Prepares final task output
-  * @param {task} buffer - Task to prepare output for
-  */
-  prepareOutput(task) {
-    return task.input.array;
-  }
-
-  /**
   * @function sortArray - Sorts array by defined order
   * @param {object} arr - Array to sort
   * @param {string} order - Defined sort order
   */
-  sortArray(arr, order) {
+  sortOutput(arr, order) {
     switch(order) {
       case 'desc':
       case 'asc':
@@ -106,56 +95,21 @@ class data {
   }
 
   /**
-  * @function typedArrayFromBuffer - Converts buffer into new typed array
-  * @param {string} dataType - Typed array type for this task
-  * @param {object} buffer - Buffer to convert
-  */
-  typedArrayFromBuffer(dataType, buffer) {
-    const types = {
-      'Uint32': Uint32Array,
-      'Uint16': Uint16Array,
-      'Uint8': Uint8Array,
-      'Uint8clamped': Uint8ClampedArray,
-      'Int32': Int32Array,
-      'Int16': Int16Array,
-      'Int8': Int8Array,
-      'Float32': Float32Array,
-      'Float64': Float64Array
-    };
-    if(!types[dataType]) {
-      return buffer;
-    }
-    return new types[dataType](buffer);
-  }
-
-  /**
-  * @function randomArray - Creates new random array
-  * @param {number} count - Number of random elements in array
-  * @param {function} onSuccess - onSuccess callback
-  */
-  randomArray(count, onSuccess) {
-    var randomArray = [];
-    while(count > 0) {
-      randomArray.push(Math.round(Math.random() * (100 - 1) + 1));
-      count -= 1;
-    }
-    onSuccess(randomArray);
-  }
-
-  /**
   * @function addThreadOutputWithIndex - Joins individual thread outputs into single result
   * @param {array} input - Array of arrays to aggregate
   * @param {string} dataType - Data type to use for typed array
   */
   addThreadOutputWithIndex(task, index, output) {
     if(task.threads === 1) {
-      task.input.array = output;
-    } else {
-      let i = 0;
-      let outputLength = output.length;
-      for (i; i < outputLength; i++) {
-        task.input.array[(index.start + i)] = output[i];
-      }
+      return task.input.array = output;
+    }
+    if(typeof task.input.array.splice === "function") {
+      return task.input.array.splice(index.start, output.length, ...output);
+    }
+    let i = 0;
+    let outputLength = output.length;
+    for (i; i < outputLength; i++) {
+      task.input.array[(index.start + i)] = output[i];
     }
   }
 

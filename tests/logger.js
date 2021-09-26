@@ -61,7 +61,7 @@ describe("Hamsters Logger", () => {
 
   it("Search log book should return results for error event", () => {
     let message = 'I found them in here, like flowers in a wasteland. Profoundly naive; unimaginably wise. They were spectacular.';
-    let savedMessageObject = hamstersLogger.searchLogBook(message, 'error');
+    let savedMessageObject = hamstersLogger.searchLogEntries(message, 'error');
     expect(typeof savedMessageObject).toEqual('object');
     expect(savedMessageObject.total).toEqual(1);
     expect(savedMessageObject.results[0]).toContain(message);
@@ -69,7 +69,7 @@ describe("Hamsters Logger", () => {
 
   it("Search log book should return results for info event", () => {
     let message =  'ISOs, isomorphic algorithms,';
-    let savedMessageObject = hamstersLogger.searchLogBook(message, 'info');
+    let savedMessageObject = hamstersLogger.searchLogEntries(message, 'info');
     expect(typeof savedMessageObject).toEqual('object');
     expect(savedMessageObject.total).toEqual(2);
     expect(savedMessageObject.results[0]).toContain(message);
@@ -77,7 +77,7 @@ describe("Hamsters Logger", () => {
 
   it("Search log book should return results for warning event", () => {
     let message = 'Biodigital jazz, man! The ISOs, they were going to be my gift to the world.';
-    let savedMessageObject = hamstersLogger.searchLogBook(message, 'warning');
+    let savedMessageObject = hamstersLogger.searchLogEntries(message, 'warning');
     expect(typeof savedMessageObject).toEqual('object');
     expect(savedMessageObject.total).toEqual(1);
     expect(savedMessageObject.results[0]).toContain(message);
@@ -85,7 +85,7 @@ describe("Hamsters Logger", () => {
 
   it("Search log book should return results without error event", () => {
     let message = 'I found them in here, like flowers in a wasteland. Profoundly naive; unimaginably wise. They were spectacular.';
-    let savedMessageObject = hamstersLogger.searchLogBook(message);
+    let savedMessageObject = hamstersLogger.searchLogEntries(message);
     expect(typeof savedMessageObject).toEqual('object');
     expect(savedMessageObject.total).toEqual(1);
     expect(savedMessageObject.results[0]).toContain(message);
@@ -93,7 +93,7 @@ describe("Hamsters Logger", () => {
 
   it("Search log book should return results without info event", () => {
     let message = 'ISOs, isomorphic algorithms,';
-    let savedMessageObject = hamstersLogger.searchLogBook(message);
+    let savedMessageObject = hamstersLogger.searchLogEntries(message);
     expect(typeof savedMessageObject).toEqual('object');
     expect(savedMessageObject.total).toEqual(2);
     expect(savedMessageObject.results[0]).toContain(message);
@@ -101,7 +101,7 @@ describe("Hamsters Logger", () => {
 
   it("Search log book should return results without warning event", () => {
     let message = 'Biodigital jazz, man! The ISOs, they were going to be my gift to the world.';
-    let savedMessageObject = hamstersLogger.searchLogBook(message);
+    let savedMessageObject = hamstersLogger.searchLogEntries(message);
     expect(typeof savedMessageObject).toEqual('object');
     expect(savedMessageObject.total).toEqual(1);
     expect(savedMessageObject.results[0]).toContain(message);

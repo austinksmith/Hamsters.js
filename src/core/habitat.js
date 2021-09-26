@@ -35,11 +35,12 @@ class habitat {
     this.isIE = this.isInternetExplorer();
     this.hamsterWheel = this.selectHamsterWheel();
     this.sharedWorker = this.locateSharedWorkerObject();
-    this.locateBlobBuilder = this.locateBlobBuilder;
+    this.locateBlobBuilder;
     this.legacy = this.isLegacyEnvironment();
     this.legacyWheel = hamstersWheel.legacy;
     this.Worker = this.locateWorkerObject();
     this.maxThreads = this.determineGlobalThreads();
+    this.keys = this.getHabitatKeys();
   }
 
   /**
@@ -226,6 +227,19 @@ class habitat {
       return './node_modules/hamsters.js/build/common/node.js';
     }
     return this.generateWorkerBlob(hamstersWheel.regular);
+  }
+
+  getHabitatKeys() {
+    return [
+      'worker','sharedworker',
+      'legacy','proxies',
+      'reactnative','atomics',
+      'transferable','browser',
+      'shell','node','debug',
+      'persistence','importscripts',
+      'maxThreads', 'parentPort',
+      'webworker',
+    ];
   }
 }
 

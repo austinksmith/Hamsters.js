@@ -16,7 +16,6 @@ import hamstersHabitat from './core/habitat';
 import hamstersPool from './core/pool';
 import hamstersData from './core/data';
 import hamstersLogger from './core/logger';
-import hamstersMemoizer from './core/memoizer';
 
 class hamstersjs {
 
@@ -26,32 +25,20 @@ class hamstersjs {
   */
   constructor() {
     this.version = hamstersVersion;
-    this.init = this.initializeLibrary;
+    this.init;
     this.habitat = hamstersHabitat;
     this.data = hamstersData;
     this.pool = hamstersPool;
     this.logger = hamstersLogger;
-    this.memoizer = hamstersMemoizer;
-    this.scheduleTask = this.scheduleTask;
     this.run = this.hamstersRun.bind(this);
     this.promise = this.hamstersPromise.bind(this);
-    this.habitatKeys = [
-      'worker','sharedworker',
-      'legacy','proxies',
-      'reactnative','atomics',
-      'transferable','browser',
-      'shell','node','debug',
-      'persistence','importscripts',
-      'maxThreads', 'parentPort',
-      'webworker',
-    ];
   }
 
   /**
   * @function initializeLibrary - Prepares & initializes Hamsters.js library
   * @param {object} startOptions - Provided library functionality options
   */
-  initializeLibrary(startOptions) {
+  init(startOptions) {
     this.processStartOptions(startOptions);
     if(!this.habitat.legacy && this.habitat.persistence === true) {
       hamstersPool.spawnHamsters(this.habitat.maxThreads);
@@ -67,7 +54,7 @@ class hamstersjs {
   processStartOptions(startOptions) {
     if (typeof startOptions !== 'undefined') {
       for (var key of Object.keys(startOptions)) {
-        if (this.habitatKeys.indexOf(key.toLowerCase()) !== -1) {
+        if (this.habitat.keys.indexOf(key.toLowerCase()) !== -1) {
           this.habitat[key] = startOptions[key];
         } else {
           this[key] = startOptions[key];
@@ -92,21 +79,23 @@ class hamstersjs {
   * @return {object} new Hamsters.js task
   */
   hamstersTask(params, functionToRun) {
-    let taskId = this.pool.tasks.length;
-    let taskThreads = (this.habitat.legacy ? 1 : (params.threads || 1));
-    let taskIndexes = (params.indexes || this.data.getIndexes(params.array, taskThreads));
-    if((this.habitat.legacy || this.habitat.webWorker) && !this.habitat.node && !this.habitat.isIE) {
+    if(this.habitat.legacy && !this.habitat.node && !this.habitat.isIE) {
       params.hamstersJob = functionToRun;
     } else {
-      params.hamstersJob = this.data.prepareJob(functionToRun);
+      params.hamstersJob = this.data.prepareFunction(functionToRun);
+    }
+    let taskThreads = ((!this.habitat.legacy && params.threads) ? params.threads : 1);
+    let indexes = params.indexes;
+    if(taskThreads !== 1 && !indexes) {
+      indexes = this.data.getSubArrayIndexes(params.array, taskThreads);
     }
     return {
-      id: taskId,
+      id: this.pool.tasks.length,
       count: 0,
       threads: taskThreads,
       workers: [],
-      indexes: taskIndexes,
-      memoize: (params.memoize || false),
+      indexes: (indexes ? indexes : [{}]),
+      memoize: (params.memoize ? params.memoize : false),
       dataType: (params.dataType ? params.dataType : null),
       input: params
     };

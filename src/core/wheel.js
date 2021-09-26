@@ -19,15 +19,15 @@ class wheel {
   * @function constructor - Sets properties for this class
   */
   constructor() {
-    this.worker = this.workerScaffold;
-    this.regular = this.regularScaffold;
-    this.legacy = this.legacyScaffold;
+    this.worker;
+    this.regular;
+    this.legacy;
   }
 
   /**
   * @function workerScaffold - Provides worker body for library functionality when used within a worker [threads inside threads]
   */
-  workerScaffold() {
+  worker() {
     self.params = {};
     self.rtn = {};
 
@@ -49,7 +49,7 @@ class wheel {
   /**
   * @function workerScaffold - Provides worker body for library functionality
   */
-  regularScaffold() {
+  regular() {
     self.params = {};
     self.rtn = {};
 
@@ -64,37 +64,10 @@ class wheel {
 
     var putHamsterToWork = function() {
       new Function(params.hamstersJob)();
-      returnResponse(rtn);
+      returnResponse(rtn, []);
     }
 
-    var returnResponse = function(rtn) {
-      if(rtn.dataType) {
-        rtn.data = typedArrayFromBuffer(rtn.dataType, rtn.data);
-        prepareTransferBuffers(rtn, []);
-      } else {
-        return postMessage(rtn);
-      }
-    }
-
-    var typedArrayFromBuffer = function(dataType, buffer) {
-      var types = {
-        'Uint32': Uint32Array,
-        'Uint16': Uint16Array,
-        'Uint8': Uint8Array,
-        'Uint8clamped': Uint8ClampedArray,
-        'Int32': Int32Array,
-        'Int16': Int16Array,
-        'Int8': Int8Array,
-        'Float32': Float32Array,
-        'Float64': Float64Array
-      };
-      if (!types[dataType]) {
-        return buffer;
-      }
-      return new types[dataType](buffer);
-    }
-
-    var prepareTransferBuffers = function(rtn, buffers) {
+    var returnResponse = function(rtn, buffers) {
       Object.keys(rtn).forEach(function(key) {
         var item = rtn[key];
         if(typeof item.buffer !== 'undefined') {
@@ -105,7 +78,7 @@ class wheel {
           }
         }
       });
-      return postMessage(rtn, buffers);
+      postMessage(rtn, buffers);
     }
   }
 
@@ -114,7 +87,7 @@ class wheel {
   /**
   * @function legacyScaffold - Provides library functionality for legacy devices
   */
-  legacyScaffold(hamstersHabitat, params, resolve, reject) {
+  legacy(hamstersHabitat, params, resolve, reject) {
     var rtn = {
       data: [],
       dataType: (typeof params.dataType !== "undefined" ? params.dataType : null)
