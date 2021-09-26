@@ -92,7 +92,10 @@ class habitat {
   * @function isInternetExplorer - Detects if execution environment is internet explorer
   */
   isInternetExplorer() {
-    return (navigator.userAgent.indexOf("MSIE ") !== -1 || navigator.userAgent.indexOf("Trident/") !== -1);
+    if(typeof navigator !== "undefined") {
+      return (navigator.userAgent.indexOf("MSIE ") !== -1 || navigator.userAgent.indexOf("Trident/") !== -1);
+    }
+    return false;
   }
 
   /**
