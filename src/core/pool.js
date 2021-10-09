@@ -191,8 +191,7 @@ class pool {
     let output = message.data;
     if(habitat.reactNative) {
       output = JSON.parse(message).data;
-    }
-    if(typeof message.data.data !== "undefined") {
+    } else if(typeof message.data.data !== "undefined") {
       output = message.data.data;
     }
     if(task.threads !== 1) {

@@ -82,12 +82,6 @@ class data {
   * @param {string} dataType - Data type to use for typed array
   */
   addThreadOutputWithIndex(task, index, output) {
-    if(task.threads === 1) {
-      return task.input.array = output;
-    }
-    if(typeof task.input.array.splice === "function") {
-      return task.input.array.splice(index.start, output.length, ...output);
-    }
     let i = 0;
     let outputLength = output.length;
     for (i; i < outputLength; i++) {

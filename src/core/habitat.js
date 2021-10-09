@@ -64,7 +64,10 @@ class habitat {
   * @function isFireox - Detect firefox browser
   */
   isFirefox() {
-    return (navigator.userAgent.toLowerCase().indexOf('firefox') !== -1);
+    if(typeof navigator !== "undefined" && typeof navigator.userAgent !== "undefined") {
+      return (navigator.userAgent.toLowerCase().indexOf('firefox') !== -1);
+    }
+    return false;
   }
 
   /**
@@ -92,7 +95,7 @@ class habitat {
   * @function isInternetExplorer - Detects if execution environment is internet explorer
   */
   isInternetExplorer() {
-    if(typeof navigator !== "undefined") {
+    if(typeof navigator !== "undefined" && typeof navigator.userAgent !== "undefined") {
       return (navigator.userAgent.indexOf("MSIE ") !== -1 || navigator.userAgent.indexOf("Trident/") !== -1);
     }
     return false;
