@@ -243,7 +243,7 @@ class habitat {
       'transferable','browser',
       'shell','node','debug',
       'persistence','importscripts',
-      'maxThreads', 'parentPort',
+      'maxthreads', 'parentport',
       'webworker',
     ];
   }
