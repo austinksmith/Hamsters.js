@@ -65,25 +65,3 @@ You can find a view examples of the library in action using the links below.
 Any support you can provide means a world of difference for projects like Hamsters.js, creating high quality software can be a time consuming and expensive process, especially a project as ambitious as this one.
 
 Please support continued efforts to provide updates like optimizing for the latest and greatest features and computer hardware. Multiple donation types are accepted including OpenCollective, PayPal, and various crypto currencies on the [Hamsters.js donation page](https://www.hamsters.io/donate)
-
-## Donators
-
-Thank you 🙏 [Back Hamsters.js](https://opencollective.com/hamstersjs#backer)
-
-<a href="https://opencollective.com/hamstersjs#backers" target="_blank"><img src="https://opencollective.com/hamstersjs/backers.svg?width=890"></a>
-
-
-## Sponsors
-
-Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [Sponsor Hamsters.js](https://opencollective.com/hamstersjs#sponsor)
-
-<a href="https://opencollective.com/hamstersjs/sponsor/0/website" target="_blank"><img src="https://opencollective.com/hamstersjs/sponsor/0/avatar.svg"></a>
-<a href="https://opencollective.com/hamstersjs/sponsor/1/website" target="_blank"><img src="https://opencollective.com/hamstersjs/sponsor/1/avatar.svg"></a>
-<a href="https://opencollective.com/hamstersjs/sponsor/2/website" target="_blank"><img src="https://opencollective.com/hamstersjs/sponsor/2/avatar.svg"></a>
-<a href="https://opencollective.com/hamstersjs/sponsor/3/website" target="_blank"><img src="https://opencollective.com/hamstersjs/sponsor/3/avatar.svg"></a>
-<a href="https://opencollective.com/hamstersjs/sponsor/4/website" target="_blank"><img src="https://opencollective.com/hamstersjs/sponsor/4/avatar.svg"></a>
-<a href="https://opencollective.com/hamstersjs/sponsor/5/website" target="_blank"><img src="https://opencollective.com/hamstersjs/sponsor/5/avatar.svg"></a>
-<a href="https://opencollective.com/hamstersjs/sponsor/6/website" target="_blank"><img src="https://opencollective.com/hamstersjs/sponsor/6/avatar.svg"></a>
-<a href="https://opencollective.com/hamstersjs/sponsor/7/website" target="_blank"><img src="https://opencollective.com/hamstersjs/sponsor/7/avatar.svg"></a>
-<a href="https://opencollective.com/hamstersjs/sponsor/8/website" target="_blank"><img src="https://opencollective.com/hamstersjs/sponsor/8/avatar.svg"></a>
-<a href="https://opencollective.com/hamstersjs/sponsor/9/website" target="_blank"><img src="https://opencollective.com/hamstersjs/sponsor/9/avatar.svg"></a>
