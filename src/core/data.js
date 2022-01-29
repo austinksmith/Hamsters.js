@@ -9,10 +9,6 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-'use strict';
-
-import hamstersLogger from './logger';
-
 class data {
 
   /**
@@ -20,19 +16,21 @@ class data {
   * @function constructor - Sets properties for this class
   */
   constructor() {
-    this.getSubArrayFromIndex;
-    this.getSubArrayIndexes;
-    this.sortOutput;
-    this.prepareFunction;
-    this.feedHamster;
+    'use strict';
+
+    this.getSubArrayFromIndex = this.getSubArrayUsingIndex;
+    this.getSubArrayIndexes = this.calculateIndexes;
+    this.sortOutput = this.sortTaskOutput;
+    this.prepareFunction = this.prepareWorkerTask;
+    this.feedHamster = this.messageWorkerThread;
   }
 
   /**
-  * @function messageWorker - Prepares message to send to thread
+  * @function messageWorkerThread - Prepares message to send to thread
   * @param {worker} hamster - Thread to message
   * @param {object} hamsterFood - Message to send to thread
   */  
-  feedHamster(hamstersHabitat, hamster, hamsterFood) {
+  messageWorkerThread(hamstersHabitat, hamster, hamsterFood) {
     if(hamstersHabitat.reactNative) {
       return hamster.postMessage(JSON.stringify(hamsterFood));
     }
@@ -47,20 +45,20 @@ class data {
   }
 
   /**
-  * @function prepareFunction - Prepares function for thread, strips whitespace
+  * @function prepareWorkerTask - Prepares function for thread, strips whitespace
   * @param {function} functionBody - Message to send to thread
   */
-  prepareFunction(functionBody) {
+  prepareWorkerTask(functionBody) {
     let functionString = String(functionBody);
     return functionString.substring((functionString.indexOf("{") + 1), (functionString.length -1));
   }
 
   /**
-  * @function sortArray - Sorts array by defined order
+  * @function sortTaskOutput - Sorts array by defined order
   * @param {object} arr - Array to sort
   * @param {string} order - Defined sort order
   */
-  sortOutput(arr, order) {
+  sortTaskOutput(arr, order) {
     switch(order) {
       case 'desc':
       case 'asc':
@@ -90,11 +88,11 @@ class data {
   }
 
   /**
-  * @function splitArrayIntoSubArrays - Splits a single array into multiple equal sized subarrays
+  * @function calculateIndexes - Splits a single array into multiple equal sized subarrays
   * @param {array} array - Array to split
   * @param {number} n - Number of subarrays to create
   */
-  getSubArrayIndexes(array, n) {
+  calculateIndexes(array, n) {
     let indexes = [];
     let i = 0;
     let size = Math.ceil(array.length/n);
@@ -109,7 +107,7 @@ class data {
   * @param {array} array - Array to split
   * @param {number} n - Number of subarrays to create
   */
-  getSubArrayFromIndex(index, task) {
+  getSubArrayUsingIndex(index, task) {
     if(typeof task.input.array.slice === "function") {
       return task.input.array.slice(index.start, index.end);
     }

@@ -93,7 +93,7 @@ describe("Hamsters Habitat", () => {
   });
 
   it("locateBlobBuilder should return string", () => {
-    let builder = hamstersHabitat.locateBlobBuilder();
+    let builder = hamstersHabitat.findAvailableBlobBuilder();
     expect(typeof builder).toBe('string');
   });
 

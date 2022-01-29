@@ -9,13 +9,9 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-'use strict';
-
-import hamstersVersion from './core/version';
 import hamstersHabitat from './core/habitat';
 import hamstersPool from './core/pool';
 import hamstersData from './core/data';
-import hamstersLogger from './core/logger';
 
 class hamstersjs {
 
@@ -24,27 +20,28 @@ class hamstersjs {
   * @function constructor - Sets properties for this class
   */
   constructor() {
-    this.version = hamstersVersion;
-    this.init;
+    'use strict';
+
+    this.version = '5.4.2';
     this.habitat = hamstersHabitat;
     this.data = hamstersData;
     this.pool = hamstersPool;
-    this.logger = hamstersLogger;
     this.run = this.hamstersRun.bind(this);
     this.promise = this.hamstersPromise.bind(this);
+    this.init = this.inititializeLibrary.bind(this);
   }
 
   /**
   * @function initializeLibrary - Prepares & initializes Hamsters.js library
   * @param {object} startOptions - Provided library functionality options
   */
-  init(startOptions) {
+  inititializeLibrary(startOptions) {
     this.processStartOptions(startOptions);
     if(!this.habitat.legacy && this.habitat.persistence === true) {
       hamstersPool.spawnHamsters(this.habitat.maxThreads);
     }
     this.maxThreads = this.habitat.maxThreads;
-    hamstersLogger.info(`Initialized using up to ${this.habitat.maxThreads} threads.`);
+    console.info(`Hamsters.js ${this.version} initialized using up to ${this.habitat.maxThreads} threads.`);
   }
 
   /**
@@ -66,7 +63,7 @@ class hamstersjs {
     if(forceLegacyMode) {
       forceLegacyMode = startOptions.legacy;
     }
-    if(typeof this.habitat['Worker'] === 'function' && !forceLegacyMode) {
+    if(typeof this.habitat.Worker === 'function' && !forceLegacyMode) {
       this.habitat.legacy = this.habitat.isIE;
     }
   }
@@ -79,33 +76,49 @@ class hamstersjs {
   * @return {object} new Hamsters.js task
   */
   hamstersTask(params, functionToRun) {
-    if(this.habitat.legacy && !this.habitat.node && !this.habitat.isIE) {
-      params.hamstersJob = functionToRun;
+    let task = {
+      id: this.pool.tasks.length,
+      input: params,
+      scheduler: {
+        count: 0,
+        threads: (params.threads ? params.threads : 1),
+        workers: [],
+        indexes: (params.indexes ? params.indexes : null),
+        metrics: {
+          created_at: Date.now(),
+          started_at: null,
+          completed_at: null,
+          threads: []
+        }
+      }
+    };
+    if(this.habitat.legacy) {
+      task.scheduler.threads = 1;
+      if(!this.habitat.node && !this.habitat.isIE) {
+        params.hamstersJob = functionToRun;
+      }
     } else {
       params.hamstersJob = this.data.prepareFunction(functionToRun);
+      if(!task.scheduler.indexes) {
+        task.scheduler.indexes = this.data.getSubArrayIndexes(params.array, task.scheduler.threads);
+      }
     }
-    let taskThreads = ((!this.habitat.legacy && params.threads) ? params.threads : 1);
-    let indexes = params.indexes;
-    if(taskThreads !== 1 && !indexes) {
-      indexes = this.data.getSubArrayIndexes(params.array, taskThreads);
-    }
-    return {
-      id: this.pool.tasks.length,
-      count: 0,
-      threads: taskThreads,
-      workers: [],
-      indexes: (indexes ? indexes : [{}]),
-      memoize: (params.memoize ? params.memoize : false),
-      dataType: (params.dataType ? params.dataType : null),
-      input: params
-    };
+    return task;
   }
 
+  /**
+  * @async
+  * @function hamstersPromise - Schedules new function to be processed by library
+  * @param {object} task - Provided library execution options
+  * @param {function} resolve - Parent function promise resolve method
+  * @param {function} reject- Parent function promise reject method
+  * @return {object} Promise object on completion
+  */
   scheduleTask(task, resolve, reject) {
     return this.pool.scheduleTask(task).then((results) => {
       resolve(results);
     }).catch((error) => {
-      this.logger.error(error.messsage, reject);
+      console.error("Hamsters.js error encountered: ", error);
     });
   }
 
@@ -114,7 +127,7 @@ class hamstersjs {
   * @function hamstersPromise - Calls library functionality using async promises
   * @param {object} params - Provided library execution options
   * @param {function} functionToRun - Function to execute
-  * @return {array} Results from functionToRun.
+  * @return {array} Results from functionToRun
   */
   hamstersPromise(params, functionToRun) {
     return new Promise((resolve, reject) => {

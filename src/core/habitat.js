@@ -9,8 +9,6 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-'use strict';
-
 import hamstersWheel from './wheel';
 
 class habitat {
@@ -20,6 +18,8 @@ class habitat {
   * @function constructor - Sets properties for this class
   */
   constructor() {
+    'use strict';
+
     this.debug = false;
     this.importScripts = null;
     this.memoize = false;
@@ -35,7 +35,7 @@ class habitat {
     this.isIE = this.isInternetExplorer();
     this.hamsterWheel = this.selectHamsterWheel();
     this.sharedWorker = this.locateSharedWorkerObject();
-    this.locateBlobBuilder;
+    this.locateBlobBuilder = this.findAvailableBlobBuilder();
     this.legacy = this.isLegacyEnvironment();
     this.legacyWheel = hamstersWheel.legacy;
     this.Worker = this.locateWorkerObject();
@@ -119,7 +119,7 @@ class habitat {
   * @function isReactNative - Detects if execution environment is reactNative
   */
   isReactNative() {
-    return (typeof navigator !== "undefined" && typeof navigator.product !== "undefined" && navigator.product == "ReactNative");
+    return (typeof navigator !== "undefined" && typeof navigator.product !== "undefined" && navigator.product === "ReactNative");
   }
 
   /**
@@ -156,7 +156,7 @@ class habitat {
   /**
   * @function createDataBlob - Attempts to locate data blob builder, vender prefixes galore
   */
-  locateBlobBuilder() {
+  findAvailableBlobBuilder() {
     if(typeof BlobBuilder !== 'undefined') {
       return BlobBuilder;
     }

@@ -9,7 +9,7 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-const { Worker, parentPort } = require('worker_threads');
+const { parentPort } = require('worker_threads');
 
 (function() {
 
@@ -29,7 +29,7 @@ const { Worker, parentPort } = require('worker_threads');
     returnResponse(rtn);
   });
 
-  const returnResponse = function(rtn, buffers) {
+  function returnResponse(rtn, buffers) {
     if(typeof rtn.data.buffer !== 'undefined') {
       parentPort.postMessage(rtn, [rtn.data.buffer]);
     } else {
@@ -37,7 +37,7 @@ const { Worker, parentPort } = require('worker_threads');
     }
   }
 
-  const typedArrayFromBuffer = (dataType, buffer) => {
+  function typedArrayFromBuffer(dataType, buffer) {
     const types = {
       'Uint32': Uint32Array,
       'Uint16': Uint16Array,

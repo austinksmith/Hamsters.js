@@ -9,9 +9,6 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-'use strict';
-
-
 class wheel {
 
   /**
@@ -19,15 +16,17 @@ class wheel {
   * @function constructor - Sets properties for this class
   */
   constructor() {
-    this.worker;
-    this.regular;
-    this.legacy;
+    'use strict';
+
+    this.worker = this.workerScaffold;
+    this.regular = this.regularScaffold;
+    this.legacy = this.legacyScaffold;
   }
 
   /**
   * @function workerScaffold - Provides worker body for library functionality when used within a worker [threads inside threads]
   */
-  worker() {
+  workerScaffold() {
     self.params = {};
     self.rtn = {};
 
@@ -49,23 +48,24 @@ class wheel {
   /**
   * @function workerScaffold - Provides worker body for library functionality
   */
-  regular() {
+  regularScaffold() {
     self.params = {};
     self.rtn = {};
+
     self.onmessage = function(message) {
       params = message.data;
       rtn = {
         data: [],
         dataType: (typeof params.dataType !== 'undefined' ? params.dataType : null)
       };
-      new Function(params.hamstersJob)();
+      eval(params.hamstersJob);
       if(rtn.dataType) {
         rtn.data = typedArrayFromBuffer(rtn.dataType, rtn.data);
       }
       returnResponse(rtn);
-    }
+    };
 
-    var typedArrayFromBuffer = (dataType, buffer) => {
+    function typedArrayFromBuffer(dataType, buffer) {
       var types = {
         'Uint32': Uint32Array,
         'Uint16': Uint16Array,
@@ -83,7 +83,7 @@ class wheel {
       return new types[dataType](buffer);
     }
 
-    var returnResponse = function(rtn, buffers) {
+    function returnResponse(rtn, buffers) {
       if(typeof rtn.data.buffer !== 'undefined') {
         postMessage(rtn, [rtn.data.buffer]);
       } else {
@@ -95,7 +95,7 @@ class wheel {
   /**
   * @function legacyScaffold - Provides library functionality for legacy devices
   */
-  legacy(hamstersHabitat, params, resolve, reject) {
+  legacyScaffold(hamstersHabitat, params, resolve, reject) {
     var rtn = {
       data: [],
       dataType: (typeof params.dataType !== "undefined" ? params.dataType : null)
@@ -110,8 +110,7 @@ class wheel {
     }
     resolve(rtn.data);
   }
-
-};
+}
 
 var hamstersWheel = new wheel();
 

@@ -1,4 +1,4 @@
-/* jshint esversion: 5, curly: true, eqeqeq: true, forin: true */
+/* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
 
 /***********************************************************************************
 * Title: Hamsters.js                                                               *
@@ -25,5 +25,5 @@ import { self } from 'react-native-hamsters';
 
     const returnResponse = rtn => {
       return self.postMessage(JSON.stringify(rtn));
-    }
+    };
 }());

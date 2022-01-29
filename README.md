@@ -8,26 +8,24 @@
 
 **License**: Artistic License 2.0
 
-[![Backers on Open Collective](https://opencollective.com/hamstersjs/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/hamstersjs/sponsors/badge.svg)](#sponsors)
-
 [![npm version](https://img.shields.io/npm/v/hamsters.js.svg?style=flat-square)](https://www.npmjs.com/package/hamsters.js)
 [![downloads](https://img.shields.io/npm/dm/hamsters.js.svg?style=flat-square)](https://www.npmjs.com/package/hamsters.js)
 
 # Environment Support
 
-* All major browsers IE9+
-* Inside of existing web workers (threads inside threads)
-* Javascript shell environments
-* React Native
+* All major browsers Internet Explorer 9 and greater
+* ReactNative
 * Node.js
+* Javascript shell environments
+* Inside existing worker threads (Threading inside Threads)
 
 # Examples
 
 You can find a view examples of the library in action using the links below.
 
-[Collatz Conjecture](https://www.hamsters.io/examples/collatz-conjecture)
-
 [Square Root](https://www.hamsters.io/examples/square-root)
+
+[Collatz Conjecture](https://www.hamsters.io/examples/collatz-conjecture)
 
 
 # Installing Hamsters
@@ -62,6 +60,4 @@ You can find a view examples of the library in action using the links below.
 
 # Support Hamsters.js
 
-Any support you can provide means a world of difference for projects like Hamsters.js, creating high quality software can be a time consuming and expensive process, especially a project as ambitious as this one.
-
-Please support continued efforts to provide updates like optimizing for the latest and greatest features and computer hardware. Multiple donation types are accepted including OpenCollective, PayPal, and various crypto currencies on the [Hamsters.js donation page](https://www.hamsters.io/donate)
+Hamsters.js is a self funded project, in order to provide updates and host the project website I rely on donations. Unfortunately over the years donations have been lacking, please consider donating today so I can continue to support this project, thank you. Multiple donation types are accepted including OpenCollective, PayPal, and various crypto currencies on the [Hamsters.js donation page](https://www.hamsters.io/donate)
