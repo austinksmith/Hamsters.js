@@ -22,7 +22,7 @@ class hamstersjs {
   constructor() {
     'use strict';
 
-    this.version = '5.4.2';
+    this.version = '5.4.3';
     this.habitat = hamstersHabitat;
     this.data = hamstersData;
     this.pool = hamstersPool;
@@ -41,7 +41,7 @@ class hamstersjs {
       hamstersPool.spawnHamsters(this.habitat.maxThreads);
     }
     this.maxThreads = this.habitat.maxThreads;
-    console.info(`Hamsters.js ${this.version} initialized using up to ${this.habitat.maxThreads} threads.`);
+    console.info(`Hamsters.js ${this.version} initialized using up to ${this.habitat.maxThreads} threads`);
   }
 
   /**

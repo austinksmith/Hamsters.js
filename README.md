@@ -13,7 +13,7 @@
 
 # Environment Support
 
-* All major browsers Internet Explorer 9 and greater
+* All major browsers Internet Explorer 10 and greater
 * ReactNative
 * Node.js
 * Javascript shell environments
@@ -60,4 +60,4 @@ You can find a view examples of the library in action using the links below.
 
 # Support Hamsters.js
 
-Hamsters.js is a self funded project, in order to provide updates and host the project website I rely on donations. Unfortunately over the years donations have been lacking, please consider donating today so I can continue to support this project, thank you. Multiple donation types are accepted including OpenCollective, PayPal, and various crypto currencies on the [Hamsters.js donation page](https://www.hamsters.io/donate)
+Hamsters.js is a self funded project, in order to provide updates and host the project website I rely on donations. Please consider donating today so I can continue to support this project, thank you. [Hamsters.js donation page](https://www.hamsters.io/donate)

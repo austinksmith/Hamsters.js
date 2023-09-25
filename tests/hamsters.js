@@ -18,6 +18,10 @@ describe("Hamsters.js", () => {
     expect(typeof hamsters.init).toBe('function'); 
   });
 
+  it("Version should be populated", () => {
+    expect(typeof hamsters.version).toBe('string');
+  });
+
   it("maxThreads should be detected and match logical thread count", () => {
   	var maxThreads = (typeof navigator.hardwareConcurrency !== 'undefined' ? navigator.hardwareConcurrency : 4);
     expect(hamsters.maxThreads).toEqual(maxThreads);

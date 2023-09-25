@@ -13,6 +13,31 @@ import hamstersData from '../src/core/data';
 
 describe("Hamsters Data", () => {
 
+  it("getSubrrayIndexes should calculate array indexes", () => {
+    const array = [1,2,3,4];
+    const numberOfThreads = 2;
+    const indexes = hamstersData.getSubArrayIndexes(array, numberOfThreads);
+    const size = Math.ceil(array.length/numberOfThreads);
+    for (let i = 0; i < numberOfThreads; i += size) {
+      expect(indexes[i].start).toEqual(i);
+      expect(indexes[i].end).toEqual(((i + size) - 1));
+    }
+  });
+
+  it("getSubArrayFromIndex should return subarray using index", () => {
+    const index = {start: 1, end: 3};
+    const dataArray = [1,2,3,4];
+    const task = {
+      input: {
+        array: dataArray
+      }
+    }
+    const output = hamstersData.getSubArrayFromIndex(index, task);
+    expect(output[0]).toEqual(2);
+    expect(output[1]).toEqual(3);
+    expect(output[2]).toEqual(4);
+  });
+
   it("prepareFunction should convert function to string", () => {
     let preparedJob = hamstersData.prepareFunction(() => {
       console.log('All your cores are belong to me');

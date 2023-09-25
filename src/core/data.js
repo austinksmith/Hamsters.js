@@ -96,8 +96,8 @@ class data {
     let indexes = [];
     let i = 0;
     let size = Math.ceil(array.length/n);
-    while (i < array.length) {
-      indexes.push({start: i, end: i += size});
+    for (let i = 0; i < array.length; i += size) {
+      indexes.push({start: i, end: ((i + size) - 1)});
     }
     return indexes;
   }
@@ -108,10 +108,7 @@ class data {
   * @param {number} n - Number of subarrays to create
   */
   getSubArrayUsingIndex(index, task) {
-    if(typeof task.input.array.slice === "function") {
-      return task.input.array.slice(index.start, index.end);
-    }
-    return task.input.array.subarray(index.start, index.end);
+    return task.input.array.slice(index.start, index.end + 1);
   }
 }
 
