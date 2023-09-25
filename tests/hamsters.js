@@ -27,4 +27,42 @@ describe("Hamsters.js", () => {
     expect(hamsters.maxThreads).toEqual(maxThreads);
   });
 
+  for(var i = 0; i < 8; i++) {
+    it("hamstersRun should execute a function using callbacks", () => {
+      const params = {
+        array: [1,2,3,4,5,6,7,8],
+        threads: (i +1)
+      };
+      hamsters.run(params, function() {
+        for (var i = 0; i < params.array.length; i++) {
+          rtn.data.push(params.array[i] * 2);
+        }
+      }, function(results) {
+          expect(typeof results).toBe('object');
+          expect(results[i]).toEqual(params.array[i] * 2)
+      }, function(error) {
+        console.error(error);
+      });
+    });
+
+    it("hamstersPromise should execute a function using promises", () => {
+      const params = {
+        array: [1,2,3,4,5,6,7,8],
+        threads: (i +1)
+      };
+      hamsters.promise(params, function() {
+        for(var i = 0; i < params.array; i++) {
+          rtn.data.push(params.array[i] * 2);
+        }
+      }).then(function(results) {
+        expect(typeof results).toBe('object');
+        expect(results[i]).toEqual(params.array[i] * 2)
+      }).catch(function(error) {
+          console.error(error);
+      });
+    });
+
+  }
+
+
 });
