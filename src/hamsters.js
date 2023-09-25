@@ -77,19 +77,11 @@ class hamstersjs {
   */
   hamstersTask(params, functionToRun) {
     let task = {
-      id: this.pool.tasks.length,
       input: params,
       scheduler: {
         count: 0,
         threads: (params.threads ? params.threads : 1),
-        workers: [],
-        indexes: (params.indexes ? params.indexes : null),
-        metrics: {
-          created_at: Date.now(),
-          started_at: null,
-          completed_at: null,
-          threads: []
-        }
+        workers: []
       }
     };
     if(this.habitat.legacy) {
@@ -99,9 +91,15 @@ class hamstersjs {
       }
     } else {
       params.hamstersJob = this.data.prepareFunction(functionToRun);
-      if(!task.scheduler.indexes) {
-        task.scheduler.indexes = this.data.getSubArrayIndexes(params.array, task.scheduler.threads);
-      }
+      task.scheduler.indexes = params.indexes ? params.indexes : this.data.getSubArrayIndexes(params.array, task.scheduler.threads);
+    }
+    if(this.habitat.debug) {
+      task.scheduler.metrics = {
+        created_at: Date.now(),
+        started_at: null,
+        completed_at: null,
+        threads: []
+      };
     }
     return task;
   }
@@ -135,12 +133,12 @@ class hamstersjs {
     });
   }
 
-  /**
+  /**unction} functionToRun - Function to execute
+  * @param {function} onSuccess - Function to call upon successful execution
+  * @param {f
   * @async
   * @function hamstersRun - Calls library functionality using async callbacks
   * @param {object} params - Provided library execution options
-  * @param {function} functionToRun - Function to execute
-  * @param {function} onSuccess - Function to call upon successful execution
   * @param {function} onError - Function to call upon execution failure
   * @return {array} Results from functionToRun.
   */

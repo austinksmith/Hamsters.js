@@ -21,8 +21,7 @@ class pool {
   constructor() {
     'use strict';
 
-    this.tasks = [];
-	  this.threads = [];
+    this.threads = [];
     this.running = [];
     this.pending = [];
     this.fetchHamster = this.getAvailableThread;
@@ -39,9 +38,7 @@ class pool {
   */
   addWorkToPending(index, task, resolve, reject) {
     if(hamstersHabitat.debug) {
-      let threads = task.scheduler.metrics.threads;
-      let thread = threads[threads.length - 1];
-      thread.enqueued_at = Date.now();
+      task.scheduler.metrics.threads[threads.length - 1].enqueued_at = Date.now();
     }
     this.pending.push({
       index: index,
@@ -58,9 +55,7 @@ class pool {
   */
   processQueuedItem(hamster, item) {
     if(hamstersHabitat.debug) {
-      let threads = item.task.scheduler.metrics.threads;
-      let thread = threads[item.count];
-      thread.dequeued_at = Date.now();
+      item.task.scheduler.metrics.threads[item.count].dequeued_at = Date.now();
     }
   	return this.runTask(hamster, item.index, item.task, item.resolve, item.reject);
   }
@@ -85,20 +80,10 @@ class pool {
   */
   keepTrackOfThread(task, id) {
     if(hamstersHabitat.debug) {
-      let threads = task.scheduler.metrics.threads;
-      let thread = threads[threads.length - 1];
-      thread.started_at = Date.now();
+      task.scheduler.metrics.threads[id].started_at = Date.now();
     }
     task.scheduler.workers.push(id); //Keep track of threads scoped to current task
     this.running.push(id); //Keep track of all currently running threads
-  }
-
-  /**
-  * @function registerTask - Adds task to execution pool based on id
-  * @param {number} id - Id of task to register
-  */
-  registerTask(id) {
-    this.tasks.push(id);
   }
 
   /**
@@ -155,12 +140,11 @@ class pool {
   runTask(hamster, index, task, resolve, reject) {
   	let threadId = this.running.length;
     let hamsterFood = this.prepareMeal(index, task);
-    this.registerTask(task.id);
     this.keepTrackOfThread(task, threadId);
     if(hamstersHabitat.legacy) {
       hamstersHabitat.legacyWheel(hamstersHabitat, hamsterFood, resolve, reject);
     } else {
-      this.trainHamster(this, hamstersHabitat, index, task, hamster, resolve, reject);
+      this.trainHamster(this, hamstersHabitat, index, task, threadId, hamster, resolve, reject);
       hamstersData.feedHamster(hamstersHabitat, hamster, hamsterFood);
     }
     task.scheduler.count += 1;
@@ -198,7 +182,6 @@ class pool {
       task.scheduler.metrics.completed_at = Date.now();
       console.info("Hamsters.js Task Completed: ", task);
     }
-    this.tasks[task.id] = null; //Clean up our task, not needed any longer
   }
 
   removeFromRunning(task, threadId) {
@@ -246,15 +229,15 @@ class pool {
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
-  trainHamster(pool, habitat, index, task, hamster, resolve, reject) {
+  trainHamster(pool, habitat, index, task, threadId, hamster, resolve, reject) {
     let onThreadResponse = (message) => {
       pool.processReturn(habitat, index, message, task);
-      pool.removeFromRunning(task, task.scheduler.count);
+      if(habitat.debug) {
+        task.scheduler.metrics.threads[threadId].completed_at = Date.now();
+      }
+      pool.removeFromRunning(task, threadId);
       if (task.scheduler.workers.length === 0 && task.scheduler.count === task.scheduler.threads) {
         pool.returnOutputAndRemoveTask(task, resolve);
-      }
-      if(habitat.debug) {
-        task.scheduler.metrics.threads[task.scheduler.metrics.threads.length - 1].completed_at = Date.now();
       }
       if (pool.pending.length !== 0) {
         return pool.processQueuedItem(hamster, pool.pending.shift());
