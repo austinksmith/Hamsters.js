@@ -38,11 +38,11 @@ class pool {
   */
   addWorkToPending(index, task, resolve, reject) {
     if(hamstersHabitat.debug) {
-      task.scheduler.metrics.threads[threads.length - 1].enqueued_at = Date.now();
+      task.scheduler.metrics.threads[task.scheduler.count].enqueued_at = Date.now();
     }
     this.pending.push({
       index: index,
-      count: threads.length,
+      count: task.scheduler.count,  
       task: task,
       resolve: resolve,
       reject: reject

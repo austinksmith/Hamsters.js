@@ -116,7 +116,8 @@ class hamstersjs {
     return this.pool.scheduleTask(task).then((results) => {
       resolve(results);
     }).catch((error) => {
-      console.error("Hamsters.js error encountered: ", error);
+      // console.error("Hamsters.js error encountered: ", error);
+      reject(error);
     });
   }
 
