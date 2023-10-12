@@ -93,14 +93,24 @@ class data {
   * @param {number} n - Number of subarrays to create
   */
   calculateIndexes(array, n) {
-    let indexes = [];
-    let i = 0;
-    let size = Math.ceil(array.length/n);
-    for (let i = 0; i < array.length; i += size) {
-      indexes.push({start: i, end: ((i + size) - 1)});
+    const indexes = [];
+    const segmentSize = Math.floor(array.length / n);
+    let startIndex = 0;
+  
+    for (let i = 0; i < n; i++) {
+      const endIndex = startIndex + segmentSize - 1;
+      indexes.push({ start: startIndex, end: endIndex });
+      startIndex = endIndex + 1;
     }
+  
+    // Adjust the last segment to cover any remaining elements
+    if (startIndex < array.length) {
+      indexes[n - 1].end = array.length - 1;
+    }
+  
     return indexes;
   }
+  
 
   /**
   * @function splitArrayIntoSubArrays - Splits a single array into multiple equal sized subarrays

@@ -91,6 +91,7 @@ class hamstersjs {
       }
     } else {
       params.hamstersJob = this.data.prepareFunction(functionToRun);
+      debugger;
       task.scheduler.indexes = params.indexes ? params.indexes : this.data.getSubArrayIndexes(params.array, task.scheduler.threads);
     }
     if(this.habitat.debug) {
@@ -130,7 +131,7 @@ class hamstersjs {
   */
   hamstersPromise(params, functionToRun) {
     return new Promise((resolve, reject) => {
-      this.scheduleTask(this.hamstersTask(params, functionToRun), resolve, reject);
+      return this.scheduleTask(this.hamstersTask(params, functionToRun), resolve, reject);
     });
   }
 

@@ -37,6 +37,7 @@ class pool {
   * @param {function} reject - onError method
   */
   addWorkToPending(index, task, resolve, reject) {
+    debugger;
     if(hamstersHabitat.debug) {
       task.scheduler.metrics.threads[task.scheduler.count].enqueued_at = Date.now();
     }

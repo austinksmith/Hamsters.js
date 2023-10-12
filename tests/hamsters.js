@@ -38,10 +38,9 @@ describe("Hamsters.js", () => {
         for (let j = 0; j < params.array.length; j++) {
           rtn.data.push(params.array[j] * 2);
         }
-        return rtn;
       }, function (results) {
         expect(typeof results).toBe('object');
-        expect(results.data[i]).toEqual(params.array[i] * 2);
+        expect(results[i]).toEqual(params.array[i] * 2);
         done();
       }, function (error) {
         console.error(error);
@@ -59,10 +58,9 @@ describe("Hamsters.js", () => {
         for (let j = 0; j < params.array.length; j++) {
           rtn.data.push(params.array[j] * 2);
         }
-        return rtn;
       }).then(function (results) {
         expect(typeof results).toBe('object');
-        expect(results.data[i]).toEqual(params.array[i] * 2);
+        expect(results[i]).toEqual(params.array[i] * 2);
         done();
       }).catch(function (error) {
         console.error(error);

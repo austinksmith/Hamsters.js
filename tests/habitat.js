@@ -27,8 +27,11 @@ describe("Hamsters Habitat", () => {
 
   it("Logical Threads should be detected", () => {
     expect(hamstersHabitat['maxThreads']).not.toBe(null);
-    expect(hamstersHabitat['maxThreads']).toEqual(4);
   });
+
+  it("Logical threads should match navigator.hardwareConcurrency", () => {
+    expect(hamstersHabitat['maxThreads']).toEqual(navigator.hardwareConcurrency || 4);
+  })
 
   it("Persistence should be boolean", () => {
     expect(hamstersHabitat['persistence']).toMatch(/true|false/);
