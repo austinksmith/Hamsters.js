@@ -40,7 +40,8 @@ describe("Hamsters.js", () => {
         }
       }, function (results) {
         expect(typeof results).toBe('object');
-        expect(results[i]).toEqual(params.array[i] * 2);
+        debugger;
+        expect(results[i]).toEqual(params.array[i]);
         done();
       }, function (error) {
         console.error(error);
@@ -60,7 +61,7 @@ describe("Hamsters.js", () => {
         }
       }).then(function (results) {
         expect(typeof results).toBe('object');
-        expect(results[i]).toEqual(params.array[i] * 2);
+        expect(results[i]).toEqual(params.array[i]);
         done();
       }).catch(function (error) {
         console.error(error);

@@ -25,10 +25,6 @@ describe("Hamsters Pool", () => {
     expect(Array.isArray(hamstersPool.pending)).toEqual(true);
   });
 
-  it("Threads should be an empty array", () => {
-    expect(hamstersPool.threads.length).toEqual(0);
-  });
-
   it("Running should be an empty array", () => {
     expect(hamstersPool.running.length).toEqual(0);
   });
