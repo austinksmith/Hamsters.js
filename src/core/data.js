@@ -83,7 +83,7 @@ class data {
     let i = 0;
     let outputLength = output.length;
     for (i; i < outputLength; i++) {
-      task.input.array[(index.start + i)] = output[i];
+      task.output[(index.start + i)] = output[i];
     }
   }
 

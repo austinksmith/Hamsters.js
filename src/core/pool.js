@@ -37,7 +37,6 @@ class pool {
   * @param {function} reject - onError method
   */
   addWorkToPending(index, task, resolve, reject) {
-    debugger;
     if(hamstersHabitat.debug) {
       task.scheduler.metrics.threads[task.scheduler.count].enqueued_at = Date.now();
     }
@@ -174,14 +173,14 @@ class pool {
   * @param {function} resolve - onSuccess method
   */
   returnOutputAndRemoveTask(task, resolve) {
-    if (task.sort) {
-      resolve(hamstersData.sortOutput(task.input.array, task.sort));
-    } else {
-      resolve(task.input.array);
-    }
     if(hamstersHabitat.debug) {
       task.scheduler.metrics.completed_at = Date.now();
       console.info("Hamsters.js Task Completed: ", task);
+    }
+    if (task.sort) {
+      resolve(hamstersData.sortOutput(task.output, task.sort));
+    } else {
+      resolve(task.output);
     }
   }
 
@@ -200,7 +199,7 @@ class pool {
     if(task.scheduler.threads !== 1) {
       hamstersData.addThreadOutputWithIndex(task, index, output);
     } else {
-      task.input.array = output;
+      task.output = output;
     }
   }
 

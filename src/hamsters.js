@@ -22,7 +22,7 @@ class hamstersjs {
   constructor() {
     'use strict';
 
-    this.version = '5.4.3';
+    this.version = '5.4.4';
     this.habitat = hamstersHabitat;
     this.data = hamstersData;
     this.pool = hamstersPool;
@@ -78,6 +78,7 @@ class hamstersjs {
   hamstersTask(params, functionToRun) {
     let task = {
       input: params,
+      output: [],
       scheduler: {
         count: 0,
         threads: (params.threads ? params.threads : 1),
@@ -91,7 +92,6 @@ class hamstersjs {
       }
     } else {
       params.hamstersJob = this.data.prepareFunction(functionToRun);
-      debugger;
       task.scheduler.indexes = params.indexes ? params.indexes : this.data.getSubArrayIndexes(params.array, task.scheduler.threads);
     }
     if(this.habitat.debug) {

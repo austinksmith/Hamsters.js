@@ -40,8 +40,7 @@ describe("Hamsters.js", () => {
         }
       }, function (results) {
         expect(typeof results).toBe('object');
-        debugger;
-        expect(results[i]).toEqual(params.array[i]);
+        expect(results[i]).toEqual(params.array[i] * 2);
         done();
       }, function (error) {
         console.error(error);
@@ -57,11 +56,11 @@ describe("Hamsters.js", () => {
   
       hamsters.promise(params, function () {
         for (let j = 0; j < params.array.length; j++) {
-          rtn.data.push(params.array[j] * 2);
+          rtn.data.push(params.array[j] * 4);
         }
       }).then(function (results) {
         expect(typeof results).toBe('object');
-        expect(results[i]).toEqual(params.array[i]);
+        expect(results[i]).toEqual(params.array[i] * 4);
         done();
       }).catch(function (error) {
         console.error(error);
