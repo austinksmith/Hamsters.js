@@ -84,7 +84,7 @@ class hamstersjs {
   hamstersTask(params, functionToRun) {
     let task = {
       input: params,
-      output: params.array ? new Array(params.array.length) : [],
+      output: [],
       scheduler: {
         count: 0,
         threads: (params.threads ? params.threads : 1),

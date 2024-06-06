@@ -11,6 +11,7 @@ class Data {
     this.getSubArrayFromIndex = this.getSubArrayUsingIndex.bind(this); // Bind getSubArrayUsingIndex function
     this.getSubArrayIndexes = this.calculateIndexes.bind(this); // Bind calculateIndexes function
     this.sortOutput = this.sortTaskOutput.bind(this); // Bind sortTaskOutput function
+    this.aggregateThreadOutputs = this.aggregateThreadOutputs;
     this.prepareFunction = this.prepareWorkerTask.bind(this); // Bind prepareWorkerTask function
     this.feedHamster = this.messageWorkerThread.bind(this); // Bind messageWorkerThread function
   }
@@ -63,6 +64,32 @@ class Data {
       default:
         return arr;
     }
+  }
+
+  /**
+  * @function aggregateThreadOutputs - Joins individual thread outputs into single result
+  * @param {array} input - Array of arrays to aggregate
+  * @param {string} dataType - Data type to use for typed array
+  */
+  aggregateThreadOutputs(input, dataType) {
+    if(!dataType) {
+      return input.reduce(function(a, b) {
+        return a.concat(b);
+      });
+    }
+    let i = 0;
+    let len = input.length;
+    let bufferLength = 0;
+    for (i; i < len; i += 1) {
+      bufferLength += input[i].length;
+    }
+    let output = this.processDataType(dataType, bufferLength);
+    let offset = 0;
+    for (i = 0; i < len; i += 1) {
+      output.set(input[i], offset);
+      offset += input[i].length;
+    }
+    return output;
   }
 
   /**

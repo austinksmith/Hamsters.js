@@ -165,11 +165,18 @@ class Pool {
   * @param {function} resolve - onSuccess method
   */
   returnOutputAndRemoveTask(task, resolve) {
+    let output = task.output;
+    if(task.input.aggregate) {
+      output = this.hamsters.data.aggregateThreadOutputs(task.output, task.input.dataType);
+    }
+    if(task.input.sort) {
+      output = this.hamsters.data.sortOutput(task.output, task.input.sort)
+    }
     if (this.hamsters.habitat.debug) {
       task.scheduler.metrics.completed_at = Date.now();
       console.info("Hamsters.js Task Completed: ", task);
     }
-    resolve(task.sort ? this.hamsters.data.sortOutput(task.output, task.sort) : task.output);
+    resolve(output);
   }
 
   /**
@@ -183,25 +190,27 @@ class Pool {
   }
 
   /**
-  * @function processReturn - Processes the returned message from a thread
-  * @param {object} habitat - Habitat configuration
-  * @param {number} index - Index of the subarray processed
-  * @param {object} message - Message returned from the thread
-  * @param {object} task - Provided library functionality options for this task
-  */
-  processReturn(index, message, task) {
-    let output = message.data;
-    if (this.hamsters.habitat.reactNative) {
-      output = JSON.parse(message).data;
-    } else if (message.data.data !== undefined) {
-      output = message.data.data;
-    }
+   * @function processReturn - Processes the returned message from a thread
+   * @param {number} index - Index of the subarray processed
+   * @param {object} message - Message returned from the thread
+   * @param {number} threadId - Id of thread returning response
+   * @param {object} task - Provided library functionality options for this task
+   */
+  processReturn(index, message, threadId, task) {
+    const isReactNative = this.hamsters.habitat.reactNative;
+    const messageData = isReactNative ? JSON.parse(message).data : message.data.data !== undefined ? message.data.data : message.data;
+    
     if (task.scheduler.threads !== 1) {
-      this.hamsters.data.addThreadOutputWithIndex(task, index, output);
+        if (isReactNative || task.input.mixedOutput) {
+          task.output[threadId] = messageData;
+        } else {
+          this.hamsters.data.addThreadOutputWithIndex(task, index, messageData);
+        }
     } else {
-      task.output = output;
+        task.output = messageData;
     }
   }
+
 
   /**
   * @function setOnMessage - Sets the message handlers for a thread
@@ -237,7 +246,7 @@ class Pool {
   */
   trainHamster(index, task, threadId, hamster, resolve, reject) {
     const onThreadResponse = (message) => {
-      this.hamsters.pool.processReturn(index, message, task);
+      this.hamsters.pool.processReturn(index, message, threadId, task);
       if (this.hamsters.habitat.debug) {
         task.scheduler.metrics.threads[threadId].completed_at = Date.now();
       }
