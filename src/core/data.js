@@ -12,6 +12,7 @@ class Data {
     this.getSubArrayIndexes = this.calculateIndexes.bind(this); // Bind calculateIndexes function
     this.sortOutput = this.sortTaskOutput.bind(this); // Bind sortTaskOutput function
     this.aggregateThreadOutputs = this.aggregateThreadOutputs;
+    this.processDataType = this.typedArrayFromBuffer;
     this.prepareFunction = this.prepareWorkerTask.bind(this); // Bind prepareWorkerTask function
     this.feedHamster = this.messageWorkerThread.bind(this); // Bind messageWorkerThread function
   }
@@ -35,6 +36,29 @@ class Data {
       hamster.postMessage(hamsterFood);
     }
   }
+
+  /**
+  * @function typedArrayFromBuffer - Converts buffer into new typed array
+  * @param {string} dataType - Typed array type for this task
+  * @param {object} buffer - Buffer to convert
+  */
+    typedArrayFromBuffer(dataType, buffer) {
+      const types = {
+        'Uint32': Uint32Array,
+        'Uint16': Uint16Array,
+        'Uint8': Uint8Array,
+        'Uint8clamped': Uint8ClampedArray,
+        'Int32': Int32Array,
+        'Int16': Int16Array,
+        'Int8': Int8Array,
+        'Float32': Float32Array,
+        'Float64': Float64Array
+      };
+      if(!types[dataType]) {
+        return buffer;
+      }
+      return new types[dataType](buffer);
+    }
 
   /**
   * @function prepareWorkerTask - Prepares function for thread, strips whitespace
