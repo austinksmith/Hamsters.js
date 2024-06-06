@@ -9,20 +9,27 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-import hamstersWheel from '../src/core/wheel';
+import hamsters from '../src/hamsters';
 
 describe("Hamsters Wheel", () => {
 
+  if(hamsters && typeof hamsters.wheel.worker === 'undefined') {
+    hamsters.init();
+  }
+
+  let Wheel = hamsters.wheel;
+
   it("WebWorker scaffold should be a function", () => {
-    expect((typeof hamstersWheel.worker)).toEqual('function');
+    expect((typeof Wheel.worker)).toEqual('function');
   });
 
   it("Regular scaffold should be a function", () => {
-    expect((typeof hamstersWheel.regular)).toEqual('function');
+    expect((typeof Wheel.regular)).toEqual('function');
   });
 
   it("Legacy scaffold should be a function", () => {
-    expect((typeof hamstersWheel.legacy)).toEqual('function');
+    debugger;
+    expect((typeof Wheel.legacy)).toEqual('function');
   });
 
 });

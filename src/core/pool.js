@@ -9,65 +9,60 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-import hamstersData from './data';
-import hamstersHabitat from './habitat';
-
-class pool {
-	
+class Pool {
   /**
   * @constructor
   * @function constructor - Sets properties for this class
   */
-  constructor() {
+  constructor(hamsters) {
     'use strict';
 
+    this.hamsters = hamsters;
     this.threads = [];
     this.running = [];
     this.pending = [];
-    this.fetchHamster = this.getAvailableThread;
+    this.fetchHamster = this.getAvailableThread.bind(this);
   }
 
   /**
-  * @function fetchHamster - Adds task to queue waiting for available thread
-  * @param {object} array - Provided data to execute logic on
+  * @function addWorkToPending - Adds task to queue waiting for available thread
+  * @param {number} index - Index of the task
   * @param {object} task - Provided library functionality options for this task
-  * @param {boolean} persistence - Whether persistence mode is enabled or not
-  * @param {function} wheel - Results from select hamster wheel
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
   addWorkToPending(index, task, resolve, reject) {
-    if(hamstersHabitat.debug) {
+    if (this.hamsters.habitat.debug) {
       task.scheduler.metrics.threads[task.scheduler.count].enqueued_at = Date.now();
     }
     this.pending.push({
-      index: index,
+      index,
       count: task.scheduler.count,  
-      task: task,
-      resolve: resolve,
-      reject: reject
+      task,
+      resolve,
+      reject
     });
   }
 
   /**
   * @function processQueuedItem - Invokes processing of next item in queue
+  * @param {object} hamster - The thread to run the task
   * @param {object} item - Task to process
   */
   processQueuedItem(hamster, item) {
-    if(hamstersHabitat.debug) {
+    if (this.hamsters.habitat.debug) {
       item.task.scheduler.metrics.threads[item.count].dequeued_at = Date.now();
     }
-  	return this.runTask(hamster, item.index, item.task, item.resolve, item.reject);
+    return this.runTask(hamster, item.index, item.task, item.resolve, item.reject);
   }
 
   /**
-  * @function getAvailableThread- Keeps track of threads running, scoped globally and to task
-  * @param {number} threadId - Id of thread
-  * @param {boolean} persistence - Whether persistence mode is enabled or not
-  * @param {function} wheel - Results from select hamster wheel
+  * @function getAvailableThread - Gets an available thread
+  * @param {number} threadId - Id of the thread
+  * @returns {object} - The available thread
   */
   getAvailableThread(threadId) {
-    if(hamstersHabitat.persistence) {
+    if (this.hamsters.habitat.persistence) {
       return this.threads[threadId];
     }
     return this.spawnHamster();
@@ -79,49 +74,49 @@ class pool {
   * @param {number} id - Id of thread to track
   */
   keepTrackOfThread(task, id) {
-    if(hamstersHabitat.debug) {
+    if (this.hamsters.habitat.debug) {
       task.scheduler.metrics.threads[id].started_at = Date.now();
     }
-    task.scheduler.workers.push(id); //Keep track of threads scoped to current task
-    this.running.push(id); //Keep track of all currently running threads
+    task.scheduler.workers.push(id);
+    this.running.push(id);
   }
 
   /**
   * @function spawnHamsters - Spawns multiple new threads for execution
-  * @param {function} wheel - Results from select hamster wheel
-  * @param {number} maxThreds - Max number of threads for this client
+  * @param {number} maxThreads - Max number of threads for this client
   */
   spawnHamsters(maxThreads) {
-    for (maxThreads; maxThreads > 0; maxThreads--) {
+    while (maxThreads--) {
       this.threads.push(this.spawnHamster());
     }
   }
 
   /**
   * @function spawnHamster - Spawns a new thread for execution
-  * @return {object} WebWorker - New WebWorker thread using selected scaffold
+  * @return {object} - New WebWorker thread using selected scaffold
   */
   spawnHamster() {
-    if (hamstersHabitat.webWorker) {
-      return new hamstersHabitat.SharedWorker(hamstersHabitat.hamsterWheel, 'SharedHamsterWheel');
+    const { selectHamsterWheel, SharedWorker, Worker, node, parentPort } = this.hamsters.habitat;
+    const hamsterWheel = selectHamsterWheel();
+    if (this.hamsters.habitat.webWorker) {
+      return new SharedWorker(hamsterWheel, 'SharedHamsterWheel');
     }
-    if(hamstersHabitat.node && typeof hamstersHabitat.parentPort !== 'undefined') {
-      return new hamstersHabitat.Worker(hamstersHabitat.hamsterWheel);
+    if (node && typeof parentPort !== 'undefined') {
+      return new Worker(hamsterWheel);
     }
-    return new hamstersHabitat.Worker(hamstersHabitat.hamsterWheel);
+    return new Worker(hamsterWheel);
   }
 
   /**
   * @function prepareMeal - Prepares message to send to a thread and invoke execution
-  * @param {object} threadArray - Provided data to execute logic on
+  * @param {number} index - Index of the subarray to process
   * @param {object} task - Provided library functionality options for this task
-  * @return {object} hamsterFood - Prepared message to send to a thread
+  * @return {object} - Prepared message to send to a thread
   */
   prepareMeal(index, task) {
-    const hamsterFood = {};
-    hamsterFood.array = hamstersData.getSubArrayFromIndex(index, task);
-    for (var key in task.input) {
-      if (task.input.hasOwnProperty(key) && ['array', 'threads'].indexOf(key) === -1) {
+    const hamsterFood = { array: this.hamsters.data.getSubArrayFromIndex(index, task) };
+    for (const key in task.input) {
+      if (task.input.hasOwnProperty(key) && !['array', 'threads'].includes(key)) {
         hamsterFood[key] = task.input[key];
       }
     }
@@ -129,136 +124,144 @@ class pool {
   }
 
   /**
-  * @function hamsterWheel - Runs function using thread
-  * @param {object} array - Provided data to execute logic on
+  * @function runTask - Runs function using thread
+  * @param {object} hamster - The thread to run the task
+  * @param {number} index - Index of the subarray to process
   * @param {object} task - Provided library functionality options for this task
-  * @param {boolean} persistence - Whether persistence mode is enabled or not
-  * @param {function} wheel - Results from select hamster wheel
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
   runTask(hamster, index, task, resolve, reject) {
-  	let threadId = this.running.length;
-    let hamsterFood = this.prepareMeal(index, task);
+    const threadId = this.running.length;
+    const hamsterFood = this.prepareMeal(index, task);
     this.keepTrackOfThread(task, threadId);
-    if(hamstersHabitat.legacy) {
-      hamstersHabitat.legacyWheel(hamstersHabitat, hamsterFood, resolve, reject);
+    if (this.hamsters.habitat.legacy) {
+      this.hamsters.wheel.legacy(hamsterFood, resolve, reject);
     } else {
-      this.trainHamster(this, hamstersHabitat, index, task, threadId, hamster, resolve, reject);
-      hamstersData.feedHamster(hamstersHabitat, hamster, hamsterFood);
+      this.trainHamster(index, task, threadId, hamster, resolve, reject);
+      this.hamsters.data.feedHamster(hamster, hamsterFood);
     }
     task.scheduler.count += 1;
   }
 
   /**
   * @function hamsterWheel - Runs or queues function using threads
-  * @param {object} array - Provided library functionality options for this task
+  * @param {number} index - Index of the subarray to process
   * @param {object} task - Provided library functionality options for this task
-  * @param {boolean} persistence - Whether persistence mode is enabled or not
-  * @param {function} wheel - Results from select hamster wheel
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
   hamsterWheel(index, task, resolve, reject) {
-    if(hamstersHabitat.maxThreads <= this.running.length) {
+    if (this.hamsters.habitat.maxThreads <= this.running.length) {
       return this.addWorkToPending(index, task, resolve, reject);
     }
-    let hamster = this.fetchHamster(this.running.length);
+    const hamster = this.fetchHamster(this.running.length);
     return this.runTask(hamster, index, task, resolve, reject);
   }
 
   /**
-  * @function returnOutputAndRemoveTask - gathers thread outputs into final result
+  * @function returnOutputAndRemoveTask - Gathers thread outputs into final result
   * @param {object} task - Provided library functionality options for this task
   * @param {function} resolve - onSuccess method
   */
   returnOutputAndRemoveTask(task, resolve) {
-    if(hamstersHabitat.debug) {
+    if (this.hamsters.habitat.debug) {
       task.scheduler.metrics.completed_at = Date.now();
       console.info("Hamsters.js Task Completed: ", task);
     }
-    if (task.sort) {
-      resolve(hamstersData.sortOutput(task.output, task.sort));
-    } else {
-      resolve(task.output);
-    }
+    resolve(task.sort ? this.hamsters.data.sortOutput(task.output, task.sort) : task.output);
   }
 
+  /**
+  * @function removeFromRunning - Removes a thread from the running pool
+  * @param {object} task - Provided library functionality options for this task
+  * @param {number} threadId - Id of the thread to remove
+  */
   removeFromRunning(task, threadId) {
-    this.running.splice(this.running.indexOf(threadId), 1); //Remove thread from running pool
-    task.scheduler.workers.splice(task.scheduler.workers.indexOf(threadId), 1); //Remove thread from task running pool
+    this.running.splice(this.running.indexOf(threadId), 1);
+    task.scheduler.workers.splice(task.scheduler.workers.indexOf(threadId), 1);
   }
 
-  processReturn(habitat, index, message, task) {
+  /**
+  * @function processReturn - Processes the returned message from a thread
+  * @param {object} habitat - Habitat configuration
+  * @param {number} index - Index of the subarray processed
+  * @param {object} message - Message returned from the thread
+  * @param {object} task - Provided library functionality options for this task
+  */
+  processReturn(index, message, task) {
     let output = message.data;
-    if(habitat.reactNative) {
+    if (this.hamsters.habitat.reactNative) {
       output = JSON.parse(message).data;
-    } else if(typeof message.data.data !== "undefined") {
+    } else if (message.data.data !== undefined) {
       output = message.data.data;
     }
-    if(task.scheduler.threads !== 1) {
-      hamstersData.addThreadOutputWithIndex(task, index, output);
+    if (task.scheduler.threads !== 1) {
+      this.hamsters.data.addThreadOutputWithIndex(task, index, output);
     } else {
       task.output = output;
     }
   }
 
-  setOnMessage(hamster, onThreadResponse, habitat, reject) {
-    if (habitat.webWorker) {
+  /**
+  * @function setOnMessage - Sets the message handlers for a thread
+  * @param {object} hamster - The thread to set the handlers on
+  * @param {function} onThreadResponse - Handler for thread response
+  * @param {object} habitat - Habitat configuration
+  * @param {function} reject - onError method
+  */
+  setOnMessage(hamster, onThreadResponse, reject) {
+    if (this.hamsters.habitat.webWorker) {
       hamster.port.onmessage = onThreadResponse;
       hamster.port.onmessageerror = reject;
       hamster.port.onerror = reject;
-    }
-    if(habitat.node) {
+    } else if (this.hamsters.habitat.node) {
       hamster.once('message', onThreadResponse);
       hamster.once('onmessageerror', reject);
       hamster.once('error', reject);
     } else {
       hamster.onmessage = onThreadResponse;
       hamster.onmessageerror = reject;
-      hamster.error = reject;
+      hamster.onerror = reject;
     }
   }
 
   /**
   * @function trainHamster - Trains thread in how to behave
-  * @param {number} threadId - Internal use id for this thread
+  * @param {number} index - Index of the subarray to process
   * @param {object} task - Provided library functionality options for this task
-  * @param {worker} hamster - Thread to train
-  * @param {boolean} persistence - Whether persistence mode is enabled or not
+  * @param {number} threadId - Id of the thread to train
+  * @param {object} hamster - The thread to train
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
-  trainHamster(pool, habitat, index, task, threadId, hamster, resolve, reject) {
-    let onThreadResponse = (message) => {
-      pool.processReturn(habitat, index, message, task);
-      if(habitat.debug) {
+  trainHamster(index, task, threadId, hamster, resolve, reject) {
+    const onThreadResponse = (message) => {
+      this.hamsters.pool.processReturn(index, message, task);
+      if (this.hamsters.habitat.debug) {
         task.scheduler.metrics.threads[threadId].completed_at = Date.now();
       }
-      pool.removeFromRunning(task, threadId);
+      this.hamsters.pool.removeFromRunning(task, threadId);
       if (task.scheduler.workers.length === 0 && task.scheduler.count === task.scheduler.threads) {
-        pool.returnOutputAndRemoveTask(task, resolve);
+        this.hamsters.pool.returnOutputAndRemoveTask(task, resolve);
       }
-      if (pool.pending.length !== 0) {
+      if (this.hamsters.pool.pending.length !== 0) {
         return pool.processQueuedItem(hamster, pool.pending.shift());
       }
-      if(!habitat.persistence) {
-        return hamster.terminate(); //Kill the thread only if no items waiting to run (20-22% performance improvement observed during testing, repurposing threads vs recreating them)
+      if (!this.hamsters.habitat.persistence) {
+        return hamster.terminate();
       }
     };
-    pool.setOnMessage(hamster, onThreadResponse, habitat, reject);
+    this.hamsters.pool.setOnMessage(hamster, onThreadResponse, reject);
   }
 
   /**
   * @function scheduleTask - Adds new task to the system for execution
   * @param {object} task - Provided library functionality options for this task
-  * @param {boolean} persistence - Whether persistence mode is enabled or not
-  * @param {function} wheel - Scaffold to execute login within
-  * @param {number} maxThreads - Maximum number of threads for this client
   */
   scheduleTask(task) {
     let i = 0;
-    if(hamstersHabitat.debug) {
+    if(this.hamsters.habitat.debug) {
       let metrics = task.scheduler.metrics;
       metrics.started_at = Date.now();
       return new Promise((resolve, reject) => {
@@ -285,8 +288,4 @@ class pool {
   }
 }
 
-var hamsterPool = new pool();
-
-if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamsterPool;
-}
+module.exports = Pool;

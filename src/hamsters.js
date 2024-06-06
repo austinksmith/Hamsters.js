@@ -9,9 +9,10 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-import hamstersHabitat from './core/habitat';
-import hamstersPool from './core/pool';
-import hamstersData from './core/data';
+import Habitat from './core/habitat';
+import Pool from './core/pool';
+import Data from './core/data';
+import Wheel from './core/wheel';
 
 class hamstersjs {
 
@@ -22,23 +23,28 @@ class hamstersjs {
   constructor() {
     'use strict';
 
-    this.version = '5.4.4';
-    this.habitat = hamstersHabitat;
-    this.data = hamstersData;
-    this.pool = hamstersPool;
+    this.version = '5.5.0';
     this.run = this.hamstersRun.bind(this);
     this.promise = this.hamstersPromise.bind(this);
     this.init = this.inititializeLibrary.bind(this);
+    this.data = {};
+    this.pool = {};
+    this.wheel = {};
+    this.habitat = {};
   }
 
   /**
-  * @function initializeLibrary - Prepares & initializes Hamsters.js library
+  * @function inititializeLibrary - Prepares & initializes Hamsters.js library
   * @param {object} startOptions - Provided library functionality options
   */
   inititializeLibrary(startOptions) {
+    this.data = new Data(this);
+    this.pool = new Pool(this);
+    this.wheel = new Wheel(this);
+    this.habitat = new Habitat(this);
     this.processStartOptions(startOptions);
-    if(!this.habitat.legacy && this.habitat.persistence === true) {
-      hamstersPool.spawnHamsters(this.habitat.maxThreads);
+    if (!this.habitat.legacy && this.habitat.persistence === true) {
+      this.pool.spawnHamsters(this.habitat.maxThreads);
     }
     this.maxThreads = this.habitat.maxThreads;
     console.info(`Hamsters.js ${this.version} initialized using up to ${this.habitat.maxThreads} threads`);
@@ -50,8 +56,8 @@ class hamstersjs {
   */
   processStartOptions(startOptions) {
     if (typeof startOptions !== 'undefined') {
-      for (var key of Object.keys(startOptions)) {
-        if (this.habitat.keys.indexOf(key.toLowerCase()) !== -1) {
+      for (const key of Object.keys(startOptions)) {
+        if (this.habitat.keys.includes(key.toLowerCase())) {
           this.habitat[key] = startOptions[key];
         } else {
           this[key] = startOptions[key];
@@ -59,11 +65,11 @@ class hamstersjs {
       }
     }
     // Ensure legacy mode is disabled when we pass a third party worker library
-    var forceLegacyMode = (typeof startOptions !== 'undefined' && typeof startOptions.legacy !== 'undefined');
-    if(forceLegacyMode) {
+    let forceLegacyMode = (typeof startOptions !== 'undefined' && typeof startOptions.legacy !== 'undefined');
+    if (forceLegacyMode) {
       forceLegacyMode = startOptions.legacy;
     }
-    if(typeof this.habitat.Worker === 'function' && !forceLegacyMode) {
+    if (typeof this.habitat.Worker === 'function' && !forceLegacyMode) {
       this.habitat.legacy = this.habitat.isIE;
     }
   }
@@ -78,23 +84,25 @@ class hamstersjs {
   hamstersTask(params, functionToRun) {
     let task = {
       input: params,
-      output: [],
+      output: params.array ? new Array(params.array.length) : [],
       scheduler: {
         count: 0,
         threads: (params.threads ? params.threads : 1),
         workers: []
       }
     };
-    if(this.habitat.legacy) {
+    if (this.habitat.legacy) {
       task.scheduler.threads = 1;
-      if(!this.habitat.node && !this.habitat.isIE) {
+      if (!this.habitat.node && !this.habitat.isIE) {
         params.hamstersJob = functionToRun;
       }
     } else {
       params.hamstersJob = this.data.prepareFunction(functionToRun);
-      task.scheduler.indexes = params.indexes ? params.indexes : this.data.getSubArrayIndexes(params.array, task.scheduler.threads);
+      if (!params.disableIndexes) {
+        task.scheduler.indexes = params.indexes ? params.indexes : this.data.getSubArrayIndexes(params.array, task.scheduler.threads);
+      }
     }
-    if(this.habitat.debug) {
+    if (this.habitat.debug) {
       task.scheduler.metrics = {
         created_at: Date.now(),
         started_at: null,
@@ -107,10 +115,10 @@ class hamstersjs {
 
   /**
   * @async
-  * @function hamstersPromise - Schedules new function to be processed by library
+  * @function scheduleTask - Schedules new function to be processed by library
   * @param {object} task - Provided library execution options
   * @param {function} resolve - Parent function promise resolve method
-  * @param {function} reject- Parent function promise reject method
+  * @param {function} reject - Parent function promise reject method
   * @return {object} Promise object on completion
   */
   scheduleTask(task, resolve, reject) {
@@ -135,9 +143,7 @@ class hamstersjs {
     });
   }
 
-  /**unction} functionToRun - Function to execute
-  * @param {function} onSuccess - Function to call upon successful execution
-  * @param {f
+  /**
   * @async
   * @function hamstersRun - Calls library functionality using async callbacks
   * @param {object} params - Provided library execution options

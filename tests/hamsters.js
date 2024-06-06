@@ -13,8 +13,11 @@ import hamsters from '../src/hamsters';
 
 describe("Hamsters.js", () => {
 
-  it("Init should initialize library", () => {
+  if(hamsters && typeof hamsters.wheel.worker === 'undefined') {
     hamsters.init();
+  }
+
+  it("Init should be a function", () => {
     expect(typeof hamsters.init).toBe('function'); 
   });
 

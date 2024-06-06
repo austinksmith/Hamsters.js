@@ -1,127 +1,140 @@
-/* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
+import hamsters from '../src/hamsters';
 
-/***********************************************************************************
-* Title: Hamsters.js                                                               *
-* Description: 100% Vanilla Javascript Multithreading & Parallel Execution Library *
-* Author: Austin K. Smith                                                          *
-* Contact: austin@asmithdev.com                                                    *  
-* Copyright: 2015 Austin K. Smith - austin@asmithdev.com                           * 
-* License: Artistic License 2.0                                                    *
-***********************************************************************************/
-
-import hamstersHabitat from '../src/core/habitat';
-
+// Describe block for testing Hamsters Habitat functionality
 describe("Hamsters Habitat", () => {
 
+  if(hamsters && typeof hamsters.habitat.determineGlobalThreads === 'undefined') {
+    hamsters.init();
+  }
+
+  let Habitat = hamsters.habitat;
+  // Test case for determining the number of global threads
   it("determineGlobalThreads should return a number", () => {
-    expect(typeof hamstersHabitat.determineGlobalThreads()).toBe("number");
+    expect(typeof Habitat.determineGlobalThreads()).toBe("number");
   });
 
+  // Test case for checking if the environment is not legacy
   it("isLegacyEnvironment should return false", () => {
-    expect(hamstersHabitat.isLegacyEnvironment()).toEqual(false);
+    expect(Habitat.isLegacyEnvironment()).toEqual(false);
   });
 
+  // Test case for checking if support for SharedWorkers is boolean
   it("supportsSharedWorkers should be boolean", () => {
-    expect(hamstersHabitat.supportsSharedWorkers()).toMatch(/true|false/);
+    expect(Habitat.supportsSharedWorkers()).toMatch(/true|false/);
   });
 
+  // Test case for detecting logical threads
   it("Logical Threads should be detected", () => {
-    expect(hamstersHabitat['maxThreads']).not.toBe(null);
+    expect(Habitat['maxThreads']).not.toBe(null);
   });
 
+  // Test case for matching logical threads with navigator.hardwareConcurrency
   it("Logical threads should match navigator.hardwareConcurrency", () => {
-    expect(hamstersHabitat['maxThreads']).toEqual(navigator.hardwareConcurrency || 4);
+    expect(Habitat['maxThreads']).toEqual(navigator.hardwareConcurrency || 4);
   })
 
+  // Test case for checking if persistence is boolean
   it("Persistence should be boolean", () => {
-    expect(hamstersHabitat['persistence']).toMatch(/true|false/);
+    expect(Habitat['persistence']).toMatch(/true|false/);
   });
 
+  // Test case for checking if memoization is boolean
   it("Memoize should be boolean", () => {
-    expect(hamstersHabitat['memoize']).toMatch(/true|false/);
+    expect(Habitat['memoize']).toMatch(/true|false/);
   });
 
+  // Test case for checking if importScripts is null
   it("ImportScripts should be null", () => {
-    expect(hamstersHabitat['importScripts']).toBe(null);
+    expect(Habitat['importScripts']).toBe(null);
   });
 
+  // Test case for checking if debug is boolean
   it("Debug should be boolean", () => {
-    expect(hamstersHabitat['debug']).toMatch(/true|false/);
+    expect(Habitat['debug']).toMatch(/true|false/);
   });
 
+  // Test case for checking if Node environment is boolean
   it("Node should be boolean", () => {
-    expect(hamstersHabitat['node']).toMatch(/true|false/);
+    expect(Habitat['node']).toMatch(/true|false/);
   });
   
+  // Test case for checking if Browser environment is boolean
   it("Browser should be boolean", () => {
-    expect(hamstersHabitat['browser']).toMatch(/true|false/);
+    expect(Habitat['browser']).toMatch(/true|false/);
   });
 
+  // Test case for checking if Internet Explorer is boolean
   it("isIE should be boolean", () => {
-    expect(hamstersHabitat.isInternetExplorer()).toMatch(/true|false/);
+    expect(Habitat.isInternetExplorer()).toMatch(/true|false/);
   });
   
+  // Test case for checking if support for Atomics is boolean
   it("Atomics should be boolean", () => {
-    expect(hamstersHabitat['atomics']).toMatch(/true|false/);
+    expect(Habitat['atomics']).toMatch(/true|false/);
   });
 
+  // Test case for checking if legacy environment is boolean
   it("Legacy should be boolean", () => {
-    expect(hamstersHabitat['legacy']).toMatch(/true|false/);
+    expect(Habitat['legacy']).toMatch(/true|false/);
   });
 
+  // Test case for checking if WebWorker environment is boolean
   it("WebWorker should be boolean", () => {
-    expect(hamstersHabitat['webWorker']).toMatch(/true|false/);
+    expect(Habitat['webWorker']).toMatch(/true|false/);
   });
 
+  // Test case for checking if Shell environment is boolean
   it("Shell should be boolean", () => {
-    expect(hamstersHabitat['shell']).toMatch(/true|false/);
+    expect(Habitat['shell']).toMatch(/true|false/);
   });
   
+  // Test case for checking if transferable objects support is boolean
   it("transferable should be boolean", () => {
-    expect(hamstersHabitat['transferable']).toMatch(/true|false/);
+    expect(Habitat['transferable']).toMatch(/true|false/);
   });
 
+  // Test case for checking if support for Proxies is boolean
   it("Proxies should be boolean", () => {
-    expect(hamstersHabitat['proxies']).toMatch(/true|false/);
+    expect(Habitat['proxies']).toMatch(/true|false/);
   });
 
+  // Test case for checking if React Native environment is boolean
   it("reactNative should be boolean", () => {
-    expect(hamstersHabitat['reactNative']).toMatch(/true|false/);
+    expect(Habitat['reactNative']).toMatch(/true|false/);
   });
 
-  it("LegacyWheel should be an object or function", () => {
-    const options = ['object', 'function'];
-    expect(hamstersHabitat['legacyWheel']).not.toBe(null);
-    expect(options.indexOf(typeof hamstersHabitat['legacyWheel'])).not.toBe(-1);
-  });
-
+  // Test case for checking if Blob Builder is a string
   it("locateBlobBuilder should return string", () => {
-    let builder = hamstersHabitat.findAvailableBlobBuilder();
+    let builder = Habitat.findAvailableBlobBuilder();
     expect(typeof builder).toBe('string');
   });
 
+  // Test case for checking if generated Blob URI is valid
   it("generateBlob should generate blob with object url", () => {
-    let dataBlobURI = hamstersHabitat.generateWorkerBlob(() => {
+    let dataBlobURI = Habitat.generateWorkerBlob(() => {
       console.log('History! Science, philosophy, every idea man has ever had about the Universe up for grabs.');
     });
     expect(dataBlobURI).not.toEqual(null);
     expect(typeof dataBlobURI).toEqual('string');
   });
   
+  // Test case for checking if Worker is an object or function
   it("Worker should be an object or function", () => {
     const options = ['object', 'function'];
-    expect(hamstersHabitat['Worker']).not.toBe(null);
-    expect(options.indexOf(typeof hamstersHabitat['Worker'])).not.toBe(-1);
+    expect(Habitat['Worker']).not.toBe(null);
+    expect(options.indexOf(typeof Habitat['Worker'])).not.toBe(-1);
   });
 
+  // Test case for checking if SharedWorker is an object or function
   it("SharedWorker should be an object or function", () => {
     const options = ['object', 'function'];
-    expect(hamstersHabitat['sharedWorker']).not.toBe(null);
-    expect(options.indexOf(typeof hamstersHabitat['sharedWorker'])).not.toBe(-1);
+    expect(Habitat['sharedWorker']).not.toBe(null);
+    expect(options.indexOf(typeof Habitat['sharedWorker'])).not.toBe(-1);
   });
 
+  // Test case for checking if selectHamsterWheel has a value
   it("SelectHamsterWheel should have a value", () => {
-    expect(typeof hamstersHabitat.selectHamsterWheel).not.toBe(null);
+    expect(typeof Habitat.selectHamsterWheel).not.toBe(null);
   });
 
 });

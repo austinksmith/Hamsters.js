@@ -9,17 +9,16 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
-import hamstersWheel from './wheel';
-
-class habitat {
+class Habitat {
 
   /**
   * @constructor
   * @function constructor - Sets properties for this class
   */
-  constructor() {
+  constructor(hamsters) {
     'use strict';
 
+    this.hamsters = hamsters;
     this.debug = false;
     this.importScripts = null;
     this.memoize = false;
@@ -29,15 +28,14 @@ class habitat {
     this.node = this.isNode();
     this.reactNative = this.isReactNative();
     this.shell = this.isShell();
-    this.transferable = this.supportstransferableObjects();
+    this.transferable = this.supportsTransferableObjects();
     this.atomics = this.supportsAtomicOperations();
     this.proxies = this.supportsProxies();
     this.isIE = this.isInternetExplorer();
-    this.hamsterWheel = this.selectHamsterWheel();
+    this.selectHamsterWheel = this.selectHamsterWheel.bind(this);
     this.sharedWorker = this.locateSharedWorkerObject();
     this.locateBlobBuilder = this.findAvailableBlobBuilder();
     this.legacy = this.isLegacyEnvironment();
-    this.legacyWheel = hamstersWheel.legacy;
     this.Worker = this.locateWorkerObject();
     this.maxThreads = this.determineGlobalThreads();
     this.keys = this.getHabitatKeys();
@@ -61,7 +59,7 @@ class habitat {
   }
 
   /**
-  * @function isFireox - Detect firefox browser
+  * @function isFirefox - Detect firefox browser
   */
   isFirefox() {
     if(typeof navigator !== "undefined" && typeof navigator.userAgent !== "undefined") {
@@ -109,14 +107,14 @@ class habitat {
   }
 
   /**
-  * @function isWebWorker - Detects if execution environment is a webworker
+  * @function isWebWorker - Detects if execution environment is a web worker
   */
   isWebWorker() {
     return (typeof importScripts === "function" && !this.isReactNative());
   }
 
   /**
-  * @function isReactNative - Detects if execution environment is reactNative
+  * @function isReactNative - Detects if execution environment is React Native
   */
   isReactNative() {
     return (typeof navigator !== "undefined" && typeof navigator.product !== "undefined" && navigator.product === "ReactNative");
@@ -141,10 +139,13 @@ class habitat {
     return isLegacy;
   }
 
+  /**
+  * @function supportsSharedWorkers - Detects if execution environment supports SharedWorkers
+  */
   supportsSharedWorkers() {
     let supports = false;
     try {
-      let workerBlob = this.generateWorkerBlob(this.hamsterWheel);
+      let workerBlob = this.generateWorkerBlob(this.selectHamsterWheel());
       let SharedHamster = new this.SharedWorker(workerBlob, 'SharedHamsterWheel');
       supports = true;
     } catch (e) {
@@ -154,7 +155,7 @@ class habitat {
   }
 
   /**
-  * @function createDataBlob - Attempts to locate data blob builder, vender prefixes galore
+  * @function findAvailableBlobBuilder - Attempts to locate a data blob builder, with vendor prefixes
   */
   findAvailableBlobBuilder() {
     if(typeof BlobBuilder !== 'undefined') {
@@ -173,7 +174,7 @@ class habitat {
   }
 
   /**
-  * @function createDataBlob - Creates new data blob from textContent
+  * @function createDataBlob - Creates a new data blob from textContent
   * @param {string} textContent - Provided text content for blob
   */
   createDataBlob(textContent) {
@@ -191,7 +192,7 @@ class habitat {
   }
 
   /**
-  * @function generateWorkerBlob - Creates blob uri for flexible scaffold loading
+  * @function generateWorkerBlob - Creates a blob URI for flexible scaffold loading
   * @param {function} workerLogic - Scaffold to use within worker thread
   */
   generateWorkerBlob(workerLogic) {
@@ -199,32 +200,32 @@ class habitat {
   }
 
   /**
-  * @function supportstransferableObjects - Detects if execution environment supports typed arrays
+  * @function supportsTransferableObjects - Detects if execution environment supports typed arrays
   */
-  supportstransferableObjects() {
+  supportsTransferableObjects() {
     return (typeof Uint8Array !== 'undefined');
   }
 
   /**
-  * @function supportsAtomicOperations - Detects if execution environment supports shared array buffers
+  * @function supportsAtomicOperations - Detects if execution environment supports SharedArrayBuffers
   */
   supportsAtomicOperations() {
     return (typeof SharedArrayBuffer !== 'undefined');
   }
 
   /**
-  * @function supportsProxies - Detects if execution environment supports proxy objects
+  * @function supportsProxies - Detects if execution environment supports Proxy objects
   */
   supportsProxies() {
     return (typeof Proxy !== 'undefined');
   }
 
   /**
-  * @function scheduleTask - Determines which scaffold to use for proper execution for various environments
+  * @function selectHamsterWheel - Determines which scaffold to use for proper execution for various environments
   */
   selectHamsterWheel() {
     if(this.isIE) {
-      return hamstersWheel.legacy;
+      return this.hamsters.wheel.legacy;
     }
     if(this.reactNative) {
       return 'reactNativeHamster.js';
@@ -232,9 +233,12 @@ class habitat {
     if (this.node) {
       return './node_modules/hamsters.js/build/common/node.js';
     }
-    return this.generateWorkerBlob(hamstersWheel.regular);
+    return this.generateWorkerBlob(this.hamsters.wheel.regular);
   }
 
+  /**
+  * @function getHabitatKeys - Returns keys for this Habitat instance
+  */
   getHabitatKeys() {
     return [
       'worker','sharedworker',
@@ -249,8 +253,4 @@ class habitat {
   }
 }
 
-var hamstersHabitat = new habitat();
-
-if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamstersHabitat;
-}
+module.exports = Habitat;

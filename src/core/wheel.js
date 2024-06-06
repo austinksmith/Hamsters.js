@@ -1,26 +1,16 @@
-/* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
-
-/***********************************************************************************
-* Title: Hamsters.js                                                               *
-* Description: 100% Vanilla Javascript Multithreading & Parallel Execution Library *
-* Author: Austin K. Smith                                                          *
-* Contact: austin@asmithdev.com                                                    *  
-* Copyright: 2015 Austin K. Smith - austin@asmithdev.com                           * 
-* License: Artistic License 2.0                                                    *
-***********************************************************************************/
-
-class wheel {
+class Wheel {
 
   /**
   * @constructor
   * @function constructor - Sets properties for this class
   */
-  constructor() {
+  constructor(hamsters) {
     'use strict';
 
+    this.hamsters = hamsters;
     this.worker = this.workerScaffold;
     this.regular = this.regularScaffold;
-    this.legacy = this.legacyScaffold;
+    this.legacy = this.legacyScaffold.bind(this);
   }
 
   /**
@@ -34,36 +24,36 @@ class wheel {
       var port = incomingConnection.ports[0];
       port.start();
       port.addEventListener('message', (incomingMessage) => {
-        params = incomingMessage.data;
-        rtn = {
+        this.params = incomingMessage.data;
+        this.rtn = {
           data: [],
-          dataType: params.dataType
+          dataType: this.params.dataType
         };
-        eval("(" + params.hamstersJob + ")")();
-        port.postMessage(rtn);
+        eval("(" + this.params.hamstersJob + ")")();
+        port.postMessage(this.rtn);
       }, false);
     }, false);
   }
 
   /**
-  * @function workerScaffold - Provides worker body for library functionality
+  * @function regularScaffold - Provides worker body for library functionality
   */
   regularScaffold() {
     self.params = {};
     self.rtn = {};
 
     self.onmessage = function(message) {
-      params = message.data;
-      rtn = {
+      this.params = message.data;
+      this.rtn = {
         data: [],
-        dataType: (typeof params.dataType !== 'undefined' ? params.dataType : null)
+        dataType: (typeof this.params.dataType !== 'undefined' ? this.params.dataType : null)
       };
-      eval(params.hamstersJob);
-      if(rtn.dataType) {
-        rtn.data = typedArrayFromBuffer(rtn.dataType, rtn.data);
+      eval(this.params.hamstersJob);
+      if(this.rtn.dataType) {
+        this.rtn.data = typedArrayFromBuffer(this.rtn.dataType, this.rtn.data);
       }
-      returnResponse(rtn);
-    };
+      returnResponse(this.rtn);
+    }.bind(this);
 
     function typedArrayFromBuffer(dataType, buffer) {
       var types = {
@@ -95,15 +85,15 @@ class wheel {
   /**
   * @function legacyScaffold - Provides library functionality for legacy devices
   */
-  legacyScaffold(hamstersHabitat, params, resolve, reject) {
+  legacyScaffold(params, resolve, reject) {
     var rtn = {
       data: [],
       dataType: (typeof params.dataType !== "undefined" ? params.dataType : null)
     };
-    if(hamstersHabitat.reactNative) {
+    if(this.hamsters.habitat.reactNative) {
       self.rtn = rtn;
     }
-    if(hamstersHabitat.node || hamstersHabitat.isIE) {
+    if(this.hamsters.habitat.node || this.hamsters.habitat.isIE) {
       eval(params.hamstersJob);
     } else {
       params.hamstersJob();
@@ -112,8 +102,6 @@ class wheel {
   }
 }
 
-var hamstersWheel = new wheel();
-
 if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamstersWheel;
+  module.exports = Wheel;
 }

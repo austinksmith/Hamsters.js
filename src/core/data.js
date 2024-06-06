@@ -1,40 +1,31 @@
-/* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
-
-/***********************************************************************************
-* Title: Hamsters.js                                                               *
-* Description: 100% Vanilla Javascript Multithreading & Parallel Execution Library *
-* Author: Austin K. Smith                                                          *
-* Contact: austin@asmithdev.com                                                    *  
-* Copyright: 2015 Austin K. Smith - austin@asmithdev.com                           * 
-* License: Artistic License 2.0                                                    *
-***********************************************************************************/
-
-class data {
+class Data {
 
   /**
   * @constructor
   * @function constructor - Sets properties for this class
   */
-  constructor() {
+  constructor(hamsters) {
     'use strict';
 
-    this.getSubArrayFromIndex = this.getSubArrayUsingIndex;
-    this.getSubArrayIndexes = this.calculateIndexes;
-    this.sortOutput = this.sortTaskOutput;
-    this.prepareFunction = this.prepareWorkerTask;
-    this.feedHamster = this.messageWorkerThread;
+    this.hamsters = hamsters; // Set the hamsters object as a property of Data class
+    this.getSubArrayFromIndex = this.getSubArrayUsingIndex.bind(this); // Bind getSubArrayUsingIndex function
+    this.getSubArrayIndexes = this.calculateIndexes.bind(this); // Bind calculateIndexes function
+    this.sortOutput = this.sortTaskOutput.bind(this); // Bind sortTaskOutput function
+    this.prepareFunction = this.prepareWorkerTask.bind(this); // Bind prepareWorkerTask function
+    this.feedHamster = this.messageWorkerThread.bind(this); // Bind messageWorkerThread function
   }
 
   /**
   * @function messageWorkerThread - Prepares message to send to thread
-  * @param {worker} hamster - Thread to message
+  * @param {object} hamstersHabitat - Hamsters Habitat instance
+  * @param {Worker} hamster - Thread to message
   * @param {object} hamsterFood - Message to send to thread
   */  
-  messageWorkerThread(hamstersHabitat, hamster, hamsterFood) {
-    if(hamstersHabitat.reactNative) {
+  messageWorkerThread(hamster, hamsterFood) {
+    if(this.hamsters.habitat.reactNative) {
       return hamster.postMessage(JSON.stringify(hamsterFood));
     }
-    if (hamstersHabitat.webWorker) {
+    if (this.hamsters.habitat.webWorker) {
       return hamster.port.postMessage(hamsterFood);
     }
     if(typeof hamsterFood.array.buffer !== 'undefined') {
@@ -76,8 +67,9 @@ class data {
 
   /**
   * @function addThreadOutputWithIndex - Joins individual thread outputs into single result
-  * @param {array} input - Array of arrays to aggregate
-  * @param {string} dataType - Data type to use for typed array
+  * @param {object} task - Hamsters task object
+  * @param {object} index - Index information
+  * @param {array} output - Output array
   */
   addThreadOutputWithIndex(task, index, output) {
     let i = 0;
@@ -113,17 +105,13 @@ class data {
   
 
   /**
-  * @function splitArrayIntoSubArrays - Splits a single array into multiple equal sized subarrays
-  * @param {array} array - Array to split
-  * @param {number} n - Number of subarrays to create
+  * @function getSubArrayUsingIndex - Slices subarray based on provided index
+  * @param {object} index - Index information
+  * @param {object} task - Hamsters task object
   */
   getSubArrayUsingIndex(index, task) {
     return task.input.array.slice(index.start, index.end + 1);
   }
 }
 
-var hamstersData = new data();
-
-if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamstersData;
-}
+module.exports = Data;

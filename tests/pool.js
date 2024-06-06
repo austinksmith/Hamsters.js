@@ -1,38 +1,40 @@
-/* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
+import hamsters from '../src/hamsters';
 
-/***********************************************************************************
-* Title: Hamsters.js                                                               *
-* Description: 100% Vanilla Javascript Multithreading & Parallel Execution Library *
-* Author: Austin K. Smith                                                          *
-* Contact: austin@asmithdev.com                                                    *  
-* Copyright: 2015 Austin K. Smith - austin@asmithdev.com                           * 
-* License: Artistic License 2.0                                                    *
-***********************************************************************************/
-
-import hamstersPool from '../src/core/pool';
-
+// Describe block for testing Hamsters Pool functionality
 describe("Hamsters Pool", () => {
 
+  if(hamsters && typeof hamsters.pool.threads === 'undefined') {
+    hamsters.init();
+  }
+  
+  let hamstersPool = hamsters.pool;
+
+  // Test case for checking if threads is an array
   it("Threads should be an array", () => {
     expect(Array.isArray(hamstersPool.threads)).toEqual(true);
   });
 
+  // Test case for checking if running is an array
   it("Running should be an array", () => {
     expect(Array.isArray(hamstersPool.running)).toEqual(true);
   });
 
+  // Test case for checking if pending is an array
   it("Pending should be an array", () => {
     expect(Array.isArray(hamstersPool.pending)).toEqual(true);
   });
 
+  // Test case for checking if running is an empty array
   it("Running should be an empty array", () => {
     expect(hamstersPool.running.length).toEqual(0);
   });
 
+  // Test case for checking if pending is an empty array
   it("Pending should be an empty array", () => {
     expect(hamstersPool.pending.length).toEqual(0);
   });
 
+  // Test case for checking if prepareMeal constructs params object variables
   it("prepareMeal should construct params object variables", () => {
     let taskInput = {
       hamstersJob: `function() { console.log('The ISOs, they were going to be my gift to the world.') }`,
