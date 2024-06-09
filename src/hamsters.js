@@ -75,33 +75,33 @@ class hamstersjs {
   }
 
   /**
-  * @constructor
-  * @function hamstersTask - Constructs a new task object from provided arguments
-  * @param {object} params - Provided library execution options
-  * @param {function} functionToRun - Function to execute
-  * @return {object} new Hamsters.js task
-  */
+   * @constructor
+   * @function hamstersTask - Constructs a new task object from provided arguments
+   * @param {object} params - Provided library execution options
+   * @param {function} functionToRun - Function to execute
+   * @return {object} new Hamsters.js task
+   */
   hamstersTask(params, functionToRun) {
-    let task = {
+    const task = {
       input: params,
       output: [],
       scheduler: {
         count: 0,
-        threads: (params.threads ? params.threads : 1),
+        threads: params.threads || 1,
         workers: []
       }
     };
+
     if (this.habitat.legacy) {
       task.scheduler.threads = 1;
       if (!this.habitat.node && !this.habitat.isIE) {
         params.hamstersJob = functionToRun;
       }
     } else {
-      params.hamstersJob = this.data.prepareFunction(functionToRun);
-      if (!params.disableIndexes) {
-        task.scheduler.indexes = params.indexes ? params.indexes : this.data.getSubArrayIndexes(params.array, task.scheduler.threads);
-      }
+      params.hamstersJob = this.habitat.legacy ? functionToRun : this.data.prepareFunction(functionToRun);
+      task.scheduler.indexes = params.indexes || this.data.getSubArrayIndexes(params.array, task.scheduler.threads);
     }
+
     if (this.habitat.debug) {
       task.scheduler.metrics = {
         created_at: Date.now(),
@@ -110,36 +110,34 @@ class hamstersjs {
         threads: []
       };
     }
+
     return task;
   }
 
   /**
-  * @async
-  * @function scheduleTask - Schedules new function to be processed by library
-  * @param {object} task - Provided library execution options
-  * @param {function} resolve - Parent function promise resolve method
-  * @param {function} reject - Parent function promise reject method
-  * @return {object} Promise object on completion
-  */
+   * @async
+   * @function scheduleTask - Schedules a new function to be processed by the library
+   * @param {object} task - Provided library execution options
+   * @param {function} resolve - Parent function promise resolve method
+   * @param {function} reject - Parent function promise reject method
+   * @return {Promise} Promise object on completion
+   */
   scheduleTask(task, resolve, reject) {
-    return this.pool.scheduleTask(task).then((results) => {
-      resolve(results);
-    }).catch((error) => {
-      // console.error("Hamsters.js error encountered: ", error);
-      reject(error);
-    });
+    return this.pool.scheduleTask(task)
+      .then(resolve)
+      .catch(reject);
   }
 
   /**
-  * @async
-  * @function hamstersPromise - Calls library functionality using async promises
-  * @param {object} params - Provided library execution options
-  * @param {function} functionToRun - Function to execute
-  * @return {array} Results from functionToRun
-  */
+   * @async
+   * @function hamstersPromise - Calls library functionality using async promises
+   * @param {object} params - Provided library execution options
+   * @param {function} functionToRun - Function to execute
+   * @return {Promise} Promise resolving with results from functionToRun
+   */
   hamstersPromise(params, functionToRun) {
     return new Promise((resolve, reject) => {
-      return this.scheduleTask(this.hamstersTask(params, functionToRun), resolve, reject);
+      this.scheduleTask(this.hamstersTask(params, functionToRun), resolve, reject);
     });
   }
 
