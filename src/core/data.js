@@ -131,26 +131,31 @@ class Data {
   }
 
   /**
-  * @function calculateIndexes - Splits a single array into multiple equal sized subarrays
-  * @param {array} array - Array to split
-  * @param {number} n - Number of subarrays to create
-  */
+   * @function calculateIndexes - Splits a single array into multiple equal sized subarrays
+   * @param {array} array - Array to split
+   * @param {number} n - Number of subarrays to create
+   */
   calculateIndexes(array, n) {
+    // If n is 1, return the whole array range
+    if (n === 1) {
+      return [{ start: 0, end: array.length - 1 }];
+    }
+
     const indexes = [];
     const segmentSize = Math.floor(array.length / n);
     let startIndex = 0;
-  
+
     for (let i = 0; i < n; i++) {
       const endIndex = startIndex + segmentSize - 1;
       indexes.push({ start: startIndex, end: endIndex });
       startIndex = endIndex + 1;
     }
-  
+
     // Adjust the last segment to cover any remaining elements
     if (startIndex < array.length) {
       indexes[n - 1].end = array.length - 1;
     }
-  
+
     return indexes;
   }
   
