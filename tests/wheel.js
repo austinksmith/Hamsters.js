@@ -28,7 +28,6 @@ describe("Hamsters Wheel", () => {
   });
 
   it("Legacy scaffold should be a function", () => {
-    debugger;
     expect((typeof Wheel.legacy)).toEqual('function');
   });
 

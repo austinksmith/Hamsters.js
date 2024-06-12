@@ -108,20 +108,32 @@ class Pool {
   }
 
   /**
-  * @function prepareMeal - Prepares message to send to a thread and invoke execution
-  * @param {number} index - Index of the subarray to process
-  * @param {object} task - Provided library functionality options for this task
-  * @return {object} - Prepared message to send to a thread
-  */
+   * @function prepareMeal - Prepares message to send to a thread and invoke execution
+   * @param {number} index - Index of the subarray to process
+   * @param {object} task - Provided library functionality options for this task
+   * @return {object} - Prepared message to send to a thread
+   */
   prepareMeal(index, task) {
-    const hamsterFood = { array: this.hamsters.data.getSubArrayFromIndex(index, task) };
+    const hamsterFood = {
+      array: task.input.array.length !== 0 ? this.hamsters.data.getSubArrayFromIndex(index, task) : [],
+      index: index
+    };
+    
+    if(typeof task.scheduler.sharedBuffer !== "undefined") {
+      hamsterFood.sharedBuffer = task.scheduler.sharedBuffer;
+    }
+
+    const excludedKeys = new Set(['array', 'threads']);
+    
     for (const key in task.input) {
-      if (task.input.hasOwnProperty(key) && !['array', 'threads'].includes(key)) {
+      if (task.input.hasOwnProperty(key) && !excludedKeys.has(key)) {
         hamsterFood[key] = task.input[key];
       }
     }
+
     return hamsterFood;
   }
+
 
   /**
   * @function runTask - Runs function using thread
@@ -139,7 +151,7 @@ class Pool {
       this.hamsters.wheel.legacy(hamsterFood, resolve, reject);
     } else {
       this.trainHamster(index, task, threadId, hamster, resolve, reject);
-      this.hamsters.data.feedHamster(hamster, hamsterFood);
+      this.hamsters.data.feedHamster(hamster, task, hamsterFood);
     }
     task.scheduler.count += 1;
   }
@@ -155,8 +167,7 @@ class Pool {
     if (this.hamsters.habitat.maxThreads <= this.running.length) {
       return this.addWorkToPending(index, task, resolve, reject);
     }
-    const hamster = this.fetchHamster(this.running.length);
-    return this.runTask(hamster, index, task, resolve, reject);
+    return this.runTask(this.fetchHamster(this.running.length), index, task, resolve, reject);
   }
 
   /**
@@ -165,18 +176,20 @@ class Pool {
   * @param {function} resolve - onSuccess method
   */
   returnOutputAndRemoveTask(task, resolve) {
-    let output = task.output;
+    if(task.input.sharedArray) {
+      task.output = hamsters.data.processDataType(task.input.dataType, task.scheduler.sharedBuffer);
+    }
     if(task.input.aggregate) {
-      output = this.hamsters.data.aggregateThreadOutputs(task.output, task.input.dataType);
+      task.output = this.hamsters.data.aggregateThreadOutputs(task.output, task.input.dataType);
     }
     if(task.input.sort) {
-      output = this.hamsters.data.sortOutput(task.output, task.input.sort)
+      task.output = this.hamsters.data.sortOutput(task.output, task.input.sort)
     }
     if (this.hamsters.habitat.debug) {
       task.scheduler.metrics.completed_at = Date.now();
       console.info("Hamsters.js Task Completed: ", task);
     }
-    resolve(output);
+    resolve(task.output);
   }
 
   /**

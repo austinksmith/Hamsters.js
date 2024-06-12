@@ -82,8 +82,9 @@ class hamstersjs {
    * @return {object} new Hamsters.js task
    */
   hamstersTask(params, functionToRun) {
+    params.array = params.array ? params.array : [];
     const task = {
-      input: params,
+      input: {},
       output: [],
       scheduler: {
         count: 0,
@@ -98,8 +99,14 @@ class hamstersjs {
         params.hamstersJob = functionToRun;
       }
     } else {
-      params.hamstersJob = this.habitat.legacy ? functionToRun : this.data.prepareFunction(functionToRun);
-      task.scheduler.indexes = params.indexes || this.data.getSubArrayIndexes(params.array, task.scheduler.threads);
+      params.hamstersJob = this.habitat.legacy ? functionToRun : this.data.prepareFunction(functionToRun);    
+        
+      if(params.sharedArray) {
+        task.scheduler.indexes = params.indexes || this.data.getSubArrayIndexes(params.sharedArray, task.scheduler.threads);
+        task.scheduler.sharedBuffer = this.data.setupSharedArrayBuffer(params.sharedArray);
+      } else {
+        task.scheduler.indexes = params.indexes || this.data.getSubArrayIndexes(params.array, task.scheduler.threads);
+      }
     }
 
     if (this.habitat.debug) {
@@ -110,9 +117,13 @@ class hamstersjs {
         threads: []
       };
     }
+    
+    //Assign task.input to params
+    task.input = params;
 
     return task;
   }
+
 
   /**
    * @async

@@ -15,6 +15,10 @@ class Data {
     this.processDataType = this.typedArrayFromBuffer;
     this.prepareFunction = this.prepareWorkerTask.bind(this); // Bind prepareWorkerTask function
     this.feedHamster = this.messageWorkerThread.bind(this); // Bind messageWorkerThread function
+    this.getBufferSize = this.getBufferSize;
+    this.createSharedBuffer = this.createSharedBuffer.bind(this);
+    this.getDataType = this.getDataType;
+    this.setupSharedArrayBuffer = this.setupSharedArrayBuffer.bind(this);
   }
 
   /**
@@ -23,17 +27,20 @@ class Data {
   * @param {Worker} hamster - Thread to message
   * @param {object} hamsterFood - Message to send to thread
   */  
-  messageWorkerThread(hamster, hamsterFood) {
+  messageWorkerThread(hamster, task, hamsterFood) {
     if(this.hamsters.habitat.reactNative) {
       return hamster.postMessage(JSON.stringify(hamsterFood));
     }
     if (this.hamsters.habitat.webWorker) {
       return hamster.port.postMessage(hamsterFood);
     }
+    if(typeof hamsterFood.sharedArray !== 'undefined' && typeof hamsterFood.sharedArray.buffer !== 'undefined' && task.scheduler.threads === 1) {
+      return hamster.postMessage(hamsterFood, [hamsterFood.sharedArray.buffer]);
+    }
     if(typeof hamsterFood.array.buffer !== 'undefined') {
-      hamster.postMessage(hamsterFood, [hamsterFood.array.buffer]);
+      return hamster.postMessage(hamsterFood, [hamsterFood.array.buffer]);
     } else {
-      hamster.postMessage(hamsterFood);
+      return hamster.postMessage(hamsterFood);
     }
   }
 
@@ -42,23 +49,23 @@ class Data {
   * @param {string} dataType - Typed array type for this task
   * @param {object} buffer - Buffer to convert
   */
-    typedArrayFromBuffer(dataType, buffer) {
-      const types = {
-        'Uint32': Uint32Array,
-        'Uint16': Uint16Array,
-        'Uint8': Uint8Array,
-        'Uint8clamped': Uint8ClampedArray,
-        'Int32': Int32Array,
-        'Int16': Int16Array,
-        'Int8': Int8Array,
-        'Float32': Float32Array,
-        'Float64': Float64Array
-      };
-      if(!types[dataType]) {
-        return buffer;
-      }
-      return new types[dataType](buffer);
+  typedArrayFromBuffer(dataType, buffer) {
+    const types = {
+      'Uint32': Uint32Array,
+      'Uint16': Uint16Array,
+      'Uint8': Uint8Array,
+      'Uint8clamped': Uint8ClampedArray,
+      'Int32': Int32Array,
+      'Int16': Int16Array,
+      'Int8': Int8Array,
+      'Float32': Float32Array,
+      'Float64': Float64Array
+    };
+    if(!types[dataType]) {
+      return buffer;
     }
+    return new types[dataType](buffer);
+  }
 
   /**
   * @function prepareWorkerTask - Prepares function for thread, strips whitespace
@@ -88,6 +95,40 @@ class Data {
       default:
         return arr;
     }
+  }
+
+  /**
+   * @function getBufferSize - Gets the byte length of the input array
+   * @param {TypedArray} array - The input typed array
+   * @returns {number} - The byte length of the array
+   */
+  getBufferSize(array) {
+    return array.byteLength;
+  }
+
+  /**
+   * @function createSharedBuffer - Creates a SharedArrayBuffer based on the input array's byte length
+   * @param {TypedArray} array - The input typed array
+   * @returns {SharedArrayBuffer} - The created SharedArrayBuffer
+   */
+  createSharedBuffer(array) {
+    const byteLength = this.getBufferSize(array);
+    const sharedBuffer = new SharedArrayBuffer(byteLength);
+    const sharedArray = new array.constructor(sharedBuffer);
+
+    // Copy data from the input array to the shared array
+    sharedArray.set(array);
+
+    return sharedBuffer;
+  }
+
+  /**
+   * @function setupSharedArrayBuffer - Sets up the shared buffer and corresponding typed array
+   * @param {TypedArray} array - The input typed array
+   * @returns {object} - SharedArrayBuffer;
+   */
+  setupSharedArrayBuffer(array) {
+    return this.createSharedBuffer(array);
   }
 
   /**

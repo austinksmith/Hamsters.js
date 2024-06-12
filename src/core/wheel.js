@@ -41,20 +41,31 @@ class Wheel {
   regularScaffold() {
     self.params = {};
     self.rtn = {};
-
+  
     self.onmessage = function(message) {
       this.params = message.data;
       this.rtn = {
         data: [],
-        dataType: (typeof this.params.dataType !== 'undefined' ? this.params.dataType : null)
+        dataType: (typeof this.params.dataType !== 'undefined' ? this.params.dataType : null),
+        index: this.params.index
       };
-      eval(this.params.hamstersJob);
-      if(this.rtn.dataType) {
-        this.rtn.data = typedArrayFromBuffer(this.rtn.dataType, this.rtn.data);
+      if(this.params.sharedBuffer) {
+        this.params.sharedArray = typedArrayFromBuffer(this.params.dataType, this.params.sharedBuffer)
       }
-      returnResponse(this.rtn);
+      eval(this.params.hamstersJob);
+      const buffers = handleDataType(this.rtn); // Call the function to handle data type
+      returnResponse(this.rtn, buffers);
     }.bind(this);
 
+    handleDataType = function(rtn) {
+      if (this.params.sharedArray) {
+        //Do nothing here, we don't need to return a buffer rtn.data is useless here
+      } else if (rtn.dataType) {
+        // Convert rtn.data to typed array if dataType is specified
+        rtn.data = typedArrayFromBuffer(rtn.dataType, rtn.data);
+      }
+    }.bind(this);
+  
     function typedArrayFromBuffer(dataType, buffer) {
       var types = {
         'Uint32': Uint32Array,
@@ -72,11 +83,13 @@ class Wheel {
       }
       return new types[dataType](buffer);
     }
-
+  
     function returnResponse(rtn, buffers) {
-      if(typeof rtn.data.buffer !== 'undefined') {
-        postMessage(rtn, [rtn.data.buffer]);
+      if (buffers && buffers.length > 0) {
+        // If there are buffers, postMessage with transferable objects
+        postMessage(rtn, buffers);
       } else {
+        // Otherwise, postMessage without transferable objects
         postMessage(rtn);
       }
     }
