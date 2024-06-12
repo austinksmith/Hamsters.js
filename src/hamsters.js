@@ -82,43 +82,42 @@ class hamstersjs {
    * @return {object} new Hamsters.js task
    */
   hamstersTask(params, functionToRun) {
-    params.array = params.array ? params.array : [];
+    params.array = params.array || [];
     const task = {
-      input: {},
-      output: [],
-      scheduler: {
-        count: 0,
-        threads: params.threads || 1,
-        workers: []
-      }
+        input: {},
+        output: [],
+        scheduler: {
+            count: 0,
+            threads: params.threads || 1,
+            workers: []
+        }
     };
 
     if (this.habitat.legacy) {
-      task.scheduler.threads = 1;
-      if (!this.habitat.node && !this.habitat.isIE) {
-        params.hamstersJob = functionToRun;
-      }
+        task.scheduler.threads = 1;
+        if (!this.habitat.node && !this.habitat.isIE) {
+            params.hamstersJob = functionToRun;
+        }
     } else {
-      params.hamstersJob = this.habitat.legacy ? functionToRun : this.data.prepareFunction(functionToRun);    
-        
-      if(params.sharedArray) {
-        task.scheduler.indexes = params.indexes || this.data.getSubArrayIndexes(params.sharedArray, task.scheduler.threads);
-        task.scheduler.sharedBuffer = this.data.setupSharedArrayBuffer(params.sharedArray);
-      } else {
-        task.scheduler.indexes = params.indexes || this.data.getSubArrayIndexes(params.array, task.scheduler.threads);
-      }
+        params.hamstersJob = this.habitat.legacy ? functionToRun : this.data.prepareFunction(functionToRun);
+        if (params.sharedArray && this.habitat.atomics) {
+            task.scheduler.indexes = params.indexes || this.data.getSubArrayIndexes(params.sharedArray, task.scheduler.threads);
+            task.scheduler.sharedBuffer = this.data.setupSharedArrayBuffer(params.sharedArray);
+        } else {
+            task.scheduler.indexes = params.indexes || this.data.getSubArrayIndexes(params.array, task.scheduler.threads);
+        }
     }
 
     if (this.habitat.debug) {
-      task.scheduler.metrics = {
-        created_at: Date.now(),
-        started_at: null,
-        completed_at: null,
-        threads: []
-      };
+        task.scheduler.metrics = {
+            created_at: Date.now(),
+            started_at: null,
+            completed_at: null,
+            threads: []
+        };
     }
-    
-    //Assign task.input to params
+
+    // Assign task.input to params
     task.input = params;
 
     return task;
