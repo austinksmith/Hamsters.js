@@ -46,7 +46,7 @@ class hamstersjs {
     this.pool = new Pool(this);
     this.wheel = new Wheel(this);
     this.habitat = new Habitat(this);
-    this.memoize = new Memoize(this);
+    this.memoize = new Memoize(this, 100); //Set a maximum of 100 memoized function results, LRU cache
 
     this.processStartOptions(startOptions);
     

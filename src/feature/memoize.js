@@ -2,9 +2,9 @@ import NodeStore from './stores/NodeStore';
 import WebStore from './stores/WebStore';
 
 class Memoize {
-    constructor(hamsters) {
+    constructor(hamsters, maxSize) {
         this.hamsters = hamsters;
-        this.store = this.hamsters.habitat.node ? new NodeStore() : new WebStore();
+        this.store = this.hamsters.habitat.node ? new NodeStore(maxSize) : new WebStore('HamstersJSMemoizeDB', 'cacheStore', maxSize);
     }
 
     memoize(func) {
@@ -29,35 +29,30 @@ class Memoize {
     }
 
     generateTaskKey(task) {
-        const key = JSON.stringify({
-            input: task.input
-        });
+        const key = JSON.stringify({ input: task.input });
         return this.hashCode(key);
     }
 
-    applyFunc(func, task) {
-        const self = this;
-        return new Promise(function(resolve, reject) {
+    hashCode(str) {
+        let hash = 0, i, chr;
+        if (str.length === 0) return hash;
+        for (i = 0; i < str.length; i++) {
+            chr = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + chr;
+            hash |= 0; // Convert to 32bit integer
+        }
+        return hash.toString();
+    }
+
+    applyFunc(func, args) {
+        return new Promise((resolve, reject) => {
             try {
-                const result = func(task);
+                const result = func.apply(null, args);
                 resolve(result);
             } catch (error) {
                 reject(error);
             }
         });
-    }
-
-    hashCode(str) {
-        let hash = 0;
-        if (str.length === 0) {
-            return hash;
-        }
-        for (let i = 0; i < str.length; i++) {
-            const char = str.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash |= 0; // Convert to 32bit integer
-        }
-        return hash.toString();
     }
 }
 
