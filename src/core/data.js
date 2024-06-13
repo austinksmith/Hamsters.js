@@ -11,7 +11,7 @@ class Data {
     this.getSubArrayFromIndex = this.getSubArrayUsingIndex.bind(this); // Bind getSubArrayUsingIndex function
     this.getSubArrayIndexes = this.calculateIndexes.bind(this); // Bind calculateIndexes function
     this.sortOutput = this.sortTaskOutput.bind(this); // Bind sortTaskOutput function
-    this.aggregateThreadOutputs = this.aggregateThreadOutputs;
+    this.aggregateThreadOutputs = this.aggregateThreadOutputs.bind(this);
     this.processDataType = this.typedArrayFromBuffer;
     this.prepareFunction = this.prepareWorkerTask.bind(this); // Bind prepareWorkerTask function
     this.feedHamster = this.messageWorkerThread.bind(this); // Bind messageWorkerThread function
@@ -33,9 +33,6 @@ class Data {
     }
     if (this.hamsters.habitat.webWorker) {
       return hamster.port.postMessage(hamsterFood);
-    }
-    if(typeof hamsterFood.sharedArray !== 'undefined' && typeof hamsterFood.sharedArray.buffer !== 'undefined' && task.scheduler.threads === 1) {
-      return hamster.postMessage(hamsterFood, [hamsterFood.sharedArray.buffer]);
     }
     if(typeof hamsterFood.array.buffer !== 'undefined') {
       return hamster.postMessage(hamsterFood, [hamsterFood.array.buffer]);

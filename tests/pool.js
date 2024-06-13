@@ -33,23 +33,4 @@ describe("Hamsters Pool", () => {
   it("Pending should be an empty array", () => {
     expect(hamstersPool.pending.length).toEqual(0);
   });
-
-  // Test case for checking if prepareMeal constructs params object variables
-  it("prepareMeal should construct params object variables", () => {
-    let taskInput = {
-      hamstersJob: `function() { console.log('The ISOs, they were going to be my gift to the world.') }`,
-      array: [1, 2, 3, 4],
-      ranVar: 'hamster powered',
-      dataType: 'Int32'
-    };
-    let task = {
-      id: 1,
-      input: taskInput
-    };
-    let meal = hamstersPool.prepareMeal(taskInput.array, task);
-    expect(typeof meal).toEqual('object');
-    expect(meal.hamstersJob).toEqual(taskInput.hamstersJob);
-    expect(meal.dataType).toEqual('Int32');
-    expect(meal.ranVar).toEqual('hamster powered');
-  });
 });

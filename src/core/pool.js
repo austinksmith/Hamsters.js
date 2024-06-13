@@ -123,7 +123,7 @@ class Pool {
       hamsterFood.sharedBuffer = task.scheduler.sharedBuffer;
     }
 
-    const excludedKeys = new Set(['array', 'threads']);
+    const excludedKeys = new Set(['array', 'threads', 'sharedArray']);
     
     for (const key in task.input) {
       if (task.input.hasOwnProperty(key) && !excludedKeys.has(key)) {
