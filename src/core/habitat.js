@@ -253,4 +253,4 @@ class Habitat {
   }
 }
 
-module.exports = Habitat;
+export default Habitat;

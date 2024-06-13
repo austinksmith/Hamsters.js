@@ -14,6 +14,9 @@ import Pool from './core/pool';
 import Data from './core/data';
 import Wheel from './core/wheel';
 
+//Features
+import Memoize from './feature/memoize';
+
 class hamstersjs {
 
   /**
@@ -23,7 +26,7 @@ class hamstersjs {
   constructor() {
     'use strict';
 
-    this.version = '5.5.4';
+    this.version = '5.5.5';
     this.run = this.hamstersRun.bind(this);
     this.promise = this.hamstersPromise.bind(this);
     this.init = this.inititializeLibrary.bind(this);
@@ -31,6 +34,7 @@ class hamstersjs {
     this.pool = {};
     this.wheel = {};
     this.habitat = {};
+    this.memoize = {};
   }
 
   /**
@@ -42,7 +46,10 @@ class hamstersjs {
     this.pool = new Pool(this);
     this.wheel = new Wheel(this);
     this.habitat = new Habitat(this);
+    this.memoize = new Memoize(this);
+
     this.processStartOptions(startOptions);
+    
     if (!this.habitat.legacy && this.habitat.persistence === true) {
       this.pool.spawnHamsters(this.habitat.maxThreads);
     }
@@ -123,7 +130,6 @@ class hamstersjs {
     return task;
   }
 
-
   /**
    * @async
    * @function scheduleTask - Schedules a new function to be processed by the library
@@ -133,10 +139,16 @@ class hamstersjs {
    * @return {Promise} Promise object on completion
    */
   scheduleTask(task, resolve, reject) {
-    return this.pool.scheduleTask(task)
-      .then(resolve)
-      .catch(reject);
+    if (task.input.memoize) {
+        const memoizedFunction = this.memoize.memoize(() => this.pool.scheduleTask(task));
+        return memoizedFunction().then(resolve).catch(reject);
+    } else {
+        return this.pool.scheduleTask(task)
+            .then(resolve)
+            .catch(reject);
+    }
   }
+
 
   /**
    * @async
@@ -163,8 +175,6 @@ class hamstersjs {
   }
 }
 
-var hamsters = new hamstersjs();
+const hamsters = new hamstersjs();
 
-if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = hamsters;
-}
+module.exports = hamsters;

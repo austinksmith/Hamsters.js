@@ -115,6 +115,4 @@ class Wheel {
   }
 }
 
-if(typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-  module.exports = Wheel;
-}
+export default Wheel;

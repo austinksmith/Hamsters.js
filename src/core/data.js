@@ -208,4 +208,4 @@ class Data {
   }
 }
 
-module.exports = Data;
+export default Data;
