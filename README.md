@@ -23,9 +23,14 @@
 
 You can find a view examples of the library in action using the links below.
 
-[Square Root](https://www.hamsters.io/examples/square-root)
+
+[Atomic Operations](https://www.hamsters.io/examples/atomic-operations)
 
 [Collatz Conjecture](https://www.hamsters.io/examples/collatz-conjecture)
+
+[Fibonacci Sequence](https://www.hamsters.io/examples/fibonacci-sequence)
+
+[Square Root](https://www.hamsters.io/examples/square-root)
 
 
 # Installing Hamsters
@@ -53,6 +58,8 @@ You can find a view examples of the library in action using the links below.
 
 [Transferable  Objects](https://www.hamsters.io/wiki/transferables)
 
+[Atomic Operations](https://www.hamsters.io/wiki/atomics)
+
 [Debugging](https://www.hamsters.io/wiki/debugging)
 
 [Limitations](https://www.hamsters.io/wiki/limitations)
@@ -60,4 +67,7 @@ You can find a view examples of the library in action using the links below.
 
 # Support Hamsters.js
 
-Hamsters.js is a self funded project, in order to provide updates and host the project website I rely on donations. Please consider donating today so I can continue to support this project, thank you. [Hamsters.js donation page](https://www.hamsters.io/donate)
+Hamsters.js thrives through community support. Your contributions help us deliver updates, maintain the project website, and continue innovating. If you find Hamsters.js valuable, please consider making a donation. Your generosity ensures the project's sustainability and growth. Thank you for your support!
+
+
+ [Donate to Hamsters.js](https://www.hamsters.io/donate)
