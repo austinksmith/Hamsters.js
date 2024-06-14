@@ -15,15 +15,11 @@ global.rtn = {};
 global.params = {};
 
 parentPort.on('message', (message) => {
-  console.log(`Message from parent: ${message.queued}`);
   params = message;
   rtn = {
     data: [],
     dataType: (typeof params.dataType !== 'undefined' ? params.dataType : null)
   };
-  if (message.queued) {
-    console.log("PARAMS QUEUED!! ", params);
-  }
   try {
     eval(params.hamstersJob);
     if (rtn.dataType) {
