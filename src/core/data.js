@@ -162,7 +162,7 @@ class Data {
   */
   addThreadOutputWithIndex(task, index, output) {
     let i = 0;
-    let outputLength = output.length;
+    const outputLength = output.length;
     for (i; i < outputLength; i++) {
       task.output[(index.start + i)] = output[i];
     }

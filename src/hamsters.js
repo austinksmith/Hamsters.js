@@ -90,9 +90,10 @@ class hamstersjs {
    */
   hamstersTask(params, functionToRun) {
     params.array = params.array || [];
+
     const task = {
       input: {},
-      output: [],
+      output: new Array(params.array.length),
       scheduler: {
         count: 0,
         threads: params.threads || 1,

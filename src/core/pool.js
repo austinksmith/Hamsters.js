@@ -49,11 +49,11 @@ class Pool {
   * @param {object} hamster - The thread to run the task
   * @param {object} item - Task to process
   */
-  processQueuedItem(hamster, threadId, item) {
+  processQueuedItem(hamster, item) {
     if (this.hamsters.habitat.debug) {
       item.task.scheduler.metrics.threads[item.count].dequeued_at = Date.now();
     }
-    this.runTask(hamster, threadId, item.index, item.task, item.resolve, item.reject, true);
+    return this.runTask(hamster, item.index, item.task, item.resolve, item.reject);
   }
 
   /**
@@ -75,7 +75,7 @@ class Pool {
   */
   keepTrackOfThread(task, id) {
     if (this.hamsters.habitat.debug) {
-      task.scheduler.metrics.threads[task.scheduler.count].started_at = Date.now();
+      task.scheduler.metrics.threads[id].started_at = Date.now();
     }
     task.scheduler.workers.push(id);
     this.running.push(id);
@@ -108,32 +108,20 @@ class Pool {
   }
 
   /**
-   * @function prepareMeal - Prepares message to send to a thread and invoke execution
-   * @param {number} index - Index of the subarray to process
-   * @param {object} task - Provided library functionality options for this task
-   * @return {object} - Prepared message to send to a thread
-   */
+  * @function prepareMeal - Prepares message to send to a thread and invoke execution
+  * @param {number} index - Index of the subarray to process
+  * @param {object} task - Provided library functionality options for this task
+  * @return {object} - Prepared message to send to a thread
+  */
   prepareMeal(index, task) {
-    const hamsterFood = {
-      array: task.input.array.length !== 0 ? this.hamsters.data.getSubArrayFromIndex(index, task) : [],
-      index: index
-    };
-    
-    if(typeof task.scheduler.sharedBuffer !== "undefined") {
-      hamsterFood.sharedBuffer = task.scheduler.sharedBuffer;
-    }
-
-    const excludedKeys = new Set(['array', 'threads', 'sharedArray']);
-    
+    const hamsterFood = { array: this.hamsters.data.getSubArrayFromIndex(index, task) };
     for (const key in task.input) {
-      if (task.input.hasOwnProperty(key) && !excludedKeys.has(key)) {
+      if (task.input.hasOwnProperty(key) && !['array', 'threads'].includes(key)) {
         hamsterFood[key] = task.input[key];
       }
     }
-
     return hamsterFood;
   }
-
 
   /**
   * @function runTask - Runs function using thread
@@ -143,13 +131,14 @@ class Pool {
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
-  runTask(hamster, threadId, index, task, resolve, reject) {
+  runTask(hamster, index, task, resolve, reject) {
+    const threadId = this.running.length;
     const hamsterFood = this.prepareMeal(index, task);
     this.keepTrackOfThread(task, threadId);
     if (this.hamsters.habitat.legacy) {
       this.hamsters.wheel.legacy(hamsterFood, resolve, reject);
     } else {
-      this.hamsters.pool.trainHamster(index, task, threadId, hamster, resolve, reject);
+      this.trainHamster(index, task, threadId, hamster, resolve, reject);
       this.hamsters.data.feedHamster(hamster, hamsterFood);
     }
     task.scheduler.count += 1;
@@ -166,7 +155,8 @@ class Pool {
     if (this.hamsters.habitat.maxThreads <= this.running.length) {
       return this.addWorkToPending(index, task, resolve, reject);
     }
-    return this.runTask(this.fetchHamster(this.running.length), this.running.length, index, task, resolve, reject);
+    const hamster = this.fetchHamster(this.running.length);
+    return this.runTask(hamster, index, task, resolve, reject);
   }
 
   /**
@@ -175,20 +165,18 @@ class Pool {
   * @param {function} resolve - onSuccess method
   */
   returnOutputAndRemoveTask(task, resolve) {
-    if(task.input.sharedArray) {
-      task.output = hamsters.data.processDataType(task.input.dataType, task.scheduler.sharedBuffer);
-    }
+    let output = task.output;
     if(task.input.aggregate) {
-      task.output = this.hamsters.data.aggregateThreadOutputs(task.output, task.input.dataType);
+      output = this.hamsters.data.aggregateThreadOutputs(task.output, task.input.dataType);
     }
     if(task.input.sort) {
-      task.output = this.hamsters.data.sortOutput(task.output, task.input.sort)
+      output = this.hamsters.data.sortOutput(task.output, task.input.sort)
     }
     if (this.hamsters.habitat.debug) {
       task.scheduler.metrics.completed_at = Date.now();
       console.info("Hamsters.js Task Completed: ", task);
     }
-    resolve(task.output);
+    resolve(output);
   }
 
   /**
@@ -237,16 +225,15 @@ class Pool {
       hamster.port.onmessageerror = reject;
       hamster.port.onerror = reject;
     } else if (this.hamsters.habitat.node) {
-      hamster.on('message', onThreadResponse);
-      hamster.on('messageerror', reject);
-      hamster.on('error', reject);
+      hamster.once('message', onThreadResponse);
+      hamster.once('onmessageerror', reject);
+      hamster.once('error', reject);
     } else {
       hamster.onmessage = onThreadResponse;
       hamster.onmessageerror = reject;
       hamster.onerror = reject;
     }
-    return hamster;
-  }  
+  }
 
   /**
   * @function trainHamster - Trains thread in how to behave
@@ -258,23 +245,23 @@ class Pool {
   * @param {function} reject - onError method
   */
   trainHamster(index, task, threadId, hamster, resolve, reject) {
-    let onThreadResponse = (message) => {
+    const onThreadResponse = (message) => {
       this.hamsters.pool.processReturn(index, message, threadId, task);
-      this.hamsters.pool.removeFromRunning(task, threadId);
-      if (task.scheduler.workers.length === 0 && task.scheduler.count === task.scheduler.threads) {
-        this.returnOutputAndRemoveTask(task, resolve);
-      }
       if (this.hamsters.habitat.debug) {
         task.scheduler.metrics.threads[threadId].completed_at = Date.now();
       }
+      this.hamsters.pool.removeFromRunning(task, threadId);
+      if (task.scheduler.workers.length === 0 && task.scheduler.count === task.scheduler.threads) {
+        this.hamsters.pool.returnOutputAndRemoveTask(task, resolve);
+      }
       if (this.hamsters.pool.pending.length !== 0) {
-        this.hamsters.pool.processQueuedItem(hamster, threadId, this.hamsters.pool.pending.shift());
+        return this.hamsters.pool.processQueuedItem(hamster, this.hamsters.pool.pending.shift());
       }
       if (!this.hamsters.habitat.persistence) {
-        hamster.terminate();
+        return hamster.terminate();
       }
     };
-    return this.hamsters.pool.setOnMessage(hamster, onThreadResponse, reject);
+    this.hamsters.pool.setOnMessage(hamster, onThreadResponse, reject);
   }
 
   /**
@@ -310,4 +297,4 @@ class Pool {
   }
 }
 
-export default Pool;
+module.exports = Pool;
