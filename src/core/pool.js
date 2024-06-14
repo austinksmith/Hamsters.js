@@ -75,7 +75,7 @@ class Pool {
   */
   keepTrackOfThread(task, id) {
     if (this.hamsters.habitat.debug) {
-      task.scheduler.metrics.threads[id].started_at = Date.now();
+      task.scheduler.metrics.threads[task.scheduler.count].started_at = Date.now();
     }
     task.scheduler.workers.push(id);
     this.running.push(id);

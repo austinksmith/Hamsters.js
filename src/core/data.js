@@ -27,7 +27,7 @@ class Data {
   * @param {Worker} hamster - Thread to message
   * @param {object} hamsterFood - Message to send to thread
   */  
-  messageWorkerThread(hamster, hamsterFood, queued) {
+  messageWorkerThread(hamster, hamsterFood) {
     if(this.hamsters.habitat.reactNative) {
       return hamster.postMessage(JSON.stringify(hamsterFood));
     }
@@ -37,12 +37,6 @@ class Data {
     if(typeof hamsterFood.array.buffer !== 'undefined') {
       return hamster.postMessage(hamsterFood, [hamsterFood.array.buffer]);
     } else {
-      if(queued) {
-        var test = hamsterFood;
-        test.queued = true;
-        console.log("FEEDING A QUEUED HAMSTER!! ", hamsterFood);
-        return hamster.postMessage(test);
-      }
       return hamster.postMessage(hamsterFood);
     }
   }
