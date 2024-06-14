@@ -4,7 +4,7 @@ import WebStore from './stores/WebStore';
 class Memoize {
     constructor(hamsters, maxSize) {
         this.hamsters = hamsters;
-        this.store = this.hamsters.habitat.node ? new NodeStore(maxSize) : new WebStore('HamstersJSMemoizeDB', 'cacheStore', maxSize);
+        this.store = this.hamsters.habitat.node ? new NodeStore(maxSize) : new WebStore('hamstersjs', 'cacheStore', maxSize);
     }
 
     memoize(func) {

@@ -49,11 +49,11 @@ class Pool {
   * @param {object} hamster - The thread to run the task
   * @param {object} item - Task to process
   */
-  processQueuedItem(hamster, item) {
+  processQueuedItem(hamster, threadId, item) {
     if (this.hamsters.habitat.debug) {
       item.task.scheduler.metrics.threads[item.count].dequeued_at = Date.now();
     }
-    return this.runTask(hamster, item.index, item.task, item.resolve, item.reject);
+    this.runTask(hamster, threadId, item.index, item.task, item.resolve, item.reject, true);
   }
 
   /**
@@ -143,15 +143,14 @@ class Pool {
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
-  runTask(hamster, index, task, resolve, reject) {
-    const threadId = this.running.length;
+  runTask(hamster, threadId, index, task, resolve, reject) {
     const hamsterFood = this.prepareMeal(index, task);
     this.keepTrackOfThread(task, threadId);
     if (this.hamsters.habitat.legacy) {
       this.hamsters.wheel.legacy(hamsterFood, resolve, reject);
     } else {
-      this.trainHamster(index, task, threadId, hamster, resolve, reject);
-      this.hamsters.data.feedHamster(hamster, task, hamsterFood);
+      this.hamsters.pool.trainHamster(index, task, threadId, hamster, resolve, reject);
+      this.hamsters.data.feedHamster(hamster, hamsterFood);
     }
     task.scheduler.count += 1;
   }
@@ -167,7 +166,7 @@ class Pool {
     if (this.hamsters.habitat.maxThreads <= this.running.length) {
       return this.addWorkToPending(index, task, resolve, reject);
     }
-    return this.runTask(this.fetchHamster(this.running.length), index, task, resolve, reject);
+    return this.runTask(this.fetchHamster(this.running.length), this.running.length, index, task, resolve, reject);
   }
 
   /**
@@ -238,15 +237,16 @@ class Pool {
       hamster.port.onmessageerror = reject;
       hamster.port.onerror = reject;
     } else if (this.hamsters.habitat.node) {
-      hamster.once('message', onThreadResponse);
-      hamster.once('onmessageerror', reject);
-      hamster.once('error', reject);
+      hamster.on('message', onThreadResponse);
+      hamster.on('messageerror', reject);
+      hamster.on('error', reject);
     } else {
       hamster.onmessage = onThreadResponse;
       hamster.onmessageerror = reject;
       hamster.onerror = reject;
     }
-  }
+    return hamster;
+  }  
 
   /**
   * @function trainHamster - Trains thread in how to behave
@@ -258,23 +258,23 @@ class Pool {
   * @param {function} reject - onError method
   */
   trainHamster(index, task, threadId, hamster, resolve, reject) {
-    const onThreadResponse = (message) => {
+    let onThreadResponse = (message) => {
       this.hamsters.pool.processReturn(index, message, threadId, task);
+      this.hamsters.pool.removeFromRunning(task, threadId);
+      if (task.scheduler.workers.length === 0 && task.scheduler.count === task.scheduler.threads) {
+        this.returnOutputAndRemoveTask(task, resolve);
+      }
       if (this.hamsters.habitat.debug) {
         task.scheduler.metrics.threads[threadId].completed_at = Date.now();
       }
-      this.hamsters.pool.removeFromRunning(task, threadId);
-      if (task.scheduler.workers.length === 0 && task.scheduler.count === task.scheduler.threads) {
-        this.hamsters.pool.returnOutputAndRemoveTask(task, resolve);
-      }
       if (this.hamsters.pool.pending.length !== 0) {
-        return pool.processQueuedItem(hamster, pool.pending.shift());
+        this.hamsters.pool.processQueuedItem(hamster, threadId, this.hamsters.pool.pending.shift());
       }
       if (!this.hamsters.habitat.persistence) {
-        return hamster.terminate();
+        hamster.terminate();
       }
     };
-    this.hamsters.pool.setOnMessage(hamster, onThreadResponse, reject);
+    return this.hamsters.pool.setOnMessage(hamster, onThreadResponse, reject);
   }
 
   /**

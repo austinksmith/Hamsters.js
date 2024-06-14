@@ -11,48 +11,53 @@
 
 const { parentPort } = require('worker_threads');
 
-(function() {
+global.rtn = {};
+global.params = {};
 
-  global.rtn = {};
-  global.params = {};
-
-  parentPort.once('message', (message) => {
-    params = message;
-    rtn = {
-      data: [],
-      dataType: (typeof params.dataType !== 'undefined' ? params.dataType : null)
-    };
+parentPort.on('message', (message) => {
+  console.log(`Message from parent: ${message.queued}`);
+  params = message;
+  rtn = {
+    data: [],
+    dataType: (typeof params.dataType !== 'undefined' ? params.dataType : null)
+  };
+  if (message.queued) {
+    console.log("PARAMS QUEUED!! ", params);
+  }
+  try {
     eval(params.hamstersJob);
-    if(rtn.dataType) {
+    if (rtn.dataType) {
       rtn.data = typedArrayFromBuffer(rtn.dataType, rtn.data);
     }
     returnResponse(rtn);
-  });
-
-  function returnResponse(rtn, buffers) {
-    if(typeof rtn.data.buffer !== 'undefined') {
-      parentPort.postMessage(rtn, [rtn.data.buffer]);
-    } else {
-      parentPort.postMessage(rtn);
-    }
+  } catch (error) {
+    console.error("Error executing job:", error);
+    returnResponse({ error: error.message });
   }
+});
 
-  function typedArrayFromBuffer(dataType, buffer) {
-    const types = {
-      'Uint32': Uint32Array,
-      'Uint16': Uint16Array,
-      'Uint8': Uint8Array,
-      'Uint8clamped': Uint8ClampedArray,
-      'Int32': Int32Array,
-      'Int16': Int16Array,
-      'Int8': Int8Array,
-      'Float32': Float32Array,
-      'Float64': Float64Array
-    };
-    if (!types[dataType]) {
-      return buffer;
-    }
-    return new types[dataType](buffer);
+function returnResponse(rtn, buffers) {
+  if (typeof rtn.data !== 'undefined' && typeof rtn.data.buffer !== 'undefined') {
+    parentPort.postMessage(rtn, [rtn.data.buffer]);
+  } else {
+    parentPort.postMessage(rtn);
   }
+}
 
-}());
+function typedArrayFromBuffer(dataType, buffer) {
+  const types = {
+    'Uint32': Uint32Array,
+    'Uint16': Uint16Array,
+    'Uint8': Uint8Array,
+    'Uint8clamped': Uint8ClampedArray,
+    'Int32': Int32Array,
+    'Int16': Int16Array,
+    'Int8': Int8Array,
+    'Float32': Float32Array,
+    'Float64': Float64Array
+  };
+  if (!types[dataType]) {
+    return buffer;
+  }
+  return new types[dataType](buffer);
+}

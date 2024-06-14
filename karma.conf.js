@@ -52,7 +52,7 @@ module.exports = (config) => {
             exclude: path.resolve(__dirname, 'node_modules'),
             loader: 'babel',
             query: {
-              presets: ['es2015'],
+              presets: ['env'],
             },
           }
         ]
