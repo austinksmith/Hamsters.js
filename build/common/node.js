@@ -27,7 +27,7 @@ parentPort.on('message', (message) => {
     }
     returnResponse(rtn);
   } catch (error) {
-    console.error("Error executing job:", error);
+    console.error("Error executing task:", error);
     returnResponse({ error: error.message });
   }
 });
