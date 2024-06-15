@@ -106,20 +106,22 @@ class Pool {
     }
     return new Worker(hamsterWheel);
   }
-
+    
   /**
-   * @function prepareMeal - Prepares a message to send to a thread and invoke execution
+   * @function prepareMeal
+   * @description Prepares message to send to a thread and invoke execution
    * @param {number} index - Index of the subarray to process
-   * @param {number} subTaskId - ID of the subtask
+   * @param {number} subTaskId - Subtask ID
    * @param {object} task - Provided library functionality options for this task
-   * @return {object} - Prepared message to send to a thread
+   * @returns {object} - Prepared message to send to a thread
    */
   prepareMeal(index, subTaskId, task) {
     index.id = subTaskId;
-    
+
     // Prepare the base hamsterFood object
     const hamsterFood = {
-      array: task.input.array.length !== 0 ? this.hamsters.data.getSubArrayFromIndex(index, task) : [],
+      array: task.input.array && task.input.array.length !== 0 ? 
+            this.hamsters.data.getSubArrayFromIndex(index, task) : [],
       index: index
     };
 
@@ -128,15 +130,19 @@ class Pool {
       hamsterFood.sharedBuffer = task.scheduler.sharedBuffer;
     }
 
-    // Add other input properties, excluding 'array' and 'threads'
+    // List of excluded keys
+    const excludedKeys = new Set(['array', 'threads', 'sharedArray']);
+
+    // Iterate over task.input properties and add to hamsterFood
     for (const key in task.input) {
-      if (task.input.hasOwnProperty(key) && key !== 'array' && key !== 'threads' && key !== 'sharedArray') {
+      if (task.input.hasOwnProperty(key) && !excludedKeys.has(key)) {
         hamsterFood[key] = task.input[key];
       }
     }
 
     return hamsterFood;
   }
+
 
 
   /**
