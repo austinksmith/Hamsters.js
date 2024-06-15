@@ -34,11 +34,38 @@ class Data {
     if (this.hamsters.habitat.webWorker) {
       return hamster.port.postMessage(hamsterFood);
     }
-    if(typeof hamsterFood.array.buffer !== 'undefined') {
-      return hamster.postMessage(hamsterFood, [hamsterFood.array.buffer]);
-    } else {
-      return hamster.postMessage(hamsterFood);
+    return hamster.postMessage(hamsterFood, this.hamsters.data.getTransferableObjects(hamsterFood));
+  }
+
+  getTransferableObjects(obj) {
+    const typedArrayBuffers = [];
+    const transferableObjects = [];
+    const typedArrayTypes = [
+      'Int32Array', 'Uint8Array', 'Uint8ClampedArray', 'Int16Array', 
+      'Uint16Array', 'Uint32Array', 'Float32Array', 'Float64Array'
+    ];
+    const otherTransferables = [
+      'ArrayBuffer', 'MessagePort', 'ImageBitmap', 'OffscreenCanvas'
+    ];
+    const globalContext = typeof window !== 'undefined' ? window : global;
+  
+    for (const prop in obj) {
+      for (const type of typedArrayTypes) {
+        if (typeof globalContext[type] !== 'undefined' && obj[prop] instanceof globalContext[type]) {
+          typedArrayBuffers.push(obj[prop].buffer);
+          break;
+        }
+      }
+  
+      for (const type of otherTransferables) {
+        if (typeof globalContext[type] !== 'undefined' && obj[prop] instanceof globalContext[type]) {
+          transferableObjects.push(obj[prop]);
+          break;
+        }
+      }
     }
+  
+    return typedArrayBuffers.concat(transferableObjects);
   }
 
   /**

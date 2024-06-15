@@ -40,7 +40,7 @@ parentPort.on('message', (message) => {
 });
 
 function returnResponse(rtn) {
-  const buffers = rtn.data.buffer ? [rtn.data.buffer] : [];
+  const buffers = getTransferableObjects(rtn);
   if (buffers.length > 0) {
     // If there are buffers, postMessage with transferable objects
     parentPort.postMessage(rtn, buffers);
@@ -66,4 +66,35 @@ function typedArrayFromBuffer(dataType, buffer) {
     return buffer;
   }
   return new types[dataType](buffer);
+}
+
+function getTransferableObjects(obj) {
+  const typedArrayBuffers = [];
+  const transferableObjects = [];
+  const typedArrayTypes = [
+    'Int32Array', 'Uint8Array', 'Uint8ClampedArray', 'Int16Array', 
+    'Uint16Array', 'Uint32Array', 'Float32Array', 'Float64Array'
+  ];
+  const otherTransferables = [
+    'ArrayBuffer', 'MessagePort', 'ImageBitmap', 'OffscreenCanvas'
+  ];
+  const globalContext = typeof global !== 'undefined' ? global : self;
+
+  for (const prop in obj) {
+    for (const type of typedArrayTypes) {
+      if (typeof globalContext[type] !== 'undefined' && obj[prop] instanceof globalContext[type]) {
+        typedArrayBuffers.push(obj[prop].buffer);
+        break;
+      }
+    }
+
+    for (const type of otherTransferables) {
+      if (typeof globalContext[type] !== 'undefined' && obj[prop] instanceof globalContext[type]) {
+        transferableObjects.push(obj[prop]);
+        break;
+      }
+    }
+  }
+
+  return typedArrayBuffers.concat(transferableObjects);
 }
