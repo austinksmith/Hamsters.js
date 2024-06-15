@@ -3,10 +3,10 @@
   "author": "Austin K Smith",
   "description": "100% Vanilla Javascript Multithreading & Parallel Execution Library",
   "homepage": "http://www.hamsters.io/",
-  "version": "5.5.5",
+  "version": "5.5.6",
   "main": "build/hamsters.node.min.js",
   "scripts": {
-    "build": "rm -rf ./build && webpack --config ./hamsters.webpack.config.js && npm run copy-common",
+    "build": "rm -rf ./build && webpack --config ./hamsters.webpack.config.js && npm run copy-common && npm run copy-build",
     "build-react-native": "rm -rf ./build && webpack --config ./hamsters.webpack.config.js && npm run copy-common && cp -r ./build/* ../react-native-hamsters/examples/HamstersJS/node_modules/hamsters.js/build/",
     "build-node": "npm run build && cp -r ./build/. ../hamsters-io/node_modules/hamsters.js/build/.",
     "copy-common": "mkdir ./build/common && cp -a ./src/common/. ./build/common/",

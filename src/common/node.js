@@ -11,31 +11,41 @@
 
 const { parentPort } = require('worker_threads');
 
-global.rtn = {};
 global.params = {};
+global.rtn = {};
 
 parentPort.on('message', (message) => {
   params = message;
   rtn = {
     data: [],
-    dataType: (typeof params.dataType !== 'undefined' ? params.dataType : null)
+    dataType: (typeof params.dataType !== 'undefined' ? params.dataType : null),
+    index: params.index
   };
-  try {
-    eval(params.hamstersJob);
-    if (rtn.dataType) {
-      rtn.data = typedArrayFromBuffer(rtn.dataType, rtn.data);
-    }
-    returnResponse(rtn);
-  } catch (error) {
-    console.error("Error executing task:", error);
-    returnResponse({ error: error.message });
+
+  if (params.sharedBuffer) {
+    params.sharedArray = typedArrayFromBuffer(params.dataType, params.sharedBuffer);
   }
+
+  function handleDataType(rtn) {
+    if (!params.sharedArray && rtn.dataType) {
+      // Convert rtn.data to typed array if dataType is specified and no sharedArray is used
+      rtn.data = typedArrayFromBuffer(rtn.dataType, rtn.data.buffer);
+    }
+  }
+
+  eval(params.hamstersJob);
+
+  handleDataType(rtn); // Call the function to handle data type
+  returnResponse(rtn);
 });
 
-function returnResponse(rtn, buffers) {
-  if (typeof rtn.data !== 'undefined' && typeof rtn.data.buffer !== 'undefined') {
-    parentPort.postMessage(rtn, [rtn.data.buffer]);
+function returnResponse(rtn) {
+  const buffers = rtn.data.buffer ? [rtn.data.buffer] : [];
+  if (buffers.length > 0) {
+    // If there are buffers, postMessage with transferable objects
+    parentPort.postMessage(rtn, buffers);
   } else {
+    // Otherwise, postMessage without transferable objects
     parentPort.postMessage(rtn);
   }
 }

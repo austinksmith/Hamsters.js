@@ -31,4 +31,4 @@ class NodeStore {
     }
 }
 
-export default NodeStore;
+module.exports = NodeStore;

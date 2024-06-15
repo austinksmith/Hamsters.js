@@ -13,6 +13,7 @@ import Habitat from './core/habitat';
 import Pool from './core/pool';
 import Data from './core/data';
 import Wheel from './core/wheel';
+import Task from './core/task';
 
 //Features
 import Memoize from './feature/memoize';
@@ -26,7 +27,7 @@ class hamstersjs {
   constructor() {
     'use strict';
 
-    this.version = '5.5.5';
+    this.version = '5.5.6';
     this.run = this.hamstersRun.bind(this);
     this.promise = this.hamstersPromise.bind(this);
     this.init = this.inititializeLibrary.bind(this);
@@ -82,56 +83,6 @@ class hamstersjs {
   }
 
   /**
-   * @constructor
-   * @function hamstersTask - Constructs a new task object from provided arguments
-   * @param {object} params - Provided library execution options
-   * @param {function} functionToRun - Function to execute
-   * @return {object} new Hamsters.js task
-   */
-  hamstersTask(params, functionToRun) {
-    params.array = params.array || [];
-
-    const task = {
-      input: {},
-      output: new Array(params.array.length),
-      scheduler: {
-        count: 0,
-        threads: params.threads || 1,
-        workers: []
-      }
-    };
-
-    if (this.habitat.legacy) {
-      task.scheduler.threads = 1;
-      if (!this.habitat.node && !this.habitat.isIE) {
-        params.hamstersJob = functionToRun;
-      }
-    } else {
-      params.hamstersJob = this.habitat.legacy ? functionToRun : this.data.prepareFunction(functionToRun);
-      if (params.sharedArray && this.habitat.atomics) {
-        task.scheduler.indexes = params.indexes || this.data.getSubArrayIndexes(params.sharedArray, task.scheduler.threads);
-        task.scheduler.sharedBuffer = this.data.setupSharedArrayBuffer(params.sharedArray);
-      } else {
-        task.scheduler.indexes = params.indexes || this.data.getSubArrayIndexes(params.array, task.scheduler.threads);
-      }
-    }
-
-    if (this.habitat.debug) {
-        task.scheduler.metrics = {
-          created_at: Date.now(),
-          started_at: null,
-          completed_at: null,
-          threads: []
-        };
-    }
-
-    // Assign task.input to params
-    task.input = params;
-
-    return task;
-  }
-
-  /**
    * @async
    * @function scheduleTask - Schedules a new function to be processed by the library
    * @param {object} task - Provided library execution options
@@ -150,8 +101,6 @@ class hamstersjs {
         .catch(reject);
     }
   }
-  
-
 
   /**
    * @async
@@ -162,7 +111,7 @@ class hamstersjs {
    */
   hamstersPromise(params, functionToRun) {
     return new Promise((resolve, reject) => {
-      this.scheduleTask(this.hamstersTask(params, functionToRun), resolve, reject);
+      this.scheduleTask(new Task(this, params, functionToRun), resolve, reject);
     });
   }
 
@@ -174,7 +123,7 @@ class hamstersjs {
   * @return {array} Results from functionToRun.
   */
   hamstersRun(params, functionToRun, onSuccess, onError) {
-    this.scheduleTask(this.hamstersTask(params, functionToRun), onSuccess, onError);
+    this.scheduleTask(new Task(this, params, functionToRun), onSuccess, onError);
   }
 }
 

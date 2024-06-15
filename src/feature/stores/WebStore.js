@@ -178,4 +178,4 @@ class WebStore {
     }
 }
 
-export default WebStore;
+module.exports = WebStore;

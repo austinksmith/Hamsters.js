@@ -56,4 +56,4 @@ class Memoize {
     }
 }
 
-export default Memoize;
+module.exports = Memoize;
