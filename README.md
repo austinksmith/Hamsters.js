@@ -60,6 +60,8 @@ You can find a view examples of the library in action using the links below.
 
 [Atomic Operations](https://www.hamsters.io/wiki/atomics)
 
+[Memoization](https://www.hamsters.io/wiki/memoization)
+
 [Debugging](https://www.hamsters.io/wiki/debugging)
 
 [Limitations](https://www.hamsters.io/wiki/limitations)
