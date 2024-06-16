@@ -60,7 +60,7 @@ class Wheel {
     function handleDataType(rtn) {
       if (this.params.sharedArray) {
         // Do nothing here, we don't need to return a buffer rtn.data is useless here
-      } else {
+      } else if(this.params.dataType) {
         rtn.data = typedArrayFromBuffer(rtn.dataType, rtn.data);
       }
       return getTransferableObjects(rtn); // Return transferable objects
