@@ -177,8 +177,12 @@ class Pool {
     if (this.hamsters.habitat.maxThreads <= this.running.length) {
       this.addWorkToPending(index, subTaskId, task, resolve, reject);
     } else {
-      const hamster = this.fetchHamster(this.running.length);
-      this.runTask(hamster, index, subTaskId, task, resolve, reject);
+      if(task.input.distribute) {
+        this.hamsters.distribute.distributeTask(index, subTaskId, task, resolve, reject);
+      } else {
+        const hamster = this.fetchHamster(this.running.length);
+        this.runTask(hamster, index, subTaskId, task, resolve, reject);
+      }
     }
   }
 

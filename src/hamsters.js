@@ -17,6 +17,7 @@ import Task from './core/task';
 
 //Features
 import Memoize from './feature/memoize';
+import Distribute from './feature/distribute';
 
 class hamstersjs {
 
@@ -27,7 +28,7 @@ class hamstersjs {
   constructor() {
     'use strict';
 
-    this.version = '5.5.8';
+    this.version = '5.5.9';
     this.run = this.hamstersRun.bind(this);
     this.promise = this.hamstersPromise.bind(this);
     this.init = this.inititializeLibrary.bind(this);
@@ -48,6 +49,7 @@ class hamstersjs {
     this.wheel = new Wheel(this);
     this.habitat = new Habitat(this);
     this.memoize = new Memoize(this, 100); //Set a maximum of 100 memoized function results, LRU cache
+    this.distribute = new Distribute(this);
 
     this.processStartOptions(startOptions);
     
@@ -95,11 +97,10 @@ class hamstersjs {
       // Pass the task object to the memoized function
       const memoizedFunction = this.memoize.memoize(() => this.pool.scheduleTask(task));
       return memoizedFunction(task).then(resolve).catch(reject);
-    } else {
-      return this.pool.scheduleTask(task)
+    }
+    return this.pool.scheduleTask(task)
         .then(resolve)
         .catch(reject);
-    }
   }
 
   /**

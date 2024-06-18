@@ -11,6 +11,8 @@ class Task {
      * @param {function} functionToRun - Function to execute
      */
     constructor(hamsters, params, functionToRun) {
+      'use strict';
+
       this.input = params;
       this.output = [];
       this.scheduler = {
