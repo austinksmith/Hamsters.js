@@ -12,6 +12,8 @@ class Distribute {
     this.ws = null;
     this.connectionTargets = [];  // List of clients to connect to
     this.clientId = null;         // Current client ID
+    this.pendingPromises = {};    // Store pending promises by messageId
+    this.returnDistributedOutput = this.sendDataResponse.bind(this);
 
     // Initialize WebSocket connection
     this.initWebSocket();
@@ -42,6 +44,9 @@ class Distribute {
           break;
         case 'candidate':
           this.handleCandidate(message);
+          break;
+        case 'task-response':
+          this.handleTaskResponse(message);
           break;
         default:
           console.log('Unknown message type:', message.type);
@@ -90,9 +95,11 @@ class Distribute {
         };
 
         sendChannel.onopen = () => {
-          this.onSendChannelStateChange();
+          this.onSendChannelStateChange(targetClient);
         };
-        sendChannel.onclose = this.onSendChannelStateChange.bind(this);
+        sendChannel.onclose = () => {
+          this.onSendChannelStateChange(targetClient);
+        };
 
         sendChannel.onmessage = (event) => {
           this.onReceiveMessageCallback(targetClient, event.data);
@@ -153,43 +160,28 @@ class Distribute {
       console.warn('No send channels available.');
       return null;
     }
-  
+
     const randomIndex = Math.floor(Math.random() * sendChannelKeys.length);
     return sendChannelKeys[randomIndex];
-  }  
-
-  distributeTask(task, hamsterFood, resolve, reject) {
-    const targetClient = this.fetchDistributedClient();
-    let subTask = {
-      hamsterFood: hamsterFood,
-      index: hamsterFood.index,
-      task: task,
-      resolve: resolve,
-      reject: reject
-    };
-    this.sendData({ targetClient: targetClient, data: subTask });
   }
 
-  sendDataResponse(targetClient, payload, isReply) {
+  distributeTask(task, hamsterFood) {
+    return new Promise((resolve, reject) => {
+      const targetClient = this.fetchDistributedClient();
+      const messageId = this.generateUniqueId();
 
-    let sendChannel = this.receiveChannels[targetClient];
-
-    if (!sendChannel) {
-      console.error('No send or receive channel found for targetClient:', targetClient);
-      return;
-    }
-
-    payload.isReply = isReply;
-
-    if (sendChannel.readyState === 'open') {
-      sendChannel.send(JSON.stringify(payload));
-      this.trace('Sent Data to ' + targetClient + ': ' + JSON.stringify(payload));
-    } else {
-      sendChannel.onopen = () => {
-        sendChannel.send(JSON.stringify(payload));
-        this.trace('Sent Data to ' + targetClient + ': ' + JSON.stringify(payload));
+      const subTask = {
+        hamsterFood,
+        index: hamsterFood.index,
+        task,
+        messageId,
       };
-    }
+
+      // Store the resolve and reject in a map with messageId
+      this.pendingPromises[messageId] = { resolve, reject };
+
+      this.sendData({ targetClient, data: subTask });
+    });
   }
 
   sendData(data) {
@@ -217,6 +209,20 @@ class Distribute {
     }
   }
 
+  handleTaskResponse(data) {
+    const { messageId, output, error } = data;
+
+    const { resolve, reject } = this.pendingPromises[messageId];
+
+    if (error) {
+      reject(error);
+    } else {
+      resolve(result);
+    }
+
+    delete this.pendingPromises[messageId];
+  }
+
   closeDataChannels() {
     for (const targetClient in this.sendChannels) {
       this.sendChannels[targetClient].close();
@@ -234,8 +240,12 @@ class Distribute {
     receiveChannel.onmessage = (event) => {
       this.onReceiveMessageCallback(targetClient, event.data);
     };
-    receiveChannel.onopen = this.onReceiveChannelStateChange.bind(this);
-    receiveChannel.onclose = this.onReceiveChannelStateChange.bind(this);
+    receiveChannel.onopen = () => {
+      this.onReceiveChannelStateChange(targetClient);
+    };
+    receiveChannel.onclose = () => {
+      this.onReceiveChannelStateChange(targetClient);
+    };
 
     // Store the receive channel with targetClient ID
     this.receiveChannels[targetClient] = receiveChannel;
@@ -246,9 +256,11 @@ class Distribute {
       const sendChannel = localConnection.createDataChannel('hamstersjs', this.dataConstraint);
 
       sendChannel.onopen = () => {
-        this.onSendChannelStateChange();
+        this.onSendChannelStateChange(targetClient);
       };
-      sendChannel.onclose = this.onSendChannelStateChange.bind(this);
+      sendChannel.onclose = () => {
+        this.onSendChannelStateChange(targetClient);
+      };
 
       sendChannel.onmessage = (event) => {
         this.onReceiveMessageCallback(targetClient, event.data);
@@ -262,48 +274,53 @@ class Distribute {
     console.log('Received message!');
     const incomingMessage = JSON.parse(data);
 
-    if(incomingMessage.isReply) {
-      console.log("K ITS READY ", incomingMessage);
+    if (incomingMessage.isReply) {
+      // This is a response from Client A to Client B
+      this.handleTaskResponse(incomingMessage);
+      console.log("Response received for task:", incomingMessage);
     } else {
-      // Find the targetClient associated with the receive channel
-      targetClient = this.findTargetClientByReceiveChannel(event.target);
-      if (targetClient) {
-        // Pass targetClient to runDistributedTask along with the received data
-        this.hamsters.pool.runDistributedTask(JSON.parse(event.data), targetClient);
-        // Optionally, respond using the same receive channel
-        // this.sendData({ targetClient, data: 'Response message' });
-      }
+      // Process the task on the current client (Client B) and send a response back
+      this.hamsters.pool.runDistributedTask(incomingMessage, targetClient);
     }
   }
-  
-  findTargetClientByReceiveChannel(receiveChannel) {
-    for (const targetClient in this.receiveChannels) {
-      if (this.receiveChannels[targetClient] === receiveChannel) {
-        return targetClient;
-      }
+
+  sendDataResponse(data) {
+    const targetClient = data.targetClient;
+    const sendChannel = this.receiveChannels[targetClient];
+    if (sendChannel && sendChannel.readyState === 'open') {
+      sendChannel.send(JSON.stringify(data));
+      console.log('Sent response to', targetClient);
+    } else {
+      console.error('Send channel is not open for targetClient:', targetClient);
     }
-    return null;
   }
 
-  onSendChannelStateChange() {
-    // Handle send channel state change if needed
+  onSendChannelStateChange(targetClient) {
+    const sendChannel = this.sendChannels[targetClient];
+    const readyState = sendChannel ? sendChannel.readyState : 'unknown';
+    console.log('Send channel state for', targetClient, 'is:', readyState);
   }
 
-  onReceiveChannelStateChange() {
-    // Handle receive channel state change if needed
+  onReceiveChannelStateChange(targetClient) {
+    const receiveChannel = this.receiveChannels[targetClient];
+    const readyState = receiveChannel ? receiveChannel.readyState : 'unknown';
+    console.log('Receive channel state for', targetClient, 'is:', readyState);
   }
 
-  trace(arg) {
-    const now = (window.performance.now() / 1000).toFixed(3);
-    console.log(now + ': ', arg);
+  generateUniqueId() {
+    return '_' + Math.random().toString(36).substr(2, 9);
+  }
+
+  trace(text) {
+    console.log((performance.now() / 1000).toFixed(3) + ': ' + text);
   }
 
   onCreateSessionDescriptionError(error) {
-    this.trace('Failed to create session description: ' + error.toString());
+    console.error('Failed to create session description:', error.toString());
   }
 
   onAddIceCandidateError(error) {
-    this.trace('Failed to add Ice Candidate: ' + error.toString());
+    console.error('Failed to add ICE candidate:', error.toString());
   }
 }
 

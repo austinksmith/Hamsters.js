@@ -147,13 +147,17 @@ class Pool {
   * @function runDistributedTask - Runs incoming distributed function using thread
   * @param {object} incomingMessage - The incoming subTask object
   */
-    runDistributedTask(incomingMessage, targetClient) {
-      const hamster = this.fetchHamster(this.running.length);
-      let task = incomingMessage.task;
-      let index = incomingMessage.hamsterFood.index;
-      task.input.targetClient = targetClient;
-      this.runTask(hamster, index, incomingMessage.hamsterFood, incomingMessage.task, incomingMessage.resolve, incomingMessage.reject);
-    }
+  runDistributedTask(incomingMessage, targetClient) {
+    const hamster = this.fetchHamster(this.running.length);
+    let task = incomingMessage.task;
+    let index = incomingMessage.hamsterFood.index;
+    let handleResponse = this.hamsters.distribute.returnDistributedOutput;
+    task.targetClient = targetClient;
+    task.messageId = incomingMessage.messageId;
+    task.isReply = true;
+
+    this.runTask(hamster, index, incomingMessage.hamsterFood, incomingMessage.task, handleResponse, handleResponse);
+  }
 
 
 
@@ -190,12 +194,17 @@ class Pool {
       this.addWorkToPending(index, hamsterFood, task, resolve, reject);
     } else {
       if(task.input.distribute) {
-        this.hamsters.distribute.distributeTask(task, hamsterFood, resolve, reject);
+        console.log("WE HAVE OUR FOOD! ", hamsterFood);
+        this.hamsters.distribute.distributeTask(task, hamsterFood);
       } else {
         const hamster = this.fetchHamster(this.running.length);
         this.runTask(hamster, index, hamsterFood, task, resolve, reject);
       }
     }
+  }
+
+  processDistributedReturn(data) {
+    debugger;
   }
 
   /**
@@ -218,7 +227,7 @@ class Pool {
       console.info("Hamsters.js Task Completed: ", task);
     }
     if(task.input.distribute) {
-      this.hamsters.distribute.sendDataResponse(task.input.targetClient, task, true);
+      resolve(task);
     } else {
       resolve(task.output);
     }
