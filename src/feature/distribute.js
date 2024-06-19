@@ -5,33 +5,25 @@ class Distribute {
     this.hamsters = hamsters;
     this.localConnection = null;
     this.remoteConnections = {};
-    this.sendChannels = {};
-    this.receiveChannels = {};
+    this.sendChannels = {};       // Stores outgoing data channels
+    this.receiveChannels = {};    // Stores incoming data channels
     this.pcConstraint = null;
     this.dataConstraint = null;
     this.ws = null;
-    this.connectionTargets = []; // New property to hold the connection targets
-    this.clientId = null; // New property to store the client's own ID
+    this.connectionTargets = [];  // List of clients to connect to
+    this.clientId = null;         // Current client ID
 
-    // Initialize elements
-    this.dataChannelSend = document.getElementById('dataChannelSend');
-    this.clientSelect = document.getElementById('clientSelect');
-
+    // Initialize WebSocket connection
     this.initWebSocket();
-
-    // Add event listener for connect button
-    document.getElementById('connectButton').addEventListener('click', () => {
-      this.createConnection();
-    });
   }
 
   initWebSocket() {
     this.ws = new WebSocket(`ws://${window.location.host}`);
-    
+
     this.ws.onopen = () => {
       console.log('WebSocket connection established');
     };
-    
+
     this.ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
       switch (message.type) {
@@ -67,7 +59,7 @@ class Distribute {
 
   updateClientList(clients) {
     this.connectionTargets = clients.map(client => client.id);
-    this.displayClientList(); // Method to update the UI
+    this.displayClientList();
   }
 
   displayClientList() {
@@ -96,7 +88,6 @@ class Distribute {
       return alert('No clients to connect to.');
     }
 
-    this.dataChannelSend.placeholder = '';
     const servers = null;
 
     this.connectionTargets.forEach(targetClient => {
@@ -135,7 +126,9 @@ class Distribute {
         this.ws.send(JSON.stringify({ type: 'candidate', target: targetClient, candidate: e.candidate }));
       }
     };
-    remoteConnection.ondatachannel = this.receiveChannelCallback.bind(this);
+    remoteConnection.ondatachannel = (event) => {
+      this.receiveChannelCallback(event, targetClient); // Pass targetClient to associate with the channel
+    };
 
     remoteConnection.setRemoteDescription(new RTCSessionDescription(data.offer)).then(() => {
       return remoteConnection.createAnswer();
@@ -158,17 +151,50 @@ class Distribute {
     connection.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(this.onAddIceCandidateError);
   }
 
+  fetchDistributedClient() {
+    const sendChannelKeys = Object.keys(this.sendChannels);
+    if (sendChannelKeys.length === 0) {
+      console.warn('No send channels available.');
+      return null;
+    }
+  
+    const randomIndex = Math.floor(Math.random() * sendChannelKeys.length);
+    return sendChannelKeys[randomIndex];
+  }  
+
+  distributeTask(task, hamsterFood, resolve, reject) {
+    const targetClient = this.fetchDistributedClient();
+    let subTask = {
+      hamsterFood: hamsterFood,
+      index: hamsterFood.index,
+      task: task,
+      resolve: resolve,
+      reject: reject
+    };
+    this.sendData({ targetClient: targetClient, data: subTask });
+  }
+
   sendData(data) {
     const { targetClient, data: payload } = data;
-    const sendChannel = this.sendChannels[targetClient];
-    
+    let sendChannel = this.sendChannels[targetClient];
+
+    // If sendChannel is not available in sendChannels, check receiveChannels
+    if (!sendChannel) {
+      sendChannel = this.receiveChannels[targetClient];
+    }
+
+    if (!sendChannel) {
+      console.error('No send or receive channel found for targetClient:', targetClient);
+      return;
+    }
+
     if (sendChannel.readyState === 'open') {
       sendChannel.send(JSON.stringify(payload));
-      this.trace('Sent Data to ' + targetClient + ': ' + payload);
+      this.trace('Sent Data to ' + targetClient + ': ' + JSON.stringify(payload));
     } else {
       sendChannel.onopen = () => {
         sendChannel.send(JSON.stringify(payload));
-        this.trace('Sent Data to ' + targetClient + ': ' + payload);
+        this.trace('Sent Data to ' + targetClient + ': ' + JSON.stringify(payload));
       };
     }
   }
@@ -185,18 +211,33 @@ class Distribute {
     this.receiveChannels = {};
   }
 
-  receiveChannelCallback(event) {
+  receiveChannelCallback(event, targetClient) {
     const receiveChannel = event.channel;
     receiveChannel.onmessage = this.onReceiveMessageCallback.bind(this);
     receiveChannel.onopen = this.onReceiveChannelStateChange.bind(this);
     receiveChannel.onclose = this.onReceiveChannelStateChange.bind(this);
 
-    // Store the receive channel
-    this.receiveChannels[event.targetClient] = receiveChannel;
+    // Store the receive channel with targetClient ID
+    this.receiveChannels[targetClient] = receiveChannel;
   }
 
   onReceiveMessageCallback(event) {
-    console.log(event.data);
+    console.log('Received message:', event.data);
+    // Example of responding using the same receive channel
+    const targetClient = this.findTargetClientByReceiveChannel(event.target);
+    if (targetClient) {
+      this.hamsters.pool.runDistributedTask(JSON.parse(event.data));
+      // this.sendData({ targetClient, data: 'Response message' });
+    }
+  }
+
+  findTargetClientByReceiveChannel(receiveChannel) {
+    for (const targetClient in this.receiveChannels) {
+      if (this.receiveChannels[targetClient] === receiveChannel) {
+        return targetClient;
+      }
+    }
+    return null;
   }
 
   onSendChannelStateChange() {

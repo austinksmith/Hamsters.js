@@ -31,13 +31,13 @@ class Pool {
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
-  addWorkToPending(index, subTaskId, task, resolve, reject) {
+  addWorkToPending(index, hamsterFood, task, resolve, reject) {
     if (this.hamsters.habitat.debug) {
       task.scheduler.metrics.threads[task.scheduler.count].enqueued_at = Date.now();
     }
     this.pending.push({
       index,
-      subTaskId,  
+      hamsterFood,  
       task,
       resolve,
       reject
@@ -51,9 +51,9 @@ class Pool {
   */
   processQueuedItem(hamster, item) {
     if (this.hamsters.habitat.debug) {
-      item.task.scheduler.metrics.threads[item.subTaskId].dequeued_at = Date.now();
+      item.task.scheduler.metrics.threads[item.index.id].dequeued_at = Date.now();
     }
-    return this.runTask(hamster, item.index, item.subTaskId, item.task, item.resolve, item.reject);
+    return this.runTask(hamster, item.index, item.hamsterFood, item.task, item.resolve, item.reject);
   }
 
   /**
@@ -143,6 +143,16 @@ class Pool {
     return hamsterFood;
   }
 
+  /**
+  * @function runDistributedTask - Runs incoming distributed function using thread
+  * @param {object} incomingMessage - The incoming subTask object
+  */
+    runDistributedTask(incomingMessage) {
+      const hamster = this.fetchHamster(this.running.length);
+      const index = incomingMessage.hamsterFood.index;
+      this.runTask(hamster, index, incomingMessage.hamsterFood, incomingMessage.task, incomingMessage.resolve, incomingMessage.reject);
+    }
+
 
 
   /**
@@ -153,9 +163,8 @@ class Pool {
   * @param {function} resolve - onSuccess method
   * @param {function} reject - onError method
   */
-  runTask(hamster, index, subTaskId, task, resolve, reject) {
+  runTask(hamster, index, hamsterFood, task, resolve, reject) {
     const threadId = this.running.length;
-    const hamsterFood = this.prepareMeal(index, subTaskId, task);
     this.hamsters.pool.keepTrackOfThread(task, threadId);
     if (this.hamsters.habitat.legacy) {
       this.hamsters.wheel.legacy(hamsterFood, resolve, reject);
@@ -174,14 +183,15 @@ class Pool {
   * @param {function} reject - onError method
   */
   hamsterWheel(index, subTaskId, task, resolve, reject) {
+    const hamsterFood = this.prepareMeal(index, subTaskId, task);
     if (this.hamsters.habitat.maxThreads <= this.running.length) {
-      this.addWorkToPending(index, subTaskId, task, resolve, reject);
+      this.addWorkToPending(index, hamsterFood, task, resolve, reject);
     } else {
       if(task.input.distribute) {
-        this.hamsters.distribute.distributeTask(index, subTaskId, task, resolve, reject);
+        this.hamsters.distribute.distributeTask(task, hamsterFood, resolve, reject);
       } else {
         const hamster = this.fetchHamster(this.running.length);
-        this.runTask(hamster, index, subTaskId, task, resolve, reject);
+        this.runTask(hamster, index, hamsterFood, task, resolve, reject);
       }
     }
   }
@@ -205,7 +215,11 @@ class Pool {
       task.scheduler.metrics.completed_at = Date.now();
       console.info("Hamsters.js Task Completed: ", task);
     }
-    resolve(task.output);
+    if(task.input.distribute) {
+      console.log("OK We HAVE OUR OUTPUT, WHAT TO DO WITH IT?! ", task);
+    } else {
+      resolve(task.output);
+    }
   }
 
   /**
@@ -241,8 +255,6 @@ class Pool {
       task.output = messageData;
     }
   }
-
-
 
   /**
   * @function setOnMessage - Sets the message handlers for a thread
