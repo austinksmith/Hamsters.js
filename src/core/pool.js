@@ -147,9 +147,11 @@ class Pool {
   * @function runDistributedTask - Runs incoming distributed function using thread
   * @param {object} incomingMessage - The incoming subTask object
   */
-    runDistributedTask(incomingMessage) {
+    runDistributedTask(incomingMessage, targetClient) {
       const hamster = this.fetchHamster(this.running.length);
-      const index = incomingMessage.hamsterFood.index;
+      let task = incomingMessage.task;
+      let index = incomingMessage.hamsterFood.index;
+      task.input.targetClient = targetClient;
       this.runTask(hamster, index, incomingMessage.hamsterFood, incomingMessage.task, incomingMessage.resolve, incomingMessage.reject);
     }
 
@@ -216,7 +218,7 @@ class Pool {
       console.info("Hamsters.js Task Completed: ", task);
     }
     if(task.input.distribute) {
-      console.log("OK We HAVE OUR OUTPUT, WHAT TO DO WITH IT?! ", task);
+      this.hamsters.distribute.sendDataResponse(task.input.targetClient, task, true);
     } else {
       resolve(task.output);
     }

@@ -59,18 +59,6 @@ class Distribute {
 
   updateClientList(clients) {
     this.connectionTargets = clients.map(client => client.id);
-    this.displayClientList();
-  }
-
-  displayClientList() {
-    // Ensure that this method clears the list before updating to avoid duplicates
-    this.clientSelect.innerHTML = '';
-    this.connectionTargets.forEach(clientId => {
-      const option = document.createElement('option');
-      option.value = clientId;
-      option.text = clientId;
-      this.clientSelect.appendChild(option);
-    });
   }
 
   loadClientList() {
@@ -91,54 +79,62 @@ class Distribute {
     const servers = null;
 
     this.connectionTargets.forEach(targetClient => {
-      const localConnection = new RTCPeerConnection(servers, this.pcConstraint);
-      const sendChannel = localConnection.createDataChannel('hamstersjs', this.dataConstraint);
+      if (!this.remoteConnections[targetClient]) {
+        const localConnection = new RTCPeerConnection(servers, this.pcConstraint);
+        const sendChannel = localConnection.createDataChannel('hamstersjs', this.dataConstraint);
 
-      localConnection.onicecandidate = (e) => {
-        if (e.candidate) {
-          this.ws.send(JSON.stringify({ type: 'candidate', target: targetClient, candidate: e.candidate }));
-        }
-      };
+        localConnection.onicecandidate = (e) => {
+          if (e.candidate) {
+            this.ws.send(JSON.stringify({ type: 'candidate', target: targetClient, candidate: e.candidate }));
+          }
+        };
 
-      sendChannel.onopen = () => {
-        this.onSendChannelStateChange();
-        this.sendData({ targetClient, data: 'Initial connection established' }); // Send initial data
-      };
-      sendChannel.onclose = this.onSendChannelStateChange.bind(this);
+        sendChannel.onopen = () => {
+          this.onSendChannelStateChange();
+        };
+        sendChannel.onclose = this.onSendChannelStateChange.bind(this);
 
-      // Store connections and channels
-      this.remoteConnections[targetClient] = localConnection;
-      this.sendChannels[targetClient] = sendChannel;
+        sendChannel.onmessage = (event) => {
+          this.onReceiveMessageCallback(targetClient, event.data);
+        };
 
-      localConnection.createOffer().then(desc => {
-        localConnection.setLocalDescription(desc);
-        this.ws.send(JSON.stringify({ type: 'offer', target: targetClient, offer: desc }));
-      }).catch(this.onCreateSessionDescriptionError);
+        // Store connections and channels
+        this.remoteConnections[targetClient] = localConnection;
+        this.sendChannels[targetClient] = sendChannel;
+
+        localConnection.createOffer().then(desc => {
+          localConnection.setLocalDescription(desc);
+          this.ws.send(JSON.stringify({ type: 'offer', target: targetClient, offer: desc }));
+        }).catch(this.onCreateSessionDescriptionError);
+      }
     });
   }
 
   handleOffer(data) {
     const targetClient = data.from;
-    const remoteConnection = new RTCPeerConnection(null, this.pcConstraint);
 
-    remoteConnection.onicecandidate = (e) => {
-      if (e.candidate) {
-        this.ws.send(JSON.stringify({ type: 'candidate', target: targetClient, candidate: e.candidate }));
-      }
-    };
-    remoteConnection.ondatachannel = (event) => {
-      this.receiveChannelCallback(event, targetClient); // Pass targetClient to associate with the channel
-    };
+    if (!this.remoteConnections[targetClient]) {
+      const remoteConnection = new RTCPeerConnection(null, this.pcConstraint);
 
-    remoteConnection.setRemoteDescription(new RTCSessionDescription(data.offer)).then(() => {
-      return remoteConnection.createAnswer();
-    }).then(desc => {
-      remoteConnection.setLocalDescription(desc);
-      this.ws.send(JSON.stringify({ type: 'answer', target: targetClient, answer: desc }));
-    }).catch(this.onCreateSessionDescriptionError);
+      remoteConnection.onicecandidate = (e) => {
+        if (e.candidate) {
+          this.ws.send(JSON.stringify({ type: 'candidate', target: targetClient, candidate: e.candidate }));
+        }
+      };
+      remoteConnection.ondatachannel = (event) => {
+        this.receiveChannelCallback(event, targetClient); // Pass targetClient to associate with the channel
+      };
 
-    // Store the remote connection
-    this.remoteConnections[targetClient] = remoteConnection;
+      remoteConnection.setRemoteDescription(new RTCSessionDescription(data.offer)).then(() => {
+        return remoteConnection.createAnswer();
+      }).then(desc => {
+        remoteConnection.setLocalDescription(desc);
+        this.ws.send(JSON.stringify({ type: 'answer', target: targetClient, answer: desc }));
+      }).catch(this.onCreateSessionDescriptionError);
+
+      // Store the remote connection
+      this.remoteConnections[targetClient] = remoteConnection;
+    }
   }
 
   handleAnswer(data) {
@@ -172,6 +168,28 @@ class Distribute {
       reject: reject
     };
     this.sendData({ targetClient: targetClient, data: subTask });
+  }
+
+  sendDataResponse(targetClient, payload, isReply) {
+
+    let sendChannel = this.receiveChannels[targetClient];
+
+    if (!sendChannel) {
+      console.error('No send or receive channel found for targetClient:', targetClient);
+      return;
+    }
+
+    payload.isReply = isReply;
+
+    if (sendChannel.readyState === 'open') {
+      sendChannel.send(JSON.stringify(payload));
+      this.trace('Sent Data to ' + targetClient + ': ' + JSON.stringify(payload));
+    } else {
+      sendChannel.onopen = () => {
+        sendChannel.send(JSON.stringify(payload));
+        this.trace('Sent Data to ' + targetClient + ': ' + JSON.stringify(payload));
+      };
+    }
   }
 
   sendData(data) {
@@ -213,24 +231,51 @@ class Distribute {
 
   receiveChannelCallback(event, targetClient) {
     const receiveChannel = event.channel;
-    receiveChannel.onmessage = this.onReceiveMessageCallback.bind(this);
+    receiveChannel.onmessage = (event) => {
+      this.onReceiveMessageCallback(targetClient, event.data).bind(this);
+    };
     receiveChannel.onopen = this.onReceiveChannelStateChange.bind(this);
     receiveChannel.onclose = this.onReceiveChannelStateChange.bind(this);
 
     // Store the receive channel with targetClient ID
     this.receiveChannels[targetClient] = receiveChannel;
-  }
 
-  onReceiveMessageCallback(event) {
-    console.log('Received message:', event.data);
-    // Example of responding using the same receive channel
-    const targetClient = this.findTargetClientByReceiveChannel(event.target);
-    if (targetClient) {
-      this.hamsters.pool.runDistributedTask(JSON.parse(event.data));
-      // this.sendData({ targetClient, data: 'Response message' });
+    // Ensure a send channel is created if it doesn't already exist
+    if (!this.sendChannels[targetClient]) {
+      const localConnection = this.remoteConnections[targetClient];
+      const sendChannel = localConnection.createDataChannel('hamstersjs', this.dataConstraint);
+
+      sendChannel.onopen = () => {
+        this.onSendChannelStateChange();
+      };
+      sendChannel.onclose = this.onSendChannelStateChange.bind(this);
+
+      sendChannel.onmessage = (event) => {
+        this.onReceiveMessageCallback(targetClient, event.data);
+      };
+
+      this.sendChannels[targetClient] = sendChannel;
     }
   }
 
+  onReceiveMessageCallback(targetClient, data) {
+    console.log('Received message!');
+    const incomingMessage = JSON.parse(data);
+
+    if(incomingMessage.isReply) {
+      console.log("K ITS READY ", incomingMessage);
+    } else {
+      // Find the targetClient associated with the receive channel
+      targetClient = this.findTargetClientByReceiveChannel(event.target);
+      if (targetClient) {
+        // Pass targetClient to runDistributedTask along with the received data
+        this.hamsters.pool.runDistributedTask(JSON.parse(event.data), targetClient);
+        // Optionally, respond using the same receive channel
+        // this.sendData({ targetClient, data: 'Response message' });
+      }
+    }
+  }
+  
   findTargetClientByReceiveChannel(receiveChannel) {
     for (const targetClient in this.receiveChannels) {
       if (this.receiveChannels[targetClient] === receiveChannel) {
