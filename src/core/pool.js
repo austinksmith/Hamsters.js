@@ -194,8 +194,7 @@ class Pool {
       this.addWorkToPending(index, hamsterFood, task, resolve, reject);
     } else {
       if(task.input.distribute) {
-        console.log("WE HAVE OUR FOOD! ", hamsterFood);
-        this.hamsters.distribute.distributeTask(task, hamsterFood);
+        this.hamsters.distribute.distributeTask(task, hamsterFood, resolve, reject);
       } else {
         const hamster = this.fetchHamster(this.running.length);
         this.runTask(hamster, index, hamsterFood, task, resolve, reject);

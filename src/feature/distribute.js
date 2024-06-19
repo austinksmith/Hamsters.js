@@ -165,8 +165,7 @@ class Distribute {
     return sendChannelKeys[randomIndex];
   }
 
-  distributeTask(task, hamsterFood) {
-    return new Promise((resolve, reject) => {
+  distributeTask(task, hamsterFood, resolve, reject) {
       const targetClient = this.fetchDistributedClient();
       const messageId = this.generateUniqueId();
 
@@ -181,7 +180,6 @@ class Distribute {
       this.pendingPromises[messageId] = { resolve, reject };
 
       this.sendData({ targetClient, data: subTask });
-    });
   }
 
   sendData(data) {
