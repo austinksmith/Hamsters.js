@@ -232,7 +232,7 @@ class Distribute {
   receiveChannelCallback(event, targetClient) {
     const receiveChannel = event.channel;
     receiveChannel.onmessage = (event) => {
-      this.onReceiveMessageCallback(targetClient, event.data).bind(this);
+      this.onReceiveMessageCallback(targetClient, event.data);
     };
     receiveChannel.onopen = this.onReceiveChannelStateChange.bind(this);
     receiveChannel.onclose = this.onReceiveChannelStateChange.bind(this);
