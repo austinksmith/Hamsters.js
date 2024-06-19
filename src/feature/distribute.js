@@ -217,7 +217,7 @@ class Distribute {
     if (error) {
       reject(error);
     } else {
-      resolve(result);
+      resolve(output);
     }
 
     delete this.pendingPromises[messageId];
