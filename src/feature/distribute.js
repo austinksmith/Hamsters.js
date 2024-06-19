@@ -94,6 +94,14 @@ class Distribute {
           }
         };
 
+        localConnection.oniceconnectionstatechange = () => {
+          this.onConnectionStateChange(targetClient);
+        };
+
+        localConnection.onconnectionstatechange = () => {
+          this.onConnectionStateChange(targetClient);
+        };
+
         sendChannel.onopen = () => {
           this.onSendChannelStateChange(targetClient);
         };
@@ -128,6 +136,15 @@ class Distribute {
           this.ws.send(JSON.stringify({ type: 'candidate', target: targetClient, candidate: e.candidate }));
         }
       };
+
+      remoteConnection.oniceconnectionstatechange = () => {
+        this.onConnectionStateChange(targetClient);
+      };
+
+      remoteConnection.onconnectionstatechange = () => {
+        this.onConnectionStateChange(targetClient);
+      };
+
       remoteConnection.ondatachannel = (event) => {
         this.receiveChannelCallback(event, targetClient); // Pass targetClient to associate with the channel
       };
@@ -233,6 +250,22 @@ class Distribute {
     this.receiveChannels = {};
   }
 
+  removeConnection(targetClient) {
+    if (this.sendChannels[targetClient]) {
+      this.sendChannels[targetClient].close();
+      delete this.sendChannels[targetClient];
+    }
+    if (this.receiveChannels[targetClient]) {
+      this.receiveChannels[targetClient].close();
+      delete this.receiveChannels[targetClient];
+    }
+    if (this.remoteConnections[targetClient]) {
+      this.remoteConnections[targetClient].close();
+      delete this.remoteConnections[targetClient];
+    }
+    console.log(`Connection with ${targetClient} removed.`);
+  }
+
   receiveChannelCallback(event, targetClient) {
     const receiveChannel = event.channel;
     receiveChannel.onmessage = (event) => {
@@ -297,12 +330,33 @@ class Distribute {
     const sendChannel = this.sendChannels[targetClient];
     const readyState = sendChannel ? sendChannel.readyState : 'unknown';
     console.log('Send channel state for', targetClient, 'is:', readyState);
+
+    if (readyState === 'closed') {
+      console.log(`Send channel to ${targetClient} closed, removing connection.`);
+      this.removeConnection(targetClient);
+    }
   }
 
   onReceiveChannelStateChange(targetClient) {
     const receiveChannel = this.receiveChannels[targetClient];
     const readyState = receiveChannel ? receiveChannel.readyState : 'unknown';
     console.log('Receive channel state for', targetClient, 'is:', readyState);
+
+    if (readyState === 'closed') {
+      console.log(`Receive channel from ${targetClient} closed, removing connection.`);
+      this.removeConnection(targetClient);
+    }
+  }
+
+  onConnectionStateChange(targetClient) {
+    const connection = this.remoteConnections[targetClient];
+    const state = connection ? connection.connectionState : 'unknown';
+    console.log('Connection state for', targetClient, 'is:', state);
+
+    if (state === 'disconnected' || state === 'failed' || state === 'closed') {
+      console.log(`Connection with ${targetClient} is ${state}, removing connection.`);
+      this.removeConnection(targetClient);
+    }
   }
 
   generateUniqueId() {
