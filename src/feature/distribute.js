@@ -14,6 +14,7 @@ class Distribute {
     this.clientId = null;         // Current client ID
     this.pendingPromises = {};    // Store pending promises by messageId
     this.returnDistributedOutput = this.sendDataResponse.bind(this);
+    this.latencies = {};          // Store latencies for each connection
 
     // Initialize WebSocket connection
     this.initWebSocket();
@@ -94,23 +95,26 @@ class Distribute {
           }
         };
 
-        localConnection.oniceconnectionstatechange = () => {
-          this.onConnectionStateChange(targetClient);
-        };
-
-        localConnection.onconnectionstatechange = () => {
-          this.onConnectionStateChange(targetClient);
-        };
-
         sendChannel.onopen = () => {
           this.onSendChannelStateChange(targetClient);
         };
+
         sendChannel.onclose = () => {
           this.onSendChannelStateChange(targetClient);
         };
 
         sendChannel.onmessage = (event) => {
-          this.onReceiveMessageCallback(targetClient, event.data);
+          const message = JSON.parse(event.data);
+          switch (message.type) {
+            case 'ping':
+              this.handlePing(targetClient, message.startTime);
+              break;
+            case 'pong':
+              this.handlePong(targetClient, message.startTime);
+              break;
+            default:
+              this.onReceiveMessageCallback(targetClient, event.data); // Use `self` to refer to `Distribute` instance
+          }
         };
 
         // Store connections and channels
@@ -137,14 +141,6 @@ class Distribute {
         }
       };
 
-      remoteConnection.oniceconnectionstatechange = () => {
-        this.onConnectionStateChange(targetClient);
-      };
-
-      remoteConnection.onconnectionstatechange = () => {
-        this.onConnectionStateChange(targetClient);
-      };
-
       remoteConnection.ondatachannel = (event) => {
         this.receiveChannelCallback(event, targetClient); // Pass targetClient to associate with the channel
       };
@@ -158,6 +154,9 @@ class Distribute {
 
       // Store the remote connection
       this.remoteConnections[targetClient] = remoteConnection;
+
+      // Measure latency when connection is established
+      this.measureLatency(targetClient);
     }
   }
 
@@ -171,6 +170,31 @@ class Distribute {
     connection.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(this.onAddIceCandidateError);
   }
 
+  measureLatency(targetClient) {
+    const startTime = performance.now();
+    this.sendPing(targetClient, startTime);
+  }
+
+  sendPing(targetClient, startTime) {
+    const sendChannel = this.sendChannels[targetClient];
+    if (sendChannel && sendChannel.readyState === 'open') {
+      sendChannel.send(JSON.stringify({ type: 'ping', startTime }));
+    }
+  }
+
+  handlePing(targetClient, startTime) {
+    const sendChannel = this.receiveChannels[targetClient];
+    if (sendChannel && sendChannel.readyState === 'open') {
+      sendChannel.send(JSON.stringify({ type: 'pong', startTime }));
+    }
+  }
+
+  handlePong(targetClient, startTime) {
+    const latency = performance.now() - startTime;
+    this.latencies[targetClient] = latency;
+    console.log(`Received pong from ${targetClient} with latency: ${latency.toFixed(2)}ms`);
+  }
+
   fetchDistributedClient() {
     const sendChannelKeys = Object.keys(this.sendChannels);
     if (sendChannelKeys.length === 0) {
@@ -178,25 +202,41 @@ class Distribute {
       return null;
     }
 
-    const randomIndex = Math.floor(Math.random() * sendChannelKeys.length);
-    return sendChannelKeys[randomIndex];
+    // Select client with lowest latency
+    let minLatency = Infinity;
+    let targetClient = null;
+
+    sendChannelKeys.forEach(clientId => {
+      if (this.latencies[clientId] < minLatency) {
+        minLatency = this.latencies[clientId];
+        targetClient = clientId;
+      }
+    });
+
+    return targetClient;
   }
 
   distributeTask(task, hamsterFood, resolve, reject) {
-      const targetClient = this.fetchDistributedClient();
-      const messageId = this.generateUniqueId();
+    const targetClient = this.fetchDistributedClient();
+    if (!targetClient) {
+      console.error('No target client found.');
+      reject('No target client found.');
+      return;
+    }
 
-      const subTask = {
-        hamsterFood,
-        index: hamsterFood.index,
-        task,
-        messageId,
-      };
+    const messageId = this.generateUniqueId();
 
-      // Store the resolve and reject in a map with messageId
-      this.pendingPromises[messageId] = { resolve, reject };
+    const subTask = {
+      hamsterFood,
+      index: hamsterFood.index,
+      task,
+      messageId,
+    };
 
-      this.sendData({ targetClient, data: subTask });
+    // Store the resolve and reject in a map with messageId
+    this.pendingPromises[messageId] = { resolve, reject };
+
+    this.sendData({ targetClient, data: subTask });
   }
 
   sendData(data) {
@@ -238,67 +278,64 @@ class Distribute {
     delete this.pendingPromises[messageId];
   }
 
-  closeDataChannels() {
-    for (const targetClient in this.sendChannels) {
-      this.sendChannels[targetClient].close();
-      if (this.receiveChannels[targetClient]) this.receiveChannels[targetClient].close();
-      this.remoteConnections[targetClient].close();
+  sendDataResponse(data) {
+    const targetClient = data.targetClient;
+    const sendChannel = this.receiveChannels[targetClient];
+    if (sendChannel && sendChannel.readyState === 'open') {
+      sendChannel.send(JSON.stringify(data));
+      console.log('Sent response to', targetClient);
+    } else {
+      console.error('Send channel is not open for targetClient:', targetClient);
     }
-    this.localConnection = null;
-    this.remoteConnections = {};
-    this.sendChannels = {};
-    this.receiveChannels = {};
   }
 
-  removeConnection(targetClient) {
-    if (this.sendChannels[targetClient]) {
-      this.sendChannels[targetClient].close();
-      delete this.sendChannels[targetClient];
+  closeDataChannels() {
+    for (const targetClient in this.sendChannels) {
+      if (this.sendChannels[targetClient]) {
+        this.sendChannels[targetClient].close();
+        delete this.sendChannels[targetClient];
+      }
+      if (this.receiveChannels[targetClient]) {
+        this.receiveChannels[targetClient].close();
+        delete this.receiveChannels[targetClient];
+      }
+      if (this.remoteConnections[targetClient]) {
+        this.remoteConnections[targetClient].close();
+        delete this.remoteConnections[targetClient];
+      }
+      delete this.latencies[targetClient]; // Remove latency information for closed connection
     }
-    if (this.receiveChannels[targetClient]) {
-      this.receiveChannels[targetClient].close();
-      delete this.receiveChannels[targetClient];
-    }
-    if (this.remoteConnections[targetClient]) {
-      this.remoteConnections[targetClient].close();
-      delete this.remoteConnections[targetClient];
-    }
-    console.log(`Connection with ${targetClient} removed.`);
+    this.localConnection = null;
   }
 
   receiveChannelCallback(event, targetClient) {
     const receiveChannel = event.channel;
-    receiveChannel.onmessage = (event) => {
-      this.onReceiveMessageCallback(targetClient, event.data);
+    const self = this; // Store `this` in a variable
+
+    receiveChannel.onmessage = function(event) {
+      const message = JSON.parse(event.data);
+      switch (message.type) {
+        case 'ping':
+          self.handlePing(targetClient, message.startTime);
+          break;
+        case 'pong':
+          self.handlePong(targetClient, message.startTime);
+          break;
+        default:
+          self.onReceiveMessageCallback(targetClient, event.data); // Use `self` to refer to `Distribute` instance
+      }
     };
+
     receiveChannel.onopen = () => {
       this.onReceiveChannelStateChange(targetClient);
     };
+
     receiveChannel.onclose = () => {
       this.onReceiveChannelStateChange(targetClient);
     };
 
     // Store the receive channel with targetClient ID
     this.receiveChannels[targetClient] = receiveChannel;
-
-    // Ensure a send channel is created if it doesn't already exist
-    if (!this.sendChannels[targetClient]) {
-      const localConnection = this.remoteConnections[targetClient];
-      const sendChannel = localConnection.createDataChannel('hamstersjs', this.dataConstraint);
-
-      sendChannel.onopen = () => {
-        this.onSendChannelStateChange(targetClient);
-      };
-      sendChannel.onclose = () => {
-        this.onSendChannelStateChange(targetClient);
-      };
-
-      sendChannel.onmessage = (event) => {
-        this.onReceiveMessageCallback(targetClient, event.data);
-      };
-
-      this.sendChannels[targetClient] = sendChannel;
-    }
   }
 
   onReceiveMessageCallback(targetClient, data) {
@@ -315,52 +352,24 @@ class Distribute {
     }
   }
 
-  sendDataResponse(data) {
-    const targetClient = data.targetClient;
-    const sendChannel = this.receiveChannels[targetClient];
-    if (sendChannel && sendChannel.readyState === 'open') {
-      sendChannel.send(JSON.stringify(data));
-      console.log('Sent response to', targetClient);
-    } else {
-      console.error('Send channel is not open for targetClient:', targetClient);
-    }
-  }
-
   onSendChannelStateChange(targetClient) {
+    this.measureLatency(targetClient);
     const sendChannel = this.sendChannels[targetClient];
-    const readyState = sendChannel ? sendChannel.readyState : 'unknown';
-    console.log('Send channel state for', targetClient, 'is:', readyState);
-
-    if (readyState === 'closed') {
-      console.log(`Send channel to ${targetClient} closed, removing connection.`);
-      this.removeConnection(targetClient);
+    if (sendChannel) {
+      console.log(`Send channel state changed for ${targetClient}: ${sendChannel.readyState}`);
     }
   }
 
   onReceiveChannelStateChange(targetClient) {
+    this.measureLatency(targetClient);
     const receiveChannel = this.receiveChannels[targetClient];
-    const readyState = receiveChannel ? receiveChannel.readyState : 'unknown';
-    console.log('Receive channel state for', targetClient, 'is:', readyState);
-
-    if (readyState === 'closed') {
-      console.log(`Receive channel from ${targetClient} closed, removing connection.`);
-      this.removeConnection(targetClient);
-    }
-  }
-
-  onConnectionStateChange(targetClient) {
-    const connection = this.remoteConnections[targetClient];
-    const state = connection ? connection.connectionState : 'unknown';
-    console.log('Connection state for', targetClient, 'is:', state);
-
-    if (state === 'disconnected' || state === 'failed' || state === 'closed') {
-      console.log(`Connection with ${targetClient} is ${state}, removing connection.`);
-      this.removeConnection(targetClient);
+    if (receiveChannel) {
+      console.log(`Receive channel state changed for ${targetClient}: ${receiveChannel.readyState}`);
     }
   }
 
   generateUniqueId() {
-    return '_' + Math.random().toString(36).substr(2, 9);
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
   }
 
   trace(text) {
@@ -368,11 +377,11 @@ class Distribute {
   }
 
   onCreateSessionDescriptionError(error) {
-    console.error('Failed to create session description:', error.toString());
+    console.error('Failed to create session description:', error);
   }
 
   onAddIceCandidateError(error) {
-    console.error('Failed to add ICE candidate:', error.toString());
+    console.error('Failed to add ICE candidate:', error);
   }
 }
 
