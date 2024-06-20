@@ -5,18 +5,16 @@ class Distribute {
     this.hamsters = hamsters;
     this.localConnection = null;
     this.remoteConnections = {};
-    this.sendChannels = {};       // Stores outgoing data channels
-    this.receiveChannels = {};    // Stores incoming data channels
+    this.sendChannels = {};
+    this.receiveChannels = {};
     this.pcConstraint = null;
     this.dataConstraint = null;
     this.ws = null;
-    this.connectionTargets = [];  // List of clients to connect to
-    this.clientId = null;         // Current client ID
-    this.pendingPromises = {};    // Store pending promises by messageId
+    this.clientId = null;
+    this.pendingPromises = {};
     this.returnDistributedOutput = this.sendDataResponse.bind(this);
-    this.latencies = {};          // Store latencies for each connection
+    this.latencies = {};
 
-    // Initialize WebSocket connection
     this.initWebSocket();
   }
 
@@ -31,8 +29,7 @@ class Distribute {
       const message = JSON.parse(event.data);
       switch (message.type) {
         case 'register':
-          this.clientId = message.id;
-          this.loadClientList();
+          this.handleClientReconnect(message);
           break;
         case 'update-client-list':
           this.updateClientList(message.clients);
@@ -64,69 +61,105 @@ class Distribute {
   }
 
   updateClientList(clients) {
-    this.connectionTargets = clients.map(client => client.id);
+    clients.forEach(client => {
+      if (!this.remoteConnections[client.id]) {
+        this.createConnection(client.id);
+      }
+    });
+  }
+
+  handleClientReconnect(message) {
+    const newClientId = message.id;
+
+    if (this.clientId === newClientId) {
+      console.log('Already registered with the same client ID');
+      return;
+    }
+
+    if (this.remoteConnections[newClientId]) {
+      this.remoteConnections[newClientId].close();
+      delete this.remoteConnections[newClientId];
+    }
+    if (this.sendChannels[newClientId]) {
+      this.sendChannels[newClientId].close();
+      delete this.sendChannels[newClientId];
+    }
+    if (this.receiveChannels[newClientId]) {
+      this.receiveChannels[newClientId].close();
+      delete this.receiveChannels[newClientId];
+    }
+    delete this.latencies[newClientId];
+
+    this.clientId = newClientId;
+    this.loadClientList();
   }
 
   loadClientList() {
     fetch(`/clients?currentId=${this.clientId}`)
       .then(response => response.json())
       .then(data => {
-        this.connectionTargets = data.map(client => client.id);
-        this.createConnection(); // Automatically create connections after fetching client list
+        this.updateClientList(data);
+        this.createConnections();
       })
       .catch(error => console.error('Error fetching client list:', error));
   }
 
-  createConnection() {
-    if (!this.connectionTargets.length) {
-      return alert('No clients to connect to.');
+  createConnections() {
+    Object.keys(this.remoteConnections).forEach(targetClient => {
+      this.createConnection(targetClient);
+    });
+  }
+
+  createConnection(targetClient) {
+    if (targetClient === this.clientId || this.remoteConnections[targetClient]) {
+      return;
     }
 
     const servers = null;
 
-    this.connectionTargets.forEach(targetClient => {
-      if (!this.remoteConnections[targetClient]) {
-        const localConnection = new RTCPeerConnection(servers, this.pcConstraint);
-        const sendChannel = localConnection.createDataChannel('hamstersjs', this.dataConstraint);
+    const localConnection = new RTCPeerConnection(servers, this.pcConstraint);
+    const sendChannel = localConnection.createDataChannel('hamstersjs', this.dataConstraint);
 
-        localConnection.onicecandidate = (e) => {
-          if (e.candidate) {
-            this.ws.send(JSON.stringify({ type: 'candidate', target: targetClient, candidate: e.candidate }));
-          }
-        };
-
-        sendChannel.onopen = () => {
-          this.onSendChannelStateChange(targetClient);
-        };
-
-        sendChannel.onclose = () => {
-          this.onSendChannelStateChange(targetClient);
-        };
-
-        sendChannel.onmessage = (event) => {
-          const message = JSON.parse(event.data);
-          switch (message.type) {
-            case 'ping':
-              this.handlePing(targetClient, message.startTime);
-              break;
-            case 'pong':
-              this.handlePong(targetClient, message.startTime);
-              break;
-            default:
-              this.onReceiveMessageCallback(targetClient, event.data); // Use `self` to refer to `Distribute` instance
-          }
-        };
-
-        // Store connections and channels
-        this.remoteConnections[targetClient] = localConnection;
-        this.sendChannels[targetClient] = sendChannel;
-
-        localConnection.createOffer().then(desc => {
-          localConnection.setLocalDescription(desc);
-          this.ws.send(JSON.stringify({ type: 'offer', target: targetClient, offer: desc }));
-        }).catch(this.onCreateSessionDescriptionError);
+    localConnection.onicecandidate = (e) => {
+      if (e.candidate) {
+        this.ws.send(JSON.stringify({ type: 'candidate', target: targetClient, candidate: e.candidate }));
       }
-    });
+    };
+
+    sendChannel.onopen = () => {
+      this.onSendChannelStateChange(targetClient);
+    };
+
+    sendChannel.onclose = () => {
+      this.onSendChannelStateChange(targetClient);
+    };
+
+    sendChannel.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      switch (message.type) {
+        case 'ping':
+          this.handlePing(targetClient, message.startTime);
+          break;
+        case 'pong':
+          this.handlePong(targetClient, message.startTime);
+          break;
+        default:
+          this.onReceiveMessageCallback(targetClient, event.data);
+      }
+    };
+
+    localConnection.ondatachannel = (event) => {
+      this.receiveChannelCallback(event, targetClient);
+    };
+
+    this.remoteConnections[targetClient] = localConnection;
+    this.sendChannels[targetClient] = sendChannel;
+    this.receiveChannels[targetClient] = null; // Initialize receive channel
+
+    localConnection.createOffer().then(desc => {
+      localConnection.setLocalDescription(desc);
+      this.ws.send(JSON.stringify({ type: 'offer', target: targetClient, offer: desc }));
+    }).catch(this.onCreateSessionDescriptionError);
   }
 
   handleOffer(data) {
@@ -142,7 +175,32 @@ class Distribute {
       };
 
       remoteConnection.ondatachannel = (event) => {
-        this.receiveChannelCallback(event, targetClient); // Pass targetClient to associate with the channel
+        this.receiveChannelCallback(event, targetClient); // Handle receive channel
+      };
+
+      // Create send channel
+      const sendChannel = remoteConnection.createDataChannel('hamstersjs', this.dataConstraint);
+      
+      sendChannel.onopen = () => {
+        this.onSendChannelStateChange(targetClient);
+      };
+
+      sendChannel.onclose = () => {
+        this.onSendChannelStateChange(targetClient);
+      };
+
+      sendChannel.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        switch (message.type) {
+          case 'ping':
+            this.handlePing(targetClient, message.startTime);
+            break;
+          case 'pong':
+            this.handlePong(targetClient, message.startTime);
+            break;
+          default:
+            this.onReceiveMessageCallback(targetClient, event.data);
+        }
       };
 
       remoteConnection.setRemoteDescription(new RTCSessionDescription(data.offer)).then(() => {
@@ -152,11 +210,9 @@ class Distribute {
         this.ws.send(JSON.stringify({ type: 'answer', target: targetClient, answer: desc }));
       }).catch(this.onCreateSessionDescriptionError);
 
-      // Store the remote connection
+      // Store the remote connection and send channel
       this.remoteConnections[targetClient] = remoteConnection;
-
-      // Measure latency when connection is established
-      this.measureLatency(targetClient);
+      this.sendChannels[targetClient] = sendChannel;
     }
   }
 
@@ -202,12 +258,12 @@ class Distribute {
       return null;
     }
 
-    // Select client with lowest latency
     let minLatency = Infinity;
     let targetClient = null;
 
     sendChannelKeys.forEach(clientId => {
-      if (this.latencies[clientId] < minLatency) {
+      let channel = this.sendChannels[clientId];
+      if (channel.readyState === 'open' && this.latencies[clientId] < minLatency) {
         minLatency = this.latencies[clientId];
         targetClient = clientId;
       }
@@ -233,49 +289,34 @@ class Distribute {
       messageId,
     };
 
-    // Store the resolve and reject in a map with messageId
     this.pendingPromises[messageId] = { resolve, reject };
 
     this.sendData({ targetClient, data: subTask });
   }
 
-  sendData(data) {
-    const { targetClient, data: payload } = data;
-    let sendChannel = this.sendChannels[targetClient];
+  handleTaskResponse(incomingMessage) {
+    const { messageId, output, error } = incomingMessage;
+    const pendingPromise = this.pendingPromises[messageId];
 
-    // If sendChannel is not available in sendChannels, check receiveChannels
-    if (!sendChannel) {
-      sendChannel = this.receiveChannels[targetClient];
-    }
+    if (pendingPromise) {
+      if (error) {
+        pendingPromise.reject(error);
+      } else {
+        pendingPromise.resolve(output);
+      }
 
-    if (!sendChannel) {
-      console.error('No send or receive channel found for targetClient:', targetClient);
-      return;
-    }
-
-    if (sendChannel.readyState === 'open') {
-      sendChannel.send(JSON.stringify(payload));
-      this.trace('Sent Data to ' + targetClient + ': ' + JSON.stringify(payload));
-    } else {
-      sendChannel.onopen = () => {
-        sendChannel.send(JSON.stringify(payload));
-        this.trace('Sent Data to ' + targetClient + ': ' + JSON.stringify(payload));
-      };
+      delete this.pendingPromises[messageId];
     }
   }
 
-  handleTaskResponse(data) {
-    const { messageId, output, error } = data;
-
-    const { resolve, reject } = this.pendingPromises[messageId];
-
-    if (error) {
-      reject(error);
+  sendData({ targetClient, data }) {
+    const sendChannel = this.sendChannels[targetClient];
+    if (sendChannel && sendChannel.readyState === 'open') {
+      sendChannel.send(JSON.stringify(data));
+      console.log('Sent data to', targetClient);
     } else {
-      resolve(output);
+      console.error('Send channel is not open for targetClient:', targetClient);
     }
-
-    delete this.pendingPromises[messageId];
   }
 
   sendDataResponse(data) {
@@ -303,26 +344,25 @@ class Distribute {
         this.remoteConnections[targetClient].close();
         delete this.remoteConnections[targetClient];
       }
-      delete this.latencies[targetClient]; // Remove latency information for closed connection
+      delete this.latencies[targetClient];
     }
     this.localConnection = null;
   }
 
   receiveChannelCallback(event, targetClient) {
     const receiveChannel = event.channel;
-    const self = this; // Store `this` in a variable
 
-    receiveChannel.onmessage = function(event) {
+    receiveChannel.onmessage = (event) => {
       const message = JSON.parse(event.data);
       switch (message.type) {
         case 'ping':
-          self.handlePing(targetClient, message.startTime);
+          this.handlePing(targetClient, message.startTime);
           break;
         case 'pong':
-          self.handlePong(targetClient, message.startTime);
+          this.handlePong(targetClient, message.startTime);
           break;
         default:
-          self.onReceiveMessageCallback(targetClient, event.data); // Use `self` to refer to `Distribute` instance
+          this.onReceiveMessageCallback(targetClient, event.data);
       }
     };
 
@@ -334,7 +374,6 @@ class Distribute {
       this.onReceiveChannelStateChange(targetClient);
     };
 
-    // Store the receive channel with targetClient ID
     this.receiveChannels[targetClient] = receiveChannel;
   }
 
@@ -343,11 +382,9 @@ class Distribute {
     const incomingMessage = JSON.parse(data);
 
     if (incomingMessage.isReply) {
-      // This is a response from Client A to Client B
       this.handleTaskResponse(incomingMessage);
       console.log("Response received for task:", incomingMessage);
     } else {
-      // Process the task on the current client (Client B) and send a response back
       this.hamsters.pool.runDistributedTask(incomingMessage, targetClient);
     }
   }
