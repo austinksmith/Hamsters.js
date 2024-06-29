@@ -53,10 +53,16 @@ class hamstersjs {
 
     this.processStartOptions(startOptions);
     
-    if (!this.habitat.legacy && this.habitat.persistence === true) {
+    if(!this.habitat.legacy && this.habitat.persistence === true) {
       this.pool.spawnHamsters(this.habitat.maxThreads);
     }
     this.maxThreads = this.habitat.maxThreads;
+
+    if(this.habitat.relay) {
+      console.info(`Hamsters.js ${this.version} establishing connection to relay`);
+      this.distribute.establishConnection();
+    }
+
     console.info(`Hamsters.js ${this.version} initialized using up to ${this.habitat.maxThreads} threads`);
   }
 

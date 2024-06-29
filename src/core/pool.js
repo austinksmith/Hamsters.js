@@ -121,7 +121,7 @@ class Pool {
     // Prepare the base hamsterFood object
     const hamsterFood = {
       array: task.input.array && task.input.array.length !== 0 ? 
-            this.hamsters.data.getSubArrayFromIndex(index, task) : [],
+            this.hamsters.data.getSubArrayFromIndex(index, task.input.array) : [],
       index: index
     };
 
@@ -138,6 +138,10 @@ class Pool {
       if (task.input.hasOwnProperty(key) && !excludedKeys.has(key)) {
         hamsterFood[key] = task.input[key];
       }
+    }
+
+    if((subTaskId + 1) === task.scheduler.threads) {
+      task.input.array = []; //Reduce memory usage, empty out input array its no longer needed as we have our thread arrays all prepared
     }
 
     return hamsterFood;
@@ -212,7 +216,7 @@ class Pool {
   * @param {function} resolve - onSuccess method
   */
   returnOutputAndRemoveTask(task, resolve) {
-    if(task.input.sharedArray) {
+    if(task.scheduler.sharedBuffer) {
       task.output = hamsters.data.processDataType(task.input.dataType, task.scheduler.sharedBuffer);
     }
     if(task.input.aggregate) {
@@ -308,10 +312,12 @@ class Pool {
       if (task.scheduler.workers.length === 0 && task.scheduler.count === task.scheduler.threads) {
         this.hamsters.pool.returnOutputAndRemoveTask(task, resolve);
       }
-      if (this.hamsters.pool.pending.length !== 0) {
-        this.hamsters.pool.processQueuedItem(hamster, this.hamsters.pool.pending.shift());
-      } else if (!this.hamsters.habitat.persistence) {
+      if (!this.hamsters.habitat.persistence) {
         hamster.terminate();
+      }
+      if (this.hamsters.pool.pending.length !== 0) {
+        const queueHamster = this.hamsters.pool.fetchHamster(this.hamsters.pool.running.length);
+        this.hamsters.pool.processQueuedItem(queueHamster, this.hamsters.pool.pending.shift());
       }
     };
     this.hamsters.pool.setOnMessage(hamster, onThreadResponse, reject);

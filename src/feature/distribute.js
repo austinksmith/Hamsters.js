@@ -1,4 +1,5 @@
 class Distribute {
+
   constructor(hamsters) {
     'use strict';
 
@@ -14,15 +15,14 @@ class Distribute {
     this.pendingPromises = {};
     this.returnDistributedOutput = this.sendDataResponse.bind(this);
     this.latencies = {};
-
-    this.initWebSocket();
+    this.establishConnection = this.initWebSocket.bind(this);
   }
 
   initWebSocket() {
-    this.ws = new WebSocket(`ws://${window.location.host}`);
+    this.ws = new WebSocket(`${this.hamsters.habitat.relay}`);
 
     this.ws.onopen = () => {
-      console.log('WebSocket connection established');
+      console.info(`Hamsters.js ${this.hamsters.version} connection established`);
     };
 
     this.ws.onmessage = (event) => {
@@ -47,16 +47,22 @@ class Distribute {
           this.handleTaskResponse(message);
           break;
         default:
-          console.log('Unknown message type:', message.type);
+          if (this.hamsters.habitat.debug) {
+            console.info(`Hamsters.js ${this.hamsters.version} unknown message type: ${message.type}`);
+          }
       }
     };
 
     this.ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
+      if (this.hamsters.habitat.debug) {
+        console.error(`Hamsters.js ${this.hamsters.version} connection error: ${error}`);
+      }
     };
 
     this.ws.onclose = () => {
-      console.log('WebSocket connection closed');
+      if (this.hamsters.habitat.debug) {
+        console.info(`Hamsters.js ${this.hamsters.version} connection closed.`);
+      }
     };
   }
 
@@ -72,7 +78,9 @@ class Distribute {
     const newClientId = message.id;
 
     if (this.clientId === newClientId) {
-      console.log('Already registered with the same client ID');
+      if (this.hamsters.habitat.debug) {
+        console.log(`Hamsters.js ${this.hamsters.version} connection error: `, error);
+      }
       return;
     }
 
@@ -101,7 +109,11 @@ class Distribute {
         this.updateClientList(data);
         this.createConnections();
       })
-      .catch(error => console.error('Error fetching client list:', error));
+      .catch(error => {
+        if (this.hamsters.habitat.debug) {
+          console.error(`Hamsters.js ${this.hamsters.version} Error fetching client list: ${error}`);
+        }
+      });
   }
 
   createConnections() {
@@ -154,7 +166,7 @@ class Distribute {
 
     this.remoteConnections[targetClient] = localConnection;
     this.sendChannels[targetClient] = sendChannel;
-    this.receiveChannels[targetClient] = null; // Initialize receive channel
+    this.receiveChannels[targetClient] = null;
 
     localConnection.createOffer().then(desc => {
       localConnection.setLocalDescription(desc);
@@ -175,10 +187,9 @@ class Distribute {
       };
 
       remoteConnection.ondatachannel = (event) => {
-        this.receiveChannelCallback(event, targetClient); // Handle receive channel
+        this.receiveChannelCallback(event, targetClient);
       };
 
-      // Create send channel
       const sendChannel = remoteConnection.createDataChannel('hamstersjs', this.dataConstraint);
       
       sendChannel.onopen = () => {
@@ -210,7 +221,6 @@ class Distribute {
         this.ws.send(JSON.stringify({ type: 'answer', target: targetClient, answer: desc }));
       }).catch(this.onCreateSessionDescriptionError);
 
-      // Store the remote connection and send channel
       this.remoteConnections[targetClient] = remoteConnection;
       this.sendChannels[targetClient] = sendChannel;
     }
@@ -248,13 +258,17 @@ class Distribute {
   handlePong(targetClient, startTime) {
     const latency = performance.now() - startTime;
     this.latencies[targetClient] = latency;
-    console.log(`Received pong from ${targetClient} with latency: ${latency.toFixed(2)}ms`);
+    if (this.hamsters.habitat.debug) {
+      console.log(`Hamsters.js ${this.hamsters.version} received pong from ${targetClient} with latency: ${latency.toFixed(2)}ms`);
+    }
   }
 
   fetchDistributedClient() {
     const sendChannelKeys = Object.keys(this.sendChannels);
     if (sendChannelKeys.length === 0) {
-      console.warn('No send channels available.');
+      if (this.hamsters.habitat.debug) {
+        console.warn(`Hamsters.js ${this.hamsters.version} no send channels available.`);
+      }
       return null;
     }
 
@@ -275,7 +289,9 @@ class Distribute {
   distributeTask(task, hamsterFood, resolve, reject) {
     const targetClient = this.fetchDistributedClient();
     if (!targetClient) {
-      console.error('No target client found.');
+      if (this.hamsters.habitat.debug) {
+        console.error(`Hamsters.js ${this.hamsters.version} no target client found.`);
+      }
       reject('No target client found.');
       return;
     }
@@ -313,9 +329,13 @@ class Distribute {
     const sendChannel = this.sendChannels[targetClient];
     if (sendChannel && sendChannel.readyState === 'open') {
       sendChannel.send(JSON.stringify(data));
-      console.log('Sent data to', targetClient);
+      if (this.hamsters.habitat.debug) {
+        console.log(`Hamsters.js ${this.hamsters.version} sent data to: `, targetClient);
+      }
     } else {
-      console.error('Send channel is not open for targetClient:', targetClient);
+      if (this.hamsters.habitat.debug) {
+        console.error(`Hamsters.js ${this.hamsters.version} send channel is not open for targetClient: `, targetClient);
+      }
     }
   }
 
@@ -324,9 +344,13 @@ class Distribute {
     const sendChannel = this.receiveChannels[targetClient];
     if (sendChannel && sendChannel.readyState === 'open') {
       sendChannel.send(JSON.stringify(data));
-      console.log('Sent response to', targetClient);
+      if (this.hamsters.habitat.debug) {
+        console.log(`Hamsters.js ${this.hamsters.version} sent response to: `, targetClient);
+      }
     } else {
-      console.error('Send channel is not open for targetClient:', targetClient);
+      if (this.hamsters.habitat.debug) {
+        console.error(`Hamsters.js ${this.hamsters.version} send channel is not open for targetClient: `, targetClient);
+      }
     }
   }
 
@@ -378,12 +402,16 @@ class Distribute {
   }
 
   onReceiveMessageCallback(targetClient, data) {
-    console.log('Received message!');
+    if (this.hamsters.habitat.debug) {
+      console.log(`Hamsters.js ${this.hamsters.version} received message!`);
+    }
     const incomingMessage = JSON.parse(data);
 
     if (incomingMessage.isReply) {
       this.handleTaskResponse(incomingMessage);
-      console.log("Response received for task:", incomingMessage);
+      if (this.hamsters.habitat.debug) {
+        console.log(`Hamsters.js ${this.hamsters.version} response received for task: `, incomingMessage);
+      }
     } else {
       this.hamsters.pool.runDistributedTask(incomingMessage, targetClient);
     }
@@ -392,16 +420,16 @@ class Distribute {
   onSendChannelStateChange(targetClient) {
     this.measureLatency(targetClient);
     const sendChannel = this.sendChannels[targetClient];
-    if (sendChannel) {
-      console.log(`Send channel state changed for ${targetClient}: ${sendChannel.readyState}`);
+    if (sendChannel && this.hamsters.habitat.debug) {
+      console.log(`Hamsters.js ${this.hamsters.version} send channel state changed for ${targetClient}: ${sendChannel.readyState}`);
     }
   }
 
   onReceiveChannelStateChange(targetClient) {
     this.measureLatency(targetClient);
     const receiveChannel = this.receiveChannels[targetClient];
-    if (receiveChannel) {
-      console.log(`Receive channel state changed for ${targetClient}: ${receiveChannel.readyState}`);
+    if (receiveChannel && this.hamsters.habitat.debug) {
+      console.log(`Hamsters.js ${this.hamsters.version} receive channel state changed for ${targetClient}: ${receiveChannel.readyState}`);
     }
   }
 
@@ -409,16 +437,16 @@ class Distribute {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
   }
 
-  trace(text) {
-    console.log((performance.now() / 1000).toFixed(3) + ': ' + text);
-  }
-
   onCreateSessionDescriptionError(error) {
-    console.error('Failed to create session description:', error);
+    if (this.hamsters.habitat.debug) {
+      console.error(`Hamsters.js ${this.hamsters.version} failed to create session description: ${error}`);
+    }
   }
 
   onAddIceCandidateError(error) {
-    console.error('Failed to add ICE candidate:', error);
+    if (this.hamsters.habitat.debug) {
+      console.error(`Hamsters.js ${this.hamsters.version} failed to add ICE candidate: ${error}`);
+    }
   }
 }
 

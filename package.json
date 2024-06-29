@@ -9,6 +9,7 @@
     "build": "rm -rf ./build && webpack --config ./hamsters.webpack.config.js && npm run copy-common && npm run copy-build",
     "build-react-native": "rm -rf ./build && webpack --config ./hamsters.webpack.config.js && npm run copy-common && cp -r ./build/* ../react-native-hamsters/examples/HamstersJS/node_modules/hamsters.js/build/",
     "build-node": "npm run build && cp -r ./build/. ../hamsters-io/node_modules/hamsters.js/build/.",
+    "build-challenge": "npm run build && cp -r ./build/. ../1-billion-row-challenge/node_modules/hamsters.js/build/.",
     "copy-common": "mkdir ./build/common && cp -a ./src/common/. ./build/common/",
     "copy-build": "cp -r ./build/. ../hamsters-io/public/js/benchmark/.",
     "test": "karma start --reporters dots",

@@ -228,10 +228,10 @@ class Data {
   /**
   * @function getSubArrayUsingIndex - Slices subarray based on provided index
   * @param {object} index - Index information
-  * @param {object} task - Hamsters task object
+  * @param {object} inputArray - Hamsters task object
   */
-  getSubArrayUsingIndex(index, task) {
-    return task.input.array.slice(index.start, index.end + 1);
+  getSubArrayUsingIndex(index, inputArray) {
+    return inputArray.slice(index.start, index.end + 1);
   }
 }
 

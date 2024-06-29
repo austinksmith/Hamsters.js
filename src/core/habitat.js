@@ -21,6 +21,7 @@ class Habitat {
     this.hamsters = hamsters;
     this.debug = false;
     this.importScripts = null;
+    this.relay = null;
     this.memoize = false;
     this.persistence = true;
     this.browser = this.isBrowser();
@@ -248,7 +249,7 @@ class Habitat {
       'shell','node','debug',
       'persistence','importscripts',
       'maxthreads', 'parentport',
-      'webworker',
+      'webworker', 'relay'
     ];
   }
 }

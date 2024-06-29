@@ -37,6 +37,7 @@ parentPort.on('message', (message) => {
 
   handleDataType(rtn); // Call the function to handle data type
   returnResponse(rtn);
+  rtn = {}; //Force garbage collection when thread is finished, we no longer need to keep our return data
 });
 
 function returnResponse(rtn) {

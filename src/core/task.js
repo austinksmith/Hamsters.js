@@ -1,7 +1,14 @@
-/**
- * @class HamstersTask
- * @classdesc Constructs a new task object from provided arguments for Hamsters.js
- */
+/* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
+
+/***********************************************************************************
+* Title: Hamsters.js                                                               *
+* Description: 100% Vanilla Javascript Multithreading & Parallel Execution Library *
+* Author: Austin K. Smith                                                          *
+* Contact: austin@asmithdev.com                                                    *  
+* Copyright: 2015 Austin K. Smith - austin@asmithdev.com                           * 
+* License: Artistic License 2.0                                                    *
+***********************************************************************************/
+
 class Task {
     /**
      * @constructor
@@ -55,6 +62,7 @@ class Task {
       if (params.sharedArray && hamsters.habitat.atomics) {
         this.scheduler.indexes = params.indexes || hamsters.data.getSubArrayIndexes(params.sharedArray, this.scheduler.threads);
         this.scheduler.sharedBuffer = hamsters.data.setupSharedArrayBuffer(params.sharedArray);
+        this.input.sharedArray = []; //Reduce ram usage on main thread, do not preserve original array its no longer needed.
       } else {
         this.scheduler.indexes = params.indexes || hamsters.data.getSubArrayIndexes(params.array, this.scheduler.threads);
       }
