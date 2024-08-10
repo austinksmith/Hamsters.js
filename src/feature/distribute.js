@@ -23,6 +23,11 @@ class Distribute {
 
     this.ws.onopen = () => {
       console.info(`Hamsters.js ${this.hamsters.version} connection established`);
+      const registerMessage = {
+        type: 'register',
+        logicalCores: this.hamsters.maxThreads
+      };
+      this.ws.send(JSON.stringify(registerMessage));
     };
 
     this.ws.onmessage = (event) => {
@@ -68,7 +73,7 @@ class Distribute {
 
   updateClientList(clients) {
     clients.forEach(client => {
-      if (!this.remoteConnections[client.id]) {
+      if (client.id !== this.clientId && !this.remoteConnections[client.id]) {
         this.createConnection(client.id);
       }
     });
@@ -107,7 +112,6 @@ class Distribute {
       .then(response => response.json())
       .then(data => {
         this.updateClientList(data);
-        this.createConnections();
       })
       .catch(error => {
         if (this.hamsters.habitat.debug) {
@@ -127,7 +131,9 @@ class Distribute {
       return;
     }
 
-    const servers = null;
+    const servers = {
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+    };
 
     const localConnection = new RTCPeerConnection(servers, this.pcConstraint);
     const sendChannel = localConnection.createDataChannel('hamstersjs', this.dataConstraint);
@@ -178,7 +184,11 @@ class Distribute {
     const targetClient = data.from;
 
     if (!this.remoteConnections[targetClient]) {
-      const remoteConnection = new RTCPeerConnection(null, this.pcConstraint);
+      const servers = {
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+      };
+
+      const remoteConnection = new RTCPeerConnection(servers, this.pcConstraint);
 
       remoteConnection.onicecandidate = (e) => {
         if (e.candidate) {
@@ -249,9 +259,13 @@ class Distribute {
   }
 
   handlePing(targetClient, startTime) {
+    console.log("Remote Connections ", this.remoteConnections);
     const sendChannel = this.receiveChannels[targetClient];
     if (sendChannel && sendChannel.readyState === 'open') {
       sendChannel.send(JSON.stringify({ type: 'pong', startTime }));
+      if (this.hamsters.habitat.debug) {
+        console.log(`Hamsters.js ${this.hamsters.version} sent ping to ${targetClient}`);
+      }
     }
   }
 
@@ -418,15 +432,14 @@ class Distribute {
   }
 
   onSendChannelStateChange(targetClient) {
-    this.measureLatency(targetClient);
     const sendChannel = this.sendChannels[targetClient];
+    this.measureLatency(targetClient);
     if (sendChannel && this.hamsters.habitat.debug) {
       console.log(`Hamsters.js ${this.hamsters.version} send channel state changed for ${targetClient}: ${sendChannel.readyState}`);
     }
   }
 
   onReceiveChannelStateChange(targetClient) {
-    this.measureLatency(targetClient);
     const receiveChannel = this.receiveChannels[targetClient];
     if (receiveChannel && this.hamsters.habitat.debug) {
       console.log(`Hamsters.js ${this.hamsters.version} receive channel state changed for ${targetClient}: ${receiveChannel.readyState}`);

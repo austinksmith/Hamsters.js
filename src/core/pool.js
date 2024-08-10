@@ -329,11 +329,13 @@ class Pool {
   */
   scheduleTask(task) {
     let i = 0;
-    if(this.hamsters.habitat.debug) {
-      let metrics = task.scheduler.metrics;
-      metrics.started_at = Date.now();
-      return new Promise((resolve, reject) => {
-        while (i < task.scheduler.threads) {
+  	return new Promise((resolve, reject) => {
+      while (i < task.scheduler.threads) {
+        if(this.hamsters.habitat.debug) {
+          let metrics = task.scheduler.metrics;
+          if(i === 0) {
+            metrics.started_at = Date.now();
+          }
           metrics.threads.push({
             created_at: Date.now(),
             started_at: null,
@@ -341,14 +343,7 @@ class Pool {
             dequeued_at: null,
             completed_at: null
           });
-          this.hamsterWheel(task.scheduler.indexes[i], i, task, resolve, reject);
-          i += 1;
         }
-      });
-    }
-    //Process with debug mode disabled, no need for time stamping
-  	return new Promise((resolve, reject) => {
-      while (i < task.scheduler.threads) {
         this.hamsterWheel(task.scheduler.indexes[i], i, task, resolve, reject);
         i += 1;
       }
