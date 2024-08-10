@@ -37,7 +37,6 @@ parentPort.on('message', (message) => {
 
   handleDataType(rtn); // Call the function to handle data type
   returnResponse(rtn);
-  rtn = {}; //Force garbage collection when thread is finished, we no longer need to keep our return data
 });
 
 function returnResponse(rtn) {
@@ -70,8 +69,7 @@ function typedArrayFromBuffer(dataType, buffer) {
 }
 
 function getTransferableObjects(obj) {
-  const typedArrayBuffers = [];
-  const transferableObjects = [];
+  const transferableObjects = new Set();
   const typedArrayTypes = [
     'Int32Array', 'Uint8Array', 'Uint8ClampedArray', 'Int16Array', 
     'Uint16Array', 'Uint32Array', 'Float32Array', 'Float64Array'
@@ -79,23 +77,24 @@ function getTransferableObjects(obj) {
   const otherTransferables = [
     'ArrayBuffer', 'MessagePort', 'ImageBitmap', 'OffscreenCanvas'
   ];
-  const globalContext = typeof global !== 'undefined' ? global : self;
+
+  const globalContext = typeof self !== 'undefined' ? self : this;
+
+  const allTypes = [...typedArrayTypes, ...otherTransferables];
 
   for (const prop in obj) {
-    for (const type of typedArrayTypes) {
-      if (typeof globalContext[type] !== 'undefined' && obj[prop] instanceof globalContext[type]) {
-        typedArrayBuffers.push(obj[prop].buffer);
-        break;
-      }
-    }
-
-    for (const type of otherTransferables) {
-      if (typeof globalContext[type] !== 'undefined' && obj[prop] instanceof globalContext[type]) {
-        transferableObjects.push(obj[prop]);
-        break;
+    if (obj.hasOwnProperty(prop)) {
+      for (const type of allTypes) {
+        if (typeof globalContext[type] !== 'undefined' && obj[prop] instanceof globalContext[type]) {
+          if (typedArrayTypes.includes(type)) {
+            transferableObjects.add(obj[prop].buffer);
+          } else {
+            transferableObjects.add(obj[prop]);
+          }
+        }
       }
     }
   }
 
-  return typedArrayBuffers.concat(transferableObjects);
+  return Array.from(transferableObjects);
 }

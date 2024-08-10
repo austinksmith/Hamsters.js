@@ -77,8 +77,24 @@ class Task {
         created_at: Date.now(),
         started_at: null,
         completed_at: null,
-        threads: []
+        threads: this.setupThreadMetrics()
       };
+    }
+
+    setupThreadMetrics() {
+      let i = 0;
+      let threadMetrics = [];
+      while(i < this.scheduler.threads) {
+        threadMetrics.push({
+          created_at: Date.now(),
+          started_at: null,
+          enqueued_at: null,
+          dequeued_at: null,
+          completed_at: null
+        });
+        i += 1;
+      }
+      return threadMetrics;
     }
   }
   

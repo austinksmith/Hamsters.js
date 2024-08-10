@@ -140,10 +140,6 @@ class Pool {
       }
     }
 
-    if((subTaskId + 1) === task.scheduler.threads) {
-      task.input.array = []; //Reduce memory usage, empty out input array its no longer needed as we have our thread arrays all prepared
-    }
-
     return hamsterFood;
   }
 
@@ -330,20 +326,10 @@ class Pool {
   scheduleTask(task) {
     let i = 0;
   	return new Promise((resolve, reject) => {
+      if(this.hamsters.debug) {
+        task.scheduler.metrics.started_at = Date.now();
+      }
       while (i < task.scheduler.threads) {
-        if(this.hamsters.habitat.debug) {
-          let metrics = task.scheduler.metrics;
-          if(i === 0) {
-            metrics.started_at = Date.now();
-          }
-          metrics.threads.push({
-            created_at: Date.now(),
-            started_at: null,
-            enqueued_at: null,
-            dequeued_at: null,
-            completed_at: null
-          });
-        }
         this.hamsterWheel(task.scheduler.indexes[i], i, task, resolve, reject);
         i += 1;
       }
