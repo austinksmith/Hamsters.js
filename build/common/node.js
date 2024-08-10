@@ -26,16 +26,8 @@ parentPort.on('message', (message) => {
     params.sharedArray = typedArrayFromBuffer(params.dataType, params.sharedBuffer);
   }
 
-  function handleDataType(rtn) {
-    if (!params.sharedArray && rtn.dataType) {
-      // Convert rtn.data to typed array if dataType is specified and no sharedArray is used
-      rtn.data = typedArrayFromBuffer(rtn.dataType, rtn.data.buffer);
-    }
-  }
-
   eval(params.hamstersJob);
 
-  handleDataType(rtn); // Call the function to handle data type
   returnResponse(rtn);
 });
 
