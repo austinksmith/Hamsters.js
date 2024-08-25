@@ -1,63 +1,71 @@
 const path = require('path');
-const webpack = require('webpack');
 
-const web = {
+const webConfig = {
   target: 'web',
-  devtool: 'sourcemap',
+  devtool: 'source-map',
   context: path.resolve(__dirname, 'src'),
-  entry: [
-    './hamsters'
-  ],
+  entry: './hamsters',
   output: {
     path: path.resolve(__dirname, 'build'),
     filename: 'hamsters.web.min.js',
-    library: 'hamsters',
-    libraryTarget: 'var'
+    library: {
+      name: 'hamsters',
+      type: 'umd',
+      export: 'default'
+    },
+    globalObject: 'this'
   },
-  plugins: webpack.plugins,
   module: {
-    loaders: [
+    rules: [
       {
-        test: [/\.js?$/],
-        exclude: path.resolve(__dirname, 'node_modules'),
-        loader: 'babel',
-        query: {
-          presets: ['es2015'],
+        test: /\.js$/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: [
+              ["@babel/preset-env", {
+                targets: "defaults" // Targets modern browsers with ES6+ support
+              }]
+            ]
+          }
         }
       }
     ]
   }
 };
 
-const node = {
+const nodeConfig = {
   target: 'node',
-  devtool: 'sourcemap',
+  devtool: 'source-map',
   context: path.resolve(__dirname, 'src'),
-  entry: [
-    './hamsters'
-  ],
+  entry: './hamsters',
   output: {
     path: path.resolve(__dirname, 'build'),
     filename: 'hamsters.node.min.js',
-    library: 'hamsters',
-    libraryTarget: 'commonjs2'
+    library: {
+      name: 'hamsters',
+      type: 'umd',
+      export: 'default'
+    }
   },
-  plugins: webpack.plugins,
   module: {
-    loaders: [
+    rules: [
       {
-        test: [/\.js?$/],
-        exclude: path.resolve(__dirname, 'node_modules'),
-        loader: 'babel',
-        query: {
-          presets: ['es2015'],
+        test: /\.js$/,
+        exclude: path.resolve(__dirname, 'src/core/wheel.js'),
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: [
+              ["@babel/preset-env", {
+                targets: "defaults" // Targets modern browsers with ES6+ support
+              }]
+            ]
+          }
         }
       }
     ]
   }
 };
 
-module.exports = [
-  web,
-  node
-];
+module.exports = [webConfig, nodeConfig];

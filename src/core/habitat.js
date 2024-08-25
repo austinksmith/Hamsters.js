@@ -197,7 +197,7 @@ class Habitat {
   * @param {function} workerLogic - Scaffold to use within worker thread
   */
   generateWorkerBlob(workerLogic) {
-    return  URL.createObjectURL(this.createDataBlob('(' + String(workerLogic) + ')();'));
+    return URL.createObjectURL(this.createDataBlob(`(${workerLogic.toString()})();`));
   }
 
   /**
@@ -226,7 +226,7 @@ class Habitat {
   */
   selectHamsterWheel() {
     if(this.isIE) {
-      return this.hamsters.wheel.legacy;
+      return this.hamsters.scaffold.legacy.scaffold;
     }
     if(this.reactNative) {
       return 'reactNativeHamster.js';
@@ -234,7 +234,7 @@ class Habitat {
     if (this.node) {
       return './node_modules/hamsters.js/build/common/node.js';
     }
-    return this.generateWorkerBlob(this.hamsters.wheel.regular);
+    return this.generateWorkerBlob(this.hamsters.scaffold.regular.scaffold);
   }
 
   /**
@@ -254,4 +254,4 @@ class Habitat {
   }
 }
 
-module.exports = Habitat;
+export default Habitat;

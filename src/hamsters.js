@@ -9,15 +9,22 @@
 * License: Artistic License 2.0                                                    *
 ***********************************************************************************/
 
+//Core Functionality
 import Habitat from './core/habitat';
 import Pool from './core/pool';
 import Data from './core/data';
-import Wheel from './core/wheel';
 import Task from './core/task';
+
+//Worker Scaffolds
+import Legacy from './scaffold/legacy';
+import Regular from './scaffold/regular';
+import Shared from './scaffold/shared';
 
 //Features
 import Memoize from './feature/memoize';
 import Distribute from './feature/distribute';
+
+
 
 class hamstersjs {
 
@@ -28,13 +35,13 @@ class hamstersjs {
   constructor() {
     'use strict';
 
-    this.version = '5.5.9';
+    this.version = '5.6.0';
     this.run = this.hamstersRun.bind(this);
     this.promise = this.hamstersPromise.bind(this);
-    this.init = this.inititializeLibrary.bind(this);
+    this.init = this.initializeLibrary.bind(this);
     this.data = {};
     this.pool = {};
-    this.wheel = {};
+    this.scaffold = {};
     this.habitat = {};
     this.memoize = {};
   }
@@ -43,10 +50,14 @@ class hamstersjs {
   * @function inititializeLibrary - Prepares & initializes Hamsters.js library
   * @param {object} startOptions - Provided library functionality options
   */
-  inititializeLibrary(startOptions) {
+  initializeLibrary(startOptions) {
     this.data = new Data(this);
     this.pool = new Pool(this);
-    this.wheel = new Wheel(this);
+    this.scaffold = {
+      legacy: new Legacy(),
+      regular: new Regular(),
+      shared: new Shared()
+    };
     this.habitat = new Habitat(this);
     this.memoize = new Memoize(this, 100); //Set a maximum of 100 memoized function results, LRU cache
     this.distribute = new Distribute(this);
@@ -104,9 +115,7 @@ class hamstersjs {
       const memoizedFunction = this.memoize.memoize(() => this.pool.scheduleTask(task));
       return memoizedFunction(task).then(resolve).catch(reject);
     }
-    return this.pool.scheduleTask(task)
-        .then(resolve)
-        .catch(reject);
+    return this.pool.scheduleTask(task).then(resolve).catch(reject);
   }
 
   /**
@@ -134,6 +143,4 @@ class hamstersjs {
   }
 }
 
-const hamsters = new hamstersjs();
-
-module.exports = hamsters;
+export default new hamstersjs();

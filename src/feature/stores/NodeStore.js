@@ -1,3 +1,14 @@
+/* jshint esversion: 6, curly: true, eqeqeq: true, forin: true */
+
+/***********************************************************************************
+* Title: Hamsters.js                                                               *
+* Description: 100% Vanilla Javascript Multithreading & Parallel Execution Library *
+* Author: Austin K. Smith                                                          *
+* Contact: austin@asmithdev.com                                                    *  
+* Copyright: 2015 Austin K. Smith - austin@asmithdev.com                           * 
+* License: Artistic License 2.0                                                    *
+***********************************************************************************/
+
 class NodeStore {
     constructor(maxSize) {
         this.maxSize = maxSize;
@@ -31,4 +42,4 @@ class NodeStore {
     }
 }
 
-module.exports = NodeStore;
+export default NodeStore;

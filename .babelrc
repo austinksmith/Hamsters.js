@@ -1,3 +1,7 @@
 {
-  "presets": ["env"]
+  "presets": [
+    ["@babel/preset-env", {
+      "targets": "defaults"  // This targets modern browsers with ES6+ support
+    }]
+  ]
 }

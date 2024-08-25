@@ -96,13 +96,10 @@ class Pool {
   * @return {object} - New WebWorker thread using selected scaffold
   */
   spawnHamster() {
-    const { selectHamsterWheel, SharedWorker, Worker, node, parentPort } = this.hamsters.habitat;
+    const { selectHamsterWheel, SharedWorker, Worker } = this.hamsters.habitat;
     const hamsterWheel = selectHamsterWheel();
     if (this.hamsters.habitat.webWorker) {
       return new SharedWorker(hamsterWheel, 'SharedHamsterWheel');
-    }
-    if (node && typeof parentPort !== 'undefined') {
-      return new Worker(hamsterWheel);
     }
     return new Worker(hamsterWheel);
   }
@@ -173,7 +170,7 @@ class Pool {
     const threadId = this.running.length;
     this.hamsters.pool.keepTrackOfThread(task, threadId);
     if (this.hamsters.habitat.legacy) {
-      this.hamsters.wheel.legacy(hamsterFood, resolve, reject);
+      this.hamsters.scaffold.legacy.scaffold(hamsterFood, resolve, reject);
     } else {
       this.hamsters.pool.trainHamster(index, task, threadId, hamster, resolve, reject);
       this.hamsters.data.feedHamster(hamster, hamsterFood);
@@ -337,4 +334,4 @@ class Pool {
   }
 }
 
-module.exports = Pool;
+export default Pool;
