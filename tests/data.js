@@ -33,7 +33,7 @@ describe("Hamsters Data", () => {
       }
     }
     // Getting subarray using index from Hamsters Data class method
-    const output = Data.getSubArrayFromIndex(index, task);
+    const output = Data.getSubArrayFromIndex(index, task.input.array);
     // Checking if the output matches the expected subarray
     expect(output[0]).toEqual(2);
     expect(output[1]).toEqual(3);

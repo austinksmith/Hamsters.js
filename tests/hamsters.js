@@ -13,7 +13,7 @@ import hamsters from '../src/hamsters';
 
 describe("Hamsters.js", () => {
 
-  if(hamsters && typeof hamsters.scaffold.worker.scaffold === 'undefined') {
+  if(hamsters && typeof hamsters.scaffold.shared.scaffold === 'undefined') {
     hamsters.init();
   }
 

@@ -16,29 +16,24 @@ class Shared {
     * @function constructor - Sets properties for this class
     */
     constructor() {
-      this.scaffold = this.workerScaffold;
-    }
-  
-    /**
-    * @function workerScaffold - Provides worker body for library functionality when used within a worker [threads inside threads]
-    */
-    workerScaffold() {
-      self.params = {};
-      self.rtn = {};
-  
-      addEventListener('connect', (incomingConnection) => {
-        var port = incomingConnection.ports[0];
-        port.start();
-        port.addEventListener('message', (incomingMessage) => {
-          this.params = incomingMessage.data;
-          this.rtn = {
-            data: [],
-            dataType: this.params.dataType
-          };
-          eval("(" + this.params.hamstersJob + ")")();
-          port.postMessage(this.rtn);
+      this.scaffold = function() {
+        self.params = {};
+        self.rtn = {};
+    
+        addEventListener('connect', (incomingConnection) => {
+          var port = incomingConnection.ports[0];
+          port.start();
+          port.addEventListener('message', (incomingMessage) => {
+            this.params = incomingMessage.data;
+            this.rtn = {
+              data: [],
+              dataType: this.params.dataType
+            };
+            eval("(" + this.params.hamstersJob + ")")();
+            port.postMessage(this.rtn);
+          }, false);
         }, false);
-      }, false);
+      }
     }
   }
   

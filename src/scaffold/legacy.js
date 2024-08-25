@@ -17,26 +17,21 @@ class Legacy {
     */
     constructor(hamsters) {
       this.hamsters = hamsters;
-      this.scaffold = this.legacyScaffold.bind(this);
-    }
-   
-    /**
-    * @function legacyScaffold - Provides library functionality for legacy devices
-    */
-    legacyScaffold(params, resolve, reject) {
-      var rtn = {
-        data: [],
-        dataType: (typeof params.dataType !== "undefined" ? params.dataType : null)
-      };
-      if(this.hamsters.habitat.reactNative) {
-        self.rtn = rtn;
+      this.scaffold = (params, resolve, reject) => {
+        var rtn = {
+          data: [],
+          dataType: (typeof params.dataType !== "undefined" ? params.dataType : null)
+        };
+        if(this.hamsters.habitat.reactNative) {
+          self.rtn = rtn;
+        }
+        if(this.hamsters.habitat.node || this.hamsters.habitat.isIE) {
+          eval(params.hamstersJob);
+        } else {
+          params.hamstersJob();
+        }
+        resolve(rtn.data);
       }
-      if(this.hamsters.habitat.node || this.hamsters.habitat.isIE) {
-        eval(params.hamstersJob);
-      } else {
-        params.hamstersJob();
-      }
-      resolve(rtn.data);
     }
   }
   
