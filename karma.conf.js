@@ -3,7 +3,7 @@ const webpack = require('webpack');
 
 module.exports = (config) => {
   config.set({
-    browsers: ['Chrome'], // Consider using ChromeHeadless instead of PhantomJS
+    browsers: ['ChromeHeadless'],
     files: [
       {
         pattern: 'tests.webpack.js', 
