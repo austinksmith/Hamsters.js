@@ -30,6 +30,8 @@ You can find a view examples of the library in action using the links below.
 
 [Fibonacci Sequence](https://www.hamsters.io/examples/fibonacci-sequence)
 
+[Mandelbrot Set](https://www.hamsters.io/examples/mandelbrot-set)
+
 [Square Root](https://www.hamsters.io/examples/square-root)
 
 

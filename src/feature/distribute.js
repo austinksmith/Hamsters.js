@@ -100,35 +100,10 @@ class Distribute {
       return;
     }
 
-    if (this.remoteConnections[newClientId]) {
-      this.remoteConnections[newClientId].close();
-      delete this.remoteConnections[newClientId];
-    }
-    if (this.sendChannels[newClientId]) {
-      this.sendChannels[newClientId].close();
-      delete this.sendChannels[newClientId];
-    }
-    if (this.receiveChannels[newClientId]) {
-      this.receiveChannels[newClientId].close();
-      delete this.receiveChannels[newClientId];
-    }
-    delete this.latencies[newClientId];
+    this.cleanupClient(newClientId);
 
     this.clientId = newClientId;
-    this.loadClientList();
-  }
-
-  loadClientList() {
-    fetch(`/clients?currentId=${this.clientId}`)
-      .then(response => response.json())
-      .then(data => {
-        this.updateClientList(data);
-      })
-      .catch(error => {
-        if (this.hamsters.habitat.debug) {
-          console.error(`Hamsters.js ${this.hamsters.version} Error fetching client list: ${error}`);
-        }
-      });
+    this.createConnections();
   }
 
   createConnections() {
@@ -167,7 +142,7 @@ class Distribute {
       const message = JSON.parse(event.data);
       switch (message.type) {
         case 'ping':
-          this.handlePing(targetClient, message.startTime);
+          this.handlePing(targetClient, message.startTime, message.info);
           break;
         case 'pong':
           this.handlePong(targetClient, message.startTime);
@@ -181,7 +156,10 @@ class Distribute {
       this.receiveChannelCallback(event, targetClient);
     };
 
-    this.remoteConnections[targetClient] = localConnection;
+    this.remoteConnections[targetClient] = {
+      connection: localConnection,
+      info: {} // Initialize with empty info
+    };
     this.sendChannels[targetClient] = sendChannel;
     this.receiveChannels[targetClient] = null;
 
@@ -225,7 +203,7 @@ class Distribute {
         const message = JSON.parse(event.data);
         switch (message.type) {
           case 'ping':
-            this.handlePing(targetClient, message.startTime);
+            this.handlePing(targetClient, message.startTime, message.info);
             break;
           case 'pong':
             this.handlePong(targetClient, message.startTime);
@@ -242,42 +220,57 @@ class Distribute {
         this.ws.send(JSON.stringify({ type: 'answer', target: targetClient, answer: desc }));
       }).catch(this.onCreateSessionDescriptionError);
 
-      this.remoteConnections[targetClient] = remoteConnection;
+      this.remoteConnections[targetClient] = {
+        connection: remoteConnection,
+        info: {} // Initialize with empty info
+      };
       this.sendChannels[targetClient] = sendChannel;
     }
   }
 
   handleAnswer(data) {
-    const connection = this.remoteConnections[data.from];
+    const connection = this.remoteConnections[data.from].connection;
     connection.setRemoteDescription(new RTCSessionDescription(data.answer));
   }
 
   handleCandidate(data) {
-    const connection = this.remoteConnections[data.from];
+    const connection = this.remoteConnections[data.from].connection;
     connection.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(this.onAddIceCandidateError);
   }
 
   measureLatency(targetClient) {
     const startTime = performance.now();
+    const clientInfo = {
+      this.clientId: this.clientId,
+
+    }
     this.sendPing(targetClient, startTime);
   }
 
-  sendPing(targetClient, startTime) {
+  sendPing(targetClient, startTime, info) {
     const sendChannel = this.sendChannels[targetClient];
     if (sendChannel && sendChannel.readyState === 'open') {
-      sendChannel.send(JSON.stringify({ type: 'ping', startTime }));
+      const pingMessage = {
+        type: 'ping',
+        startTime,
+        info  // Include client info here
+      };
+      sendChannel.send(JSON.stringify(pingMessage));
     }
   }
+  
 
-  handlePing(targetClient, startTime) {
+  handlePing(targetClient, startTime, info) {
     console.log("Remote Connections ", this.remoteConnections);
-    const sendChannel = this.receiveChannels[targetClient];
+    const sendChannel = this.sendChannels[targetClient];
     if (sendChannel && sendChannel.readyState === 'open') {
       sendChannel.send(JSON.stringify({ type: 'pong', startTime }));
       if (this.hamsters.habitat.debug) {
         console.log(`Hamsters.js ${this.hamsters.version} sent ping to ${targetClient}`);
       }
     }
+    // Store the client info received in the ping message
+    this.remoteConnections[targetClient].info = info;
   }
 
   handlePong(targetClient, startTime) {
@@ -379,25 +372,6 @@ class Distribute {
     }
   }
 
-  closeDataChannels() {
-    for (const targetClient in this.sendChannels) {
-      if (this.sendChannels[targetClient]) {
-        this.sendChannels[targetClient].close();
-        delete this.sendChannels[targetClient];
-      }
-      if (this.receiveChannels[targetClient]) {
-        this.receiveChannels[targetClient].close();
-        delete this.receiveChannels[targetClient];
-      }
-      if (this.remoteConnections[targetClient]) {
-        this.remoteConnections[targetClient].close();
-        delete this.remoteConnections[targetClient];
-      }
-      delete this.latencies[targetClient];
-    }
-    this.localConnection = null;
-  }
-
   receiveChannelCallback(event, targetClient) {
     const receiveChannel = event.channel;
 
@@ -405,7 +379,7 @@ class Distribute {
       const message = JSON.parse(event.data);
       switch (message.type) {
         case 'ping':
-          this.handlePing(targetClient, message.startTime);
+          this.handlePing(targetClient, message.startTime, message.info);
           break;
         case 'pong':
           this.handlePong(targetClient, message.startTime);
@@ -428,7 +402,7 @@ class Distribute {
 
   onReceiveMessageCallback(targetClient, data) {
     if (this.hamsters.habitat.debug) {
-      console.log(`Hamsters.js ${this.hamsters.version} received message!`);
+      console.log(`Hamsters.js ${this.hamsters.version} received message from client ${targetClient}!`);
     }
     const incomingMessage = JSON.parse(data);
 
@@ -471,6 +445,22 @@ class Distribute {
     if (this.hamsters.habitat.debug) {
       console.error(`Hamsters.js ${this.hamsters.version} failed to add ICE candidate: ${error}`);
     }
+  }
+
+  cleanupClient(clientId) {
+    if (this.remoteConnections[clientId]) {
+      this.remoteConnections[clientId].connection.close();
+      delete this.remoteConnections[clientId];
+    }
+    if (this.sendChannels[clientId]) {
+      this.sendChannels[clientId].close();
+      delete this.sendChannels[clientId];
+    }
+    if (this.receiveChannels[clientId]) {
+      this.receiveChannels[clientId].close();
+      delete this.receiveChannels[clientId];
+    }
+    delete this.latencies[clientId];
   }
 }
 
