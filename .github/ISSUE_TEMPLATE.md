@@ -25,5 +25,3 @@ Feature support can vary wildly and any issues you are facing may be exclusive t
 * ***Example logic***
 
 Being able to reproduce an issue directly goes a very long way towards debugging issues with the library, having example logic is probably the most important step you can take towards helping us resolve your issues.
-<!-- Love hamstersjs? Please consider supporting our collective:
-👉  https://opencollective.com/hamstersjs/donate -->

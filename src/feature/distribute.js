@@ -17,6 +17,7 @@ class Distribute {
     this.hamsters = hamsters;
     this.localConnection = null;
     this.remoteConnections = {};
+    this.clientInfo = {};
     this.sendChannels = {};
     this.receiveChannels = {};
     this.pcConstraint = null;
@@ -25,7 +26,6 @@ class Distribute {
     this.clientId = null;
     this.pendingPromises = {};
     this.returnDistributedOutput = this.sendDataResponse.bind(this);
-    this.latencies = {};
     this.establishConnection = this.initWebSocket.bind(this);
   }
 
@@ -100,10 +100,35 @@ class Distribute {
       return;
     }
 
-    this.cleanupClient(newClientId);
+    if (this.remoteConnections[newClientId]) {
+      this.remoteConnections[newClientId].close();
+      delete this.remoteConnections[newClientId];
+    }
+    if (this.sendChannels[newClientId]) {
+      this.sendChannels[newClientId].close();
+      delete this.sendChannels[newClientId];
+    }
+    if (this.receiveChannels[newClientId]) {
+      this.receiveChannels[newClientId].close();
+      delete this.receiveChannels[newClientId];
+    }
+    delete this.clientInfo[newClientId];
 
     this.clientId = newClientId;
-    this.createConnections();
+    this.loadClientList();
+  }
+
+  loadClientList() {
+    fetch(`/clients?currentId=${this.clientId}`)
+      .then(response => response.json())
+      .then(data => {
+        this.updateClientList(data);
+      })
+      .catch(error => {
+        if (this.hamsters.habitat.debug) {
+          console.error(`Hamsters.js ${this.hamsters.version} Error fetching client list: ${error}`);
+        }
+      });
   }
 
   createConnections() {
@@ -126,7 +151,14 @@ class Distribute {
 
     localConnection.onicecandidate = (e) => {
       if (e.candidate) {
-        this.ws.send(JSON.stringify({ type: 'candidate', target: targetClient, candidate: e.candidate }));
+        this.ws.send(JSON.stringify({ 
+          type: 'candidate', 
+          target: targetClient, 
+          from: this.clientId,
+          logicalCores: this.hamsters.maxThreads,
+          userAgent: navigator.userAgent,
+          candidate: e.candidate
+        }));
       }
     };
 
@@ -142,7 +174,7 @@ class Distribute {
       const message = JSON.parse(event.data);
       switch (message.type) {
         case 'ping':
-          this.handlePing(targetClient, message.startTime, message.info);
+          this.handlePing(targetClient, message.startTime);
           break;
         case 'pong':
           this.handlePong(targetClient, message.startTime);
@@ -156,10 +188,7 @@ class Distribute {
       this.receiveChannelCallback(event, targetClient);
     };
 
-    this.remoteConnections[targetClient] = {
-      connection: localConnection,
-      info: {} // Initialize with empty info
-    };
+    this.remoteConnections[targetClient] = localConnection;
     this.sendChannels[targetClient] = sendChannel;
     this.receiveChannels[targetClient] = null;
 
@@ -181,7 +210,7 @@ class Distribute {
 
       remoteConnection.onicecandidate = (e) => {
         if (e.candidate) {
-          this.ws.send(JSON.stringify({ type: 'candidate', target: targetClient, candidate: e.candidate }));
+          this.ws.send(JSON.stringify({ type: 'candidate', target: targetClient, logicalCores: this.hamsters.maxThreads, userAgent: navigator.userAgent, candidate: e.candidate }));
         }
       };
 
@@ -203,7 +232,7 @@ class Distribute {
         const message = JSON.parse(event.data);
         switch (message.type) {
           case 'ping':
-            this.handlePing(targetClient, message.startTime, message.info);
+            this.handlePing(targetClient, message.startTime);
             break;
           case 'pong':
             this.handlePong(targetClient, message.startTime);
@@ -217,65 +246,61 @@ class Distribute {
         return remoteConnection.createAnswer();
       }).then(desc => {
         remoteConnection.setLocalDescription(desc);
-        this.ws.send(JSON.stringify({ type: 'answer', target: targetClient, answer: desc }));
+        this.ws.send(JSON.stringify({ type: 'answer', target: targetClient, logicalCores: this.hamsters.maxThreads, userAgent: navigator.userAgent, answer: desc }));
       }).catch(this.onCreateSessionDescriptionError);
 
-      this.remoteConnections[targetClient] = {
-        connection: remoteConnection,
-        info: {} // Initialize with empty info
-      };
+      this.remoteConnections[targetClient] = remoteConnection;
       this.sendChannels[targetClient] = sendChannel;
     }
   }
 
+  storeClientConnectionInfo(data) {
+    const client = {
+      logicalCores: data.logicalCores,
+      userAgent: data.userAgent,
+    };
+    console.log("storing client info ", client);
+    this.clientInfo[data.from] = client;
+  }
+
   handleAnswer(data) {
-    const connection = this.remoteConnections[data.from].connection;
+    this.storeClientConnectionInfo(data);
+    const connection = this.remoteConnections[data.from];
     connection.setRemoteDescription(new RTCSessionDescription(data.answer));
   }
 
   handleCandidate(data) {
-    const connection = this.remoteConnections[data.from].connection;
+    this.storeClientConnectionInfo(data);
+    const connection = this.remoteConnections[data.from];
     connection.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(this.onAddIceCandidateError);
   }
 
   measureLatency(targetClient) {
     const startTime = performance.now();
-    const clientInfo = {
-      this.clientId: this.clientId,
-
-    }
     this.sendPing(targetClient, startTime);
   }
 
-  sendPing(targetClient, startTime, info) {
+  sendPing(targetClient, startTime) {
     const sendChannel = this.sendChannels[targetClient];
     if (sendChannel && sendChannel.readyState === 'open') {
-      const pingMessage = {
-        type: 'ping',
-        startTime,
-        info  // Include client info here
-      };
-      sendChannel.send(JSON.stringify(pingMessage));
+      sendChannel.send(JSON.stringify({ type: 'ping', startTime }));
     }
   }
-  
 
-  handlePing(targetClient, startTime, info) {
+  handlePing(targetClient, startTime) {
     console.log("Remote Connections ", this.remoteConnections);
-    const sendChannel = this.sendChannels[targetClient];
+    const sendChannel = this.receiveChannels[targetClient];
     if (sendChannel && sendChannel.readyState === 'open') {
       sendChannel.send(JSON.stringify({ type: 'pong', startTime }));
       if (this.hamsters.habitat.debug) {
         console.log(`Hamsters.js ${this.hamsters.version} sent ping to ${targetClient}`);
       }
     }
-    // Store the client info received in the ping message
-    this.remoteConnections[targetClient].info = info;
   }
 
   handlePong(targetClient, startTime) {
     const latency = performance.now() - startTime;
-    this.latencies[targetClient] = latency;
+    this.clientInfo[targetClient].latency = latency;
     if (this.hamsters.habitat.debug) {
       console.log(`Hamsters.js ${this.hamsters.version} received pong from ${targetClient} with latency: ${latency.toFixed(2)}ms`);
     }
@@ -295,8 +320,9 @@ class Distribute {
 
     sendChannelKeys.forEach(clientId => {
       let channel = this.sendChannels[clientId];
-      if (channel.readyState === 'open' && this.latencies[clientId] < minLatency) {
-        minLatency = this.latencies[clientId];
+      let client = this.clientInfo[clientId];
+      if (channel.readyState === 'open' && client.latency < minLatency) {
+        minLatency = client.latency;
         targetClient = clientId;
       }
     });
@@ -372,6 +398,25 @@ class Distribute {
     }
   }
 
+  closeDataChannels() {
+    for (const targetClient in this.sendChannels) {
+      if (this.sendChannels[targetClient]) {
+        this.sendChannels[targetClient].close();
+        delete this.sendChannels[targetClient];
+      }
+      if (this.receiveChannels[targetClient]) {
+        this.receiveChannels[targetClient].close();
+        delete this.receiveChannels[targetClient];
+      }
+      if (this.remoteConnections[targetClient]) {
+        this.remoteConnections[targetClient].close();
+        delete this.remoteConnections[targetClient];
+      }
+      delete this.latencies[targetClient];
+    }
+    this.localConnection = null;
+  }
+
   receiveChannelCallback(event, targetClient) {
     const receiveChannel = event.channel;
 
@@ -379,7 +424,7 @@ class Distribute {
       const message = JSON.parse(event.data);
       switch (message.type) {
         case 'ping':
-          this.handlePing(targetClient, message.startTime, message.info);
+          this.handlePing(targetClient, message.startTime);
           break;
         case 'pong':
           this.handlePong(targetClient, message.startTime);
@@ -402,7 +447,7 @@ class Distribute {
 
   onReceiveMessageCallback(targetClient, data) {
     if (this.hamsters.habitat.debug) {
-      console.log(`Hamsters.js ${this.hamsters.version} received message from client ${targetClient}!`);
+      console.log(`Hamsters.js ${this.hamsters.version} received message!`);
     }
     const incomingMessage = JSON.parse(data);
 
@@ -445,22 +490,6 @@ class Distribute {
     if (this.hamsters.habitat.debug) {
       console.error(`Hamsters.js ${this.hamsters.version} failed to add ICE candidate: ${error}`);
     }
-  }
-
-  cleanupClient(clientId) {
-    if (this.remoteConnections[clientId]) {
-      this.remoteConnections[clientId].connection.close();
-      delete this.remoteConnections[clientId];
-    }
-    if (this.sendChannels[clientId]) {
-      this.sendChannels[clientId].close();
-      delete this.sendChannels[clientId];
-    }
-    if (this.receiveChannels[clientId]) {
-      this.receiveChannels[clientId].close();
-      delete this.receiveChannels[clientId];
-    }
-    delete this.latencies[clientId];
   }
 }
 
