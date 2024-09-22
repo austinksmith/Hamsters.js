@@ -225,6 +225,9 @@ class Habitat {
   * @function selectHamsterWheel - Determines which scaffold to use for proper execution for various environments
   */
   selectHamsterWheel() {
+    if(this.hamsters.scaffold.custom) {
+      return this.hamsters.scaffold.custom;
+    }
     if(this.isIE) {
       return this.hamsters.scaffold.legacy.scaffold;
     }

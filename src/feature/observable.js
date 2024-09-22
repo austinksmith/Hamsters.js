@@ -49,18 +49,20 @@ class Observable {
   }
 
   push(...items) {
-    if (Array.isArray(this.data)) {
-      this.data.push(...items);
-      this.emit('change', this.data);
-    }
+    this.data.push(...items);
+    this.emit('change', this.data);
   }
 
   pop() {
-    if (Array.isArray(this.data)) {
-      const item = this.data.pop();
-      this.emit('change', this.data);
-      return item;
-    }
+    const item = this.data.pop();
+    this.emit('change', this.data);
+    return item;
+  }
+
+  shift() {
+    const item = this.data.shift();
+    this.emit('change', this.data);
+    return item;
   }
 
   splice(start, deleteCount, ...items) {
@@ -84,7 +86,6 @@ class Observable {
     }
   }
 
-  // Get current data
   getData() {
     return this.data;
   }

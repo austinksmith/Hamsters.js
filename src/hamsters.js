@@ -86,7 +86,11 @@ class hamstersjs {
         if (this.habitat.keys.includes(key.toLowerCase())) {
           this.habitat[key] = startOptions[key];
         } else {
-          this[key] = startOptions[key];
+          if(key === 'scaffold') {
+            this.scaffold.custom = startOptions[key];
+          } else {
+            this[key] = startOptions[key];
+          }
         }
       }
     }
