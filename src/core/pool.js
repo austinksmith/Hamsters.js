@@ -18,9 +18,9 @@ class Pool {
     'use strict';
 
     this.hamsters = hamsters;
-    this.threads = [];
-    this.running = [];
-    this.pending = [];
+    this.threads = new hamsters.observable([]);
+    this.running = new hamsters.observable([]);
+    this.pending = new hamsters.observable([]);
     this.fetchHamster = this.getAvailableThread.bind(this);
   }
 
@@ -33,6 +33,7 @@ class Pool {
   */
   addWorkToPending(index, hamsterFood, task, resolve, reject) {
     if (this.hamsters.habitat.debug) {
+      
       task.scheduler.metrics.threads[task.scheduler.count].enqueued_at = Date.now();
     }
     this.pending.push({
@@ -63,7 +64,7 @@ class Pool {
   */
   getAvailableThread(threadId) {
     if (this.hamsters.habitat.persistence) {
-      return this.threads[threadId];
+      return this.threads.get(threadId);
     }
     return this.spawnHamster();
   }
@@ -145,7 +146,7 @@ class Pool {
   * @param {object} incomingMessage - The incoming subTask object
   */
   runDistributedTask(incomingMessage, targetClient) {
-    const hamster = this.fetchHamster(this.running.length);
+    const hamster = this.fetchHamster(this.running.length());
     let task = incomingMessage.task;
     let index = incomingMessage.hamsterFood.index;
     let handleResponse = this.hamsters.distribute.returnDistributedOutput;
@@ -156,8 +157,6 @@ class Pool {
     this.runTask(hamster, index, incomingMessage.hamsterFood, incomingMessage.task, handleResponse, handleResponse);
   }
 
-
-
   /**
   * @function runTask - Runs function using thread
   * @param {object} hamster - The thread to run the task
@@ -167,7 +166,7 @@ class Pool {
   * @param {function} reject - onError method
   */
   runTask(hamster, index, hamsterFood, task, resolve, reject) {
-    const threadId = this.running.length;
+    const threadId = this.running.length();
     this.hamsters.pool.keepTrackOfThread(task, threadId);
     if (this.hamsters.habitat.legacy) {
       this.hamsters.scaffold.legacy.scaffold(hamsterFood, resolve, reject);
@@ -187,13 +186,13 @@ class Pool {
   */
   hamsterWheel(index, subTaskId, task, resolve, reject) {
     const hamsterFood = this.prepareMeal(index, subTaskId, task);
-    if (this.hamsters.habitat.maxThreads <= this.running.length) {
+    if (this.hamsters.habitat.maxThreads <= this.running.length()) {
       this.addWorkToPending(index, hamsterFood, task, resolve, reject);
     } else {
       if(task.input.distribute) {
         this.hamsters.distribute.distributeTask(task, hamsterFood, resolve, reject);
       } else {
-        const hamster = this.fetchHamster(this.running.length);
+        const hamster = this.fetchHamster(this.running.length());
         this.runTask(hamster, index, hamsterFood, task, resolve, reject);
       }
     }
@@ -308,8 +307,8 @@ class Pool {
       if (!this.hamsters.habitat.persistence) {
         hamster.terminate();
       }
-      if (this.hamsters.pool.pending.length !== 0) {
-        const queueHamster = this.hamsters.pool.fetchHamster(this.hamsters.pool.running.length);
+      if (this.hamsters.pool.pending.length() !== 0) {
+        const queueHamster = this.hamsters.pool.fetchHamster(this.hamsters.pool.running.length());
         this.hamsters.pool.processQueuedItem(queueHamster, this.hamsters.pool.pending.shift());
       }
     };

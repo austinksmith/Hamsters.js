@@ -23,8 +23,7 @@ import Shared from './scaffold/shared';
 //Features
 import Memoize from './feature/memoize';
 import Distribute from './feature/distribute';
-
-
+import Observable from './feature/observable';
 
 class hamstersjs {
 
@@ -35,7 +34,7 @@ class hamstersjs {
   constructor() {
     'use strict';
 
-    this.version = '5.6.0';
+    this.version = '5.6.1';
     this.run = this.hamstersRun.bind(this);
     this.promise = this.hamstersPromise.bind(this);
     this.init = this.initializeLibrary.bind(this);
@@ -51,6 +50,7 @@ class hamstersjs {
   * @param {object} startOptions - Provided library functionality options
   */
   initializeLibrary(startOptions) {
+    this.observable = Observable;
     this.data = new Data(this);
     this.pool = new Pool(this);
     this.scaffold = {
@@ -61,7 +61,6 @@ class hamstersjs {
     this.habitat = new Habitat(this);
     this.memoize = new Memoize(this, 100); //Set a maximum of 100 memoized function results, LRU cache
     this.distribute = new Distribute(this);
-
     this.processStartOptions(startOptions);
     
     if(!this.habitat.legacy && this.habitat.persistence === true) {

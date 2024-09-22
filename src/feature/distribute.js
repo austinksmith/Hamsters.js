@@ -16,15 +16,15 @@ class Distribute {
 
     this.hamsters = hamsters;
     this.localConnection = null;
-    this.remoteConnections = {};
-    this.clientInfo = {};
-    this.sendChannels = {};
-    this.receiveChannels = {};
+    this.remoteConnections = new hamsters.observable({});
+    this.clientInfo = new hamsters.observable({});
+    this.sendChannels = new hamsters.observable({});
+    this.receiveChannels = new hamsters.observable({});
     this.pcConstraint = null;
     this.dataConstraint = null;
     this.ws = null;
     this.clientId = null;
-    this.pendingPromises = {};
+    this.pendingPromises = new hamsters.observable({});
     this.returnDistributedOutput = this.sendDataResponse.bind(this);
     this.establishConnection = this.initWebSocket.bind(this);
   }
@@ -84,7 +84,7 @@ class Distribute {
 
   updateClientList(clients) {
     clients.forEach(client => {
-      if (client.id !== this.clientId && !this.remoteConnections[client.id]) {
+      if (client.id !== this.clientId && !this.remoteConnections.get(client.id)) {
         this.createConnection(client.id);
       }
     });
@@ -100,19 +100,19 @@ class Distribute {
       return;
     }
 
-    if (this.remoteConnections[newClientId]) {
-      this.remoteConnections[newClientId].close();
-      delete this.remoteConnections[newClientId];
+    if (this.remoteConnections.get(newClientId)) {
+      this.remoteConnections.get(newClientId).close();
+      this.remoteConnections.delete(newClientId);
     }
-    if (this.sendChannels[newClientId]) {
-      this.sendChannels[newClientId].close();
-      delete this.sendChannels[newClientId];
+    if (this.sendChannels.get(newClientId)) {
+      this.sendChannels.get(newClientId).close();
+      this.sendChannels.delete(newClientId);
     }
-    if (this.receiveChannels[newClientId]) {
-      this.receiveChannels[newClientId].close();
-      delete this.receiveChannels[newClientId];
+    if (this.receiveChannels.get(newClientId)) {
+      this.receiveChannels.get(newClientId).close();
+      this.receiveChannels.delete(newClientId);
     }
-    delete this.clientInfo[newClientId];
+    this.clientInfo.delete(newClientId);
 
     this.clientId = newClientId;
     this.loadClientList();
@@ -132,13 +132,13 @@ class Distribute {
   }
 
   createConnections() {
-    Object.keys(this.remoteConnections).forEach(targetClient => {
+    this.remoteConnections.forEach((_, targetClient) => {
       this.createConnection(targetClient);
     });
   }
 
   createConnection(targetClient) {
-    if (targetClient === this.clientId || this.remoteConnections[targetClient]) {
+    if (targetClient === this.clientId || this.remoteConnections.get(targetClient)) {
       return;
     }
 
@@ -188,9 +188,9 @@ class Distribute {
       this.receiveChannelCallback(event, targetClient);
     };
 
-    this.remoteConnections[targetClient] = localConnection;
-    this.sendChannels[targetClient] = sendChannel;
-    this.receiveChannels[targetClient] = null;
+    this.remoteConnections.set(targetClient, localConnection);
+    this.sendChannels.set(targetClient, sendChannel);
+    this.receiveChannels.set(targetClient, null);
 
     localConnection.createOffer().then(desc => {
       localConnection.setLocalDescription(desc);
@@ -201,7 +201,7 @@ class Distribute {
   handleOffer(data) {
     const targetClient = data.from;
 
-    if (!this.remoteConnections[targetClient]) {
+    if (!this.remoteConnections.get(targetClient)) {
       const servers = {
         iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
       };
@@ -249,8 +249,8 @@ class Distribute {
         this.ws.send(JSON.stringify({ type: 'answer', target: targetClient, logicalCores: this.hamsters.maxThreads, userAgent: navigator.userAgent, answer: desc }));
       }).catch(this.onCreateSessionDescriptionError);
 
-      this.remoteConnections[targetClient] = remoteConnection;
-      this.sendChannels[targetClient] = sendChannel;
+      this.remoteConnections.set(targetClient, remoteConnection);
+      this.sendChannels.set(targetClient, sendChannel);
     }
   }
 
@@ -260,18 +260,18 @@ class Distribute {
       userAgent: data.userAgent,
     };
     console.log("storing client info ", client);
-    this.clientInfo[data.from] = client;
+    this.clientInfo.set(data.from, client);
   }
 
   handleAnswer(data) {
     this.storeClientConnectionInfo(data);
-    const connection = this.remoteConnections[data.from];
+    const connection = this.remoteConnections.get(data.from);
     connection.setRemoteDescription(new RTCSessionDescription(data.answer));
   }
 
   handleCandidate(data) {
     this.storeClientConnectionInfo(data);
-    const connection = this.remoteConnections[data.from];
+    const connection = this.remoteConnections.get(data.from);
     connection.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(this.onAddIceCandidateError);
   }
 
@@ -281,7 +281,7 @@ class Distribute {
   }
 
   sendPing(targetClient, startTime) {
-    const sendChannel = this.sendChannels[targetClient];
+    const sendChannel = this.sendChannels.get(targetClient);
     if (sendChannel && sendChannel.readyState === 'open') {
       sendChannel.send(JSON.stringify({ type: 'ping', startTime }));
     }
@@ -289,7 +289,7 @@ class Distribute {
 
   handlePing(targetClient, startTime) {
     console.log("Remote Connections ", this.remoteConnections);
-    const sendChannel = this.receiveChannels[targetClient];
+    const sendChannel = this.receiveChannels.get(targetClient);
     if (sendChannel && sendChannel.readyState === 'open') {
       sendChannel.send(JSON.stringify({ type: 'pong', startTime }));
       if (this.hamsters.habitat.debug) {
@@ -300,14 +300,14 @@ class Distribute {
 
   handlePong(targetClient, startTime) {
     const latency = performance.now() - startTime;
-    this.clientInfo[targetClient].latency = latency;
+    this.clientInfo.set(targetClient, { ...this.clientInfo.get(targetClient), latency });
     if (this.hamsters.habitat.debug) {
       console.log(`Hamsters.js ${this.hamsters.version} received pong from ${targetClient} with latency: ${latency.toFixed(2)}ms`);
     }
   }
 
   fetchDistributedClient() {
-    const sendChannelKeys = Object.keys(this.sendChannels);
+    const sendChannelKeys = Array.from(this.sendChannels.keys());
     if (sendChannelKeys.length === 0) {
       if (this.hamsters.habitat.debug) {
         console.warn(`Hamsters.js ${this.hamsters.version} no send channels available.`);
@@ -319,8 +319,8 @@ class Distribute {
     let targetClient = null;
 
     sendChannelKeys.forEach(clientId => {
-      let channel = this.sendChannels[clientId];
-      let client = this.clientInfo[clientId];
+      const channel = this.sendChannels.get(clientId);
+      const client = this.clientInfo.get(clientId);
       if (channel.readyState === 'open' && client.latency < minLatency) {
         minLatency = client.latency;
         targetClient = clientId;
@@ -349,14 +349,14 @@ class Distribute {
       messageId,
     };
 
-    this.pendingPromises[messageId] = { resolve, reject };
+    this.pendingPromises.set(messageId, { resolve, reject });
 
     this.sendData({ targetClient, data: subTask });
   }
 
   handleTaskResponse(incomingMessage) {
     const { messageId, output, error } = incomingMessage;
-    const pendingPromise = this.pendingPromises[messageId];
+    const pendingPromise = this.pendingPromises.get(messageId);
 
     if (pendingPromise) {
       if (error) {
@@ -365,12 +365,12 @@ class Distribute {
         pendingPromise.resolve(output);
       }
 
-      delete this.pendingPromises[messageId];
+      this.pendingPromises.delete(messageId);
     }
   }
 
   sendData({ targetClient, data }) {
-    const sendChannel = this.sendChannels[targetClient];
+    const sendChannel = this.sendChannels.get(targetClient);
     if (sendChannel && sendChannel.readyState === 'open') {
       sendChannel.send(JSON.stringify(data));
       if (this.hamsters.habitat.debug) {
@@ -385,7 +385,7 @@ class Distribute {
 
   sendDataResponse(data) {
     const targetClient = data.targetClient;
-    const sendChannel = this.receiveChannels[targetClient];
+    const sendChannel = this.receiveChannels.get(targetClient);
     if (sendChannel && sendChannel.readyState === 'open') {
       sendChannel.send(JSON.stringify(data));
       if (this.hamsters.habitat.debug) {
@@ -399,20 +399,23 @@ class Distribute {
   }
 
   closeDataChannels() {
-    for (const targetClient in this.sendChannels) {
-      if (this.sendChannels[targetClient]) {
-        this.sendChannels[targetClient].close();
-        delete this.sendChannels[targetClient];
+    for (const targetClient of this.sendChannels.keys()) {
+      const sendChannel = this.sendChannels.get(targetClient);
+      if (sendChannel) {
+        sendChannel.close();
+        this.sendChannels.delete(targetClient);
       }
-      if (this.receiveChannels[targetClient]) {
-        this.receiveChannels[targetClient].close();
-        delete this.receiveChannels[targetClient];
+      const receiveChannel = this.receiveChannels.get(targetClient);
+      if (receiveChannel) {
+        receiveChannel.close();
+        this.receiveChannels.delete(targetClient);
       }
-      if (this.remoteConnections[targetClient]) {
-        this.remoteConnections[targetClient].close();
-        delete this.remoteConnections[targetClient];
+      const remoteConnection = this.remoteConnections.get(targetClient);
+      if (remoteConnection) {
+        remoteConnection.close();
+        this.remoteConnections.delete(targetClient);
       }
-      delete this.latencies[targetClient];
+      this.clientInfo.delete(targetClient);
     }
     this.localConnection = null;
   }
@@ -442,7 +445,7 @@ class Distribute {
       this.onReceiveChannelStateChange(targetClient);
     };
 
-    this.receiveChannels[targetClient] = receiveChannel;
+    this.receiveChannels.set(targetClient, receiveChannel);
   }
 
   onReceiveMessageCallback(targetClient, data) {
@@ -462,7 +465,7 @@ class Distribute {
   }
 
   onSendChannelStateChange(targetClient) {
-    const sendChannel = this.sendChannels[targetClient];
+    const sendChannel = this.sendChannels.get(targetClient);
     this.measureLatency(targetClient);
     if (sendChannel && this.hamsters.habitat.debug) {
       console.log(`Hamsters.js ${this.hamsters.version} send channel state changed for ${targetClient}: ${sendChannel.readyState}`);
@@ -470,7 +473,7 @@ class Distribute {
   }
 
   onReceiveChannelStateChange(targetClient) {
-    const receiveChannel = this.receiveChannels[targetClient];
+    const receiveChannel = this.receiveChannels.get(targetClient);
     if (receiveChannel && this.hamsters.habitat.debug) {
       console.log(`Hamsters.js ${this.hamsters.version} receive channel state changed for ${targetClient}: ${receiveChannel.readyState}`);
     }
