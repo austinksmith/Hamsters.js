@@ -171,7 +171,11 @@ class Pool {
     if (this.hamsters.habitat.legacy) {
       this.hamsters.scaffold.legacy.scaffold(hamsterFood, resolve, reject);
     } else {
-      this.hamsters.pool.trainHamster(index, task, threadId, hamster, resolve, reject);
+      if(this.hamsters.trainer) {
+        this.hamsters.trainer(index, task, threadId, hamster, resolve, reject);
+      } else {
+        this.hamsters.pool.trainHamster(index, task, threadId, hamster, resolve, reject);
+      }
       this.hamsters.data.feedHamster(hamster, hamsterFood);
     }
     task.scheduler.count += 1;
