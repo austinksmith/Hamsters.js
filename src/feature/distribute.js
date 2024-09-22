@@ -83,12 +83,35 @@ class Distribute {
   }
 
   updateClientList(clients) {
+    const newClientIds = new Set(clients.map(client => client.id));
     clients.forEach(client => {
-      if (client.id !== this.clientId && !this.remoteConnections.get(client.id)) {
-        this.createConnection(client.id);
-      }
+        if (client.id !== this.clientId && !this.remoteConnections.get(client.id)) {
+            this.createConnection(client.id);
+        }
+    });
+    const remoteConnections = this.remoteConnections.getData();
+    Object.keys(remoteConnections).forEach((key) => {
+        if (!newClientIds.has(key)) {
+          this.handleClientDisconnect(key);
+        }
     });
   }
+
+  handleClientDisconnect(clientId) {
+    if (this.remoteConnections.get(clientId)) {
+      this.remoteConnections.get(clientId).close();
+      this.remoteConnections.delete(clientId);
+    }
+    if (this.sendChannels.get(clientId)) {
+      this.sendChannels.get(clientId).close();
+      this.sendChannels.delete(clientId);
+    }
+    if (this.receiveChannels.get(clientId)) {
+      this.receiveChannels.get(clientId).close();
+      this.receiveChannels.delete(clientId);
+    }
+    this.clientInfo.delete(clientId);
+  };
 
   handleClientReconnect(message) {
     const newClientId = message.id;
@@ -99,21 +122,7 @@ class Distribute {
       }
       return;
     }
-
-    if (this.remoteConnections.get(newClientId)) {
-      this.remoteConnections.get(newClientId).close();
-      this.remoteConnections.delete(newClientId);
-    }
-    if (this.sendChannels.get(newClientId)) {
-      this.sendChannels.get(newClientId).close();
-      this.sendChannels.delete(newClientId);
-    }
-    if (this.receiveChannels.get(newClientId)) {
-      this.receiveChannels.get(newClientId).close();
-      this.receiveChannels.delete(newClientId);
-    }
-    this.clientInfo.delete(newClientId);
-
+    this.handleClientDisconnect(newClientId);
     this.clientId = newClientId;
     this.loadClientList();
   }
@@ -259,7 +268,6 @@ class Distribute {
       logicalCores: data.logicalCores,
       userAgent: data.userAgent,
     };
-    console.log("storing client info ", client);
     this.clientInfo.set(data.from, client);
   }
 
@@ -288,7 +296,6 @@ class Distribute {
   }
 
   handlePing(targetClient, startTime) {
-    console.log("Remote Connections ", this.remoteConnections);
     const sendChannel = this.receiveChannels.get(targetClient);
     if (sendChannel && sendChannel.readyState === 'open') {
       sendChannel.send(JSON.stringify({ type: 'pong', startTime }));
