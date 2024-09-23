@@ -108,7 +108,14 @@ class Data {
   */
   prepareWorkerTask(functionBody) {
     let functionString = String(functionBody);
-    return functionString.substring((functionString.indexOf("{") + 1), (functionString.length -1));
+    let isAsync = functionString.trim().startsWith('async');
+    functionBody = functionString.substring(functionString.indexOf("{") + 1, functionString.lastIndexOf("}"));
+    if(isAsync) {
+      return `(async () => {
+        ${functionBody}
+      })();`;
+    }
+    return functionBody;
   }
 
   /**
