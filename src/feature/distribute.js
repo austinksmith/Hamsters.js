@@ -77,8 +77,9 @@ class Distribute {
 
     this.ws.onclose = () => {
       if (this.hamsters.habitat.debug) {
-        console.info(`Hamsters.js ${this.hamsters.version} connection closed.`);
+        console.info(`Hamsters.js ${this.hamsters.version} connection closed. Reconnecting...`);
       }
+      this.establishConnection();
     };
   }
 
@@ -314,7 +315,7 @@ class Distribute {
   }
 
   fetchDistributedClient() {
-    const sendChannelKeys = Array.from(this.sendChannels.keys());
+    const sendChannelKeys = Object.keys(this.sendChannels.getData());
     if (sendChannelKeys.length === 0) {
       if (this.hamsters.habitat.debug) {
         console.warn(`Hamsters.js ${this.hamsters.version} no send channels available.`);
@@ -406,7 +407,7 @@ class Distribute {
   }
 
   closeDataChannels() {
-    for (const targetClient of this.sendChannels.keys()) {
+    for (const targetClient of this.sendChannels.getData().keys()) {
       const sendChannel = this.sendChannels.get(targetClient);
       if (sendChannel) {
         sendChannel.close();
