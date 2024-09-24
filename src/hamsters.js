@@ -34,7 +34,7 @@ class hamstersjs {
   constructor() {
     'use strict';
 
-    this.version = '5.6.1';
+    this.version = '5.6.2';
     this.run = this.hamstersRun.bind(this);
     this.promise = this.hamstersPromise.bind(this);
     this.init = this.initializeLibrary.bind(this);

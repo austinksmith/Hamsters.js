@@ -279,9 +279,9 @@ class Pool {
       hamster.port.onmessageerror = reject;
       hamster.port.onerror = reject;
     } else if (this.hamsters.habitat.node) {
-      hamster.once('message', onThreadResponse);
-      hamster.once('onmessageerror', reject);
-      hamster.once('error', reject);
+      hamster.on('message', onThreadResponse);
+      hamster.on('onmessageerror', reject);
+      hamster.on('error', reject);
     } else {
       hamster.onmessage = onThreadResponse;
       hamster.onmessageerror = reject;
