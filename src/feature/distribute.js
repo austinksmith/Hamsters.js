@@ -27,6 +27,9 @@ class Distribute {
     this.pendingPromises = new hamsters.observable({});
     this.returnDistributedOutput = this.sendDataResponse.bind(this);
     this.establishConnection = this.initWebSocket.bind(this);
+    this.lastHeartbeat = {};
+    this.heartBeatInterval = 30 * 1000; //Send heartbeat message every 30 seconds, keep socket connection open
+    this.heartBeatTimeout = {};
   }
 
   initWebSocket() {
@@ -39,6 +42,7 @@ class Distribute {
         logicalCores: this.hamsters.maxThreads
       };
       this.ws.send(JSON.stringify(registerMessage));
+      this.sendHeartBeat(this.heartBeatInterval);
     };
 
     this.ws.onmessage = (event) => {
@@ -125,21 +129,16 @@ class Distribute {
     }
     this.handleClientDisconnect(newClientId);
     this.clientId = newClientId;
-    this.loadClientList();
   }
 
-  loadClientList() {
-    fetch(`/clients?currentId=${this.clientId}`)
-      .then(response => response.json())
-      .then(data => {
-        this.updateClientList(data);
-      })
-      .catch(error => {
-        if (this.hamsters.habitat.debug) {
-          console.error(`Hamsters.js ${this.hamsters.version} Error fetching client list: ${error}`);
-        }
-      });
-  }
+  sendHeartBeat(interval) {
+    this.heartBeatTimeout = setInterval(() => {
+      this.ws.send(JSON.stringify({
+        type: 'heartbeat'
+      }));
+      this.lastHeartbeat = Date.now();
+    }, interval);
+  }  
 
   createConnections() {
     this.remoteConnections.forEach((_, targetClient) => {
@@ -314,7 +313,7 @@ class Distribute {
     }
   }
 
-  fetchDistributedClient() {
+  getDistributedClient() {
     const sendChannelKeys = Object.keys(this.sendChannels.getData());
     if (sendChannelKeys.length === 0) {
       if (this.hamsters.habitat.debug) {
@@ -339,7 +338,7 @@ class Distribute {
   }
 
   distributeTask(task, hamsterFood, resolve, reject) {
-    const targetClient = this.fetchDistributedClient();
+    const targetClient = this.getDistributedClient();
     if (!targetClient) {
       if (this.hamsters.habitat.debug) {
         console.error(`Hamsters.js ${this.hamsters.version} no target client found.`);
