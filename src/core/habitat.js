@@ -144,15 +144,7 @@ class Habitat {
   * @function supportsSharedWorkers - Detects if execution environment supports SharedWorkers
   */
   supportsSharedWorkers() {
-    let supports = false;
-    try {
-      let workerBlob = this.generateWorkerBlob(this.selectHamsterWheel());
-      let SharedHamster = new this.SharedWorker(workerBlob, 'SharedHamsterWheel');
-      supports = true;
-    } catch (e) {
-      supports = false;
-    }
-    return supports;
+    return (typeof SharedWorker !== 'undefined');
   }
 
   /**
@@ -197,9 +189,12 @@ class Habitat {
   * @param {function} workerLogic - Scaffold to use within worker thread
   */
   generateWorkerBlob(workerLogic) {
-    return URL.createObjectURL(this.createDataBlob(`(${workerLogic.toString()})();`));
+    return URL.createObjectURL(this.createDataBlob(this.generateWorkerString(workerLogic)));
   }
 
+  generateWorkerString(workerLogic) {
+    return `(${workerLogic.toString()})();`;
+  }
   /**
   * @function supportsTransferableObjects - Detects if execution environment supports typed arrays
   */
@@ -237,7 +232,7 @@ class Habitat {
     if (this.node) {
       return './node_modules/hamsters.js/build/common/node.js';
     }
-    return this.generateWorkerBlob(this.hamsters.scaffold.regular.scaffold);
+    return 'data:text/javascript,' + encodeURIComponent(this.generateWorkerString(this.hamsters.scaffold.regular.scaffold));
   }
 
   /**

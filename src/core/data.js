@@ -42,9 +42,6 @@ class Data {
     if(this.hamsters.habitat.reactNative) {
       return hamster.postMessage(JSON.stringify(hamsterFood));
     }
-    if (this.hamsters.habitat.webWorker) {
-      return hamster.port.postMessage(hamsterFood);
-    }
     return hamster.postMessage(hamsterFood, this.hamsters.data.getTransferableObjects(hamsterFood));
   }
 

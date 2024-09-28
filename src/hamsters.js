@@ -50,6 +50,7 @@ class hamstersjs {
   * @param {object} startOptions - Provided library functionality options
   */
   initializeLibrary(startOptions) {
+    const start = performance.now();
     this.observable = Observable;
     this.data = new Data(this);
     this.pool = new Pool(this);
@@ -72,8 +73,8 @@ class hamstersjs {
       console.info(`Hamsters.js ${this.version} establishing connection to relay`);
       this.distribute.establishConnection();
     }
-
-    console.info(`Hamsters.js ${this.version} initialized using up to ${this.habitat.maxThreads} threads`);
+    const end = performance.now();
+    console.info(`Hamsters.js ${this.version} initialized using up to ${this.habitat.maxThreads} threads in ${end - start}ms`);
   }
 
   /**

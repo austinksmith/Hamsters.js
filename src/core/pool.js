@@ -97,11 +97,8 @@ class Pool {
   * @return {object} - New WebWorker thread using selected scaffold
   */
   spawnHamster() {
-    const { selectHamsterWheel, SharedWorker, Worker } = this.hamsters.habitat;
+    const { selectHamsterWheel, Worker } = this.hamsters.habitat;
     const hamsterWheel = selectHamsterWheel();
-    if (this.hamsters.habitat.webWorker) {
-      return new SharedWorker(hamsterWheel, 'SharedHamsterWheel');
-    }
     return new Worker(hamsterWheel);
   }
     
@@ -274,11 +271,7 @@ class Pool {
   * @param {function} reject - onError method
   */
   setOnMessage(hamster, onThreadResponse, reject) {
-    if (this.hamsters.habitat.webWorker) {
-      hamster.port.onmessage = onThreadResponse;
-      hamster.port.onmessageerror = reject;
-      hamster.port.onerror = reject;
-    } else if (this.hamsters.habitat.node) {
+    if (this.hamsters.habitat.node) {
       hamster.on('message', onThreadResponse);
       hamster.on('onmessageerror', reject);
       hamster.on('error', reject);
