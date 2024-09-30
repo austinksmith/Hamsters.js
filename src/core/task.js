@@ -25,6 +25,10 @@ class Task {
     this.scheduler = {
       count: 0,
       threads: params.threads || 1,
+      transfers: {
+        request: 0,
+        send: 0
+      },
       workers: []
     };
 

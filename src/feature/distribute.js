@@ -25,11 +25,16 @@ class Distribute {
     this.ws = null;
     this.clientId = null;
     this.pendingPromises = new hamsters.observable({});
+    this.pendingTasks = new hamsters.observable({});
+    this.pendingTransfers = new hamsters.observable({});
+    this.awaitingTransfers = new hamsters.observable({});
     this.returnDistributedOutput = this.sendDataResponse.bind(this);
     this.establishConnection = this.initWebSocket.bind(this);
     this.lastHeartbeat = {};
     this.heartBeatInterval = 30 * 1000; //Send heartbeat message every 30 seconds, keep socket connection open
     this.heartBeatTimeout = {};
+    //Listen for changes to transfers and tasks
+    this.setRealTimeListeners();
   }
 
   initWebSocket() {
@@ -278,10 +283,14 @@ class Distribute {
   }
 
   handleCandidate(data) {
-    this.storeClientConnectionInfo(data);
-    const connection = this.remoteConnections.get(data.from);
+    let connection = this.remoteConnections.get(data.from) || {};
+    if(!connection) {
+      this.storeClientConnectionInfo(data);
+      connection = this.remoteConnections.get(data.from);
+    }
     connection.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(this.onAddIceCandidateError);
   }
+
 
   measureLatency(targetClient) {
     const startTime = performance.now();
@@ -348,17 +357,20 @@ class Distribute {
     }
 
     const messageId = this.generateUniqueId();
-
-    const subTask = {
-      hamsterFood,
+    const preparedList = this.hamsters.data.getTransferList(hamsterFood, task);
+    const distributedSubTask = {
+      hamsterFood: preparedList.hamsterFood,
       index: hamsterFood.index,
-      task,
-      messageId,
+      task: preparedList.task,
+      messageId: messageId,
+      awaitingTransfers: preparedList.transferCount > 0,
+      type: 'task-request'
     };
 
     this.pendingPromises.set(messageId, { resolve, reject });
+    this.pendingTransfers.set(messageId, preparedList.transferList);
 
-    this.sendData({ targetClient, data: subTask });
+    this.sendData({ targetClient, data: distributedSubTask });
   }
 
   handleTaskResponse(incomingMessage) {
@@ -376,10 +388,37 @@ class Distribute {
     }
   }
 
+  requestDataTransfer(key, messageId, targetClient) {
+    const message = {
+      type: 'transfer-request',
+      key: key,
+      messageId, messageId
+    };
+    this.awaitingTransfers.set(targetClient, message);
+    this.sendData({targetClient, message});
+  }
+
   sendData({ targetClient, data }) {
     const sendChannel = this.sendChannels.get(targetClient);
     if (sendChannel && sendChannel.readyState === 'open') {
       sendChannel.send(JSON.stringify(data));
+      if (this.hamsters.habitat.debug) {
+        console.log(`Hamsters.js ${this.hamsters.version} sent data to: `, targetClient);
+      }
+    } else {
+      if (this.hamsters.habitat.debug) {
+        console.error(`Hamsters.js ${this.hamsters.version} send channel is not open for targetClient: `, targetClient);
+      }
+    }
+  }
+
+  sendBlobData({targetClient, data, dataType}) {
+    const sendChannel = this.sendChannels.get(targetClient);
+    if (sendChannel && sendChannel.readyState === 'open') {
+      if(!data.buffer) {
+        data = this.hamsters.data.processDataType(dataType, data);
+      }
+      sendChannel.send(data.buffer);
       if (this.hamsters.habitat.debug) {
         console.log(`Hamsters.js ${this.hamsters.version} sent data to: `, targetClient);
       }
@@ -459,16 +498,65 @@ class Distribute {
     if (this.hamsters.habitat.debug) {
       console.log(`Hamsters.js ${this.hamsters.version} received message!`);
     }
-    const incomingMessage = JSON.parse(data);
-
-    if (incomingMessage.isReply) {
-      this.handleTaskResponse(incomingMessage);
-      if (this.hamsters.habitat.debug) {
-        console.log(`Hamsters.js ${this.hamsters.version} response received for task: `, incomingMessage);
+    let incomingMessage = data;
+    if(typeof data === 'string') {
+      incomingMessage = JSON.parse(data);
+      
+      switch (incomingMessage.type) {
+        case 'transfer-request':
+            this.fulfillTransferRequest(targetClient, incomingMessage);
+          break;
+        case 'task-response':
+          this.handleTaskResponse(incomingMessage);
+          if (this.hamsters.habitat.debug) {
+            console.log(`Hamsters.js ${this.hamsters.version} response received for task: `, incomingMessage);
+          }
+          break;
+        case 'task-request':
+          if(incomingMessage.awaitingTransfers) {
+            this.pendingTasks.set(targetClient, incomingMessage);
+          } else {
+            this.hamsters.pool.runDistributedTask(incomingMessage, targetClient);
+          }
+          break;
+        default:
+          this.processTransferResponse(targetClient, incomingMessage);
+          console.log(`Hamsters.js ${this.hamsters.version} unknown message received from: ${targetClient}`);
+          break;
       }
     } else {
-      this.hamsters.pool.runDistributedTask(incomingMessage, targetClient);
+      console.log("We have a transfer request response", data);
     }
+  }
+
+  processTransferResponse(targetClient, incomingMessage) {
+    const awaitingTransfer = this.awaitingTransfers.get(targetClient);
+    const pendingTask = this.pendingTasks.get(targetClient);
+    const hamsterFood = pendingTask.hamsterFood;
+    const hamsterFoodKeys = Object.keys(hamsterFood);
+    for (const item of hamsterFoodKeys) {
+      if ((awaitingTransfer[item] && awaitingTransfer[item].status === 'Requested') && hamsterFood[item] === 'Awaiting Transfer') {
+        hamsterFood[item] = incomingMessage;
+        break;
+      }
+    }
+    const stillAwaiting = hamsterFoodKeys.filter(key => ['Awaiting Transfer', 'Requested'].indexOf(hamsterFood[key]) !== -1);
+    pendingTask.awaitingTransfers = stillAwaiting.length > 0;
+    this.pendingTasks.set(targetClient, pendingTask);
+    console.log("WE HAVE A PENDING TASK WITH A DATA RESPONSE ", pendingTask);
+  }
+  
+
+  fulfillTransferRequest(targetClient, incomingMessage) {
+    const pendingTransferItems = this.pendingTransfers.get(incomingMessage.messageId);
+    const pendingTask = this.pendingTasks.get(targetClient);
+    if(pendingTransferItems) {
+      const pendingTransferItem = pendingTransferItems[incomingMessage.key];
+      if(typeof pendingTransferItem !== 'undefined') {
+        this.sendData({targetClient, data: pendingTransferItem});
+      }
+    }
+    console.log(incomingMessage, "WE HAVE TRANSFER REQUEST!", pendingTask);
   }
 
   onSendChannelStateChange(targetClient) {
@@ -501,6 +589,77 @@ class Distribute {
       console.error(`Hamsters.js ${this.hamsters.version} failed to add ICE candidate: ${error}`);
     }
   }
+
+  initializeAwaitingTransfersListener() {
+    this.awaitingTransfers.on('change', (awaitingTransfers) => {
+      let updatedAwaitingTransfers = {};
+      Object.keys(awaitingTransfers).forEach((clientId) => {
+        let updatedTransferItems = {};
+        const transferObject = awaitingTransfers[clientId];
+        Object.keys(transferObject).forEach((item) => {
+          const awaitingTransfer = transferObject[item]; // Correct access
+          if (awaitingTransfer.status === 'Pending Request') {
+            const requestTransferMessage = {
+              type: 'transfer-request',
+              key: item,
+              messageId: awaitingTransfer.messageId // Assuming this is defined in the class scope
+            };
+            this.sendData({targetClient: clientId, data: requestTransferMessage}); // Correct the function call
+            awaitingTransfer.status = 'Requested';
+            updatedTransferItems[item] = awaitingTransfer; // Use item as key for updated transfers
+  
+            // Check if pendingTasks and its structure exist before updating
+            if (this.pendingTasks[clientId]) {
+              this.pendingTasks[clientId].task.scheduler.transfers.request += 1;
+            } else {
+              console.error(`Invalid structure for clientId: ${clientId}`);
+            }
+          }
+        });
+        updatedAwaitingTransfers[clientId] = updatedTransferItems;
+      });
+      // Set awaiting transfers with updated information
+      this.awaitingTransfers.setAll(updatedAwaitingTransfers);
+    },  { passive: true });
+  }
+
+  initializePendingTasksListener() {
+    this.pendingTasks.on('change', (pendingTasks) => {
+      let pendingTaskId = 0;
+      let updatedTasks = {};
+      Object.keys(pendingTasks).forEach((targetClient) => {
+        const pendingTask = pendingTasks[targetClient];
+        if (pendingTask.awaitingTransfers) {
+          const pendingTask = pendingTasks[targetClient];
+          let transferStatus = pendingTask.hamsterFood; // Consider renaming for clarity
+          let transfers = {}; // Use an object or array to hold transfers
+    
+          Object.keys(transferStatus).forEach((item) => {
+            if (transferStatus[item] === 'Awaiting Transfer') {
+              transfers[item] = { // Use bracket notation to assign multiple transfers
+                taskId: pendingTaskId,
+                messageId: pendingTask.messageId, // Ensure this is defined
+                status: 'Pending Request'
+              };
+            }
+          });
+    
+          // Add transfers to awaiting transfers for the specific client
+          if (Object.keys(transfers).length > 0) {  
+            this.awaitingTransfers.set(targetClient, transfers); // Save transfers for this client
+          }
+          pendingTaskId += 1;
+        } else { //We are not waiting for data anymore, we can start processing the task
+          this.hamsters.pool.runDistributedTask(pendingTask, targetClient);
+        }
+      });
+    }, { passive: true });
+  }
+
+  setRealTimeListeners() {
+    this.initializeAwaitingTransfersListener();
+    this.initializePendingTasksListener();
+  }  
 }
 
 export default Distribute;

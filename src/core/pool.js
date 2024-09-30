@@ -149,8 +149,7 @@ class Pool {
     let handleResponse = this.hamsters.distribute.returnDistributedOutput;
     task.targetClient = targetClient;
     task.messageId = incomingMessage.messageId;
-    task.isReply = true;
-
+    task.type = 'task-response';
     this.runTask(hamster, index, incomingMessage.hamsterFood, incomingMessage.task, handleResponse, handleResponse);
   }
 

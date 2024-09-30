@@ -44,6 +44,10 @@ class Observable {
     this.emit('change', this.data);
   }
 
+  setAll(data) {
+    this.data = data;
+  }
+
   get(key) {
     return this.data[key];
   }

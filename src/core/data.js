@@ -238,7 +238,27 @@ class Data {
 
     return indexes;
   }
-  
+
+  prepareDistributedTask(task) {
+    Object.keys(task.input).forEach(key => {
+      if(Array.isArray(task.input[key])) {
+        task.input[key] = null;
+      }
+    });
+    return task;
+  }
+
+  getTransferList(hamsterFood, task) {
+    const transferList = {};
+    task = this.prepareDistributedTask(task);
+    Object.keys(hamsterFood).forEach(item => {
+      if (Array.isArray(hamsterFood[item])) {
+        transferList[item] = hamsterFood[item];
+        hamsterFood[item] = 'Awaiting Transfer';
+      }
+    });
+    return {hamsterFood, transferList, task, transferCount: Object.keys(transferList).length};
+  }
 
   /**
   * @function getSubArrayUsingIndex - Slices subarray based on provided index
