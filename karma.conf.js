@@ -3,7 +3,7 @@ const webpack = require('webpack');
 
 module.exports = (config) => {
   config.set({
-    browsers: ['ChromeHeadless'],
+    browsers: ['Chrome'],
     files: [
       {
         pattern: 'tests.webpack.js', 

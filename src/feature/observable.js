@@ -42,6 +42,7 @@ class Observable {
       this.data[key] = value;
     }
     this.emit('change', this.data);
+    return value;
   }
 
   setAll(data) {
@@ -64,7 +65,7 @@ class Observable {
   }
 
   shift() {
-    const item = this.data.shift();
+    let item = this.data.shift();
     this.emit('change', this.data);
     return item;
   }

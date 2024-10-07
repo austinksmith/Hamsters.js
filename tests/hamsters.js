@@ -72,6 +72,4 @@ describe("Hamsters.js", () => {
     });
   }
   
-
-
 });

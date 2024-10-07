@@ -7,9 +7,7 @@ class Distribute {
     this.remoteConnections = new hamsters.observable({});
     this.clientInfo = new hamsters.observable({});
     this.sendChannels = new hamsters.observable({});
-    this.receiveChannels = new hamsters.observable({});
     this.pcConstraint = null;
-    this.dataConstraint = null;
     this.ws = null;
     this.clientId = null;
     this.pendingPromises = new hamsters.observable({});
@@ -23,8 +21,6 @@ class Distribute {
     this.lastHeartbeat = {};
     this.heartBeatInterval = 30 * 1000; //Send heartbeat message every 30 seconds
     this.heartBeatTimeout = {};
-
-    this.startPeriodicLatencyChecks();
   }
 
   initWebSocket() {
@@ -84,15 +80,6 @@ class Distribute {
     }, interval);
   }
 
-  startPeriodicLatencyChecks(interval = 30000) {
-    setInterval(() => {
-      const clients = this.sendChannels.getData();
-      Object.keys(clients).forEach(clientId => {
-        this.measureLatency(clientId);
-      });
-    }, interval);
-  }
-
   updateClientList(clientListMessage) {
     const clients = clientListMessage.clients;
     const newClientIds = new Set(clients.map(client => client.id));
@@ -117,10 +104,6 @@ class Distribute {
     if (this.sendChannels.get(clientId)) {
       this.sendChannels.get(clientId).close();
       this.sendChannels.delete(clientId);
-    }
-    if (this.receiveChannels.get(clientId)) {
-      this.receiveChannels.get(clientId).close();
-      this.receiveChannels.delete(clientId);
     }
     this.clientInfo.delete(clientId);
   }
@@ -148,7 +131,6 @@ class Distribute {
     };
 
     const localConnection = new RTCPeerConnection(servers, this.pcConstraint);
-    const sendChannel = localConnection.createDataChannel('hamstersjs', this.dataConstraint);
 
     localConnection.onicecandidate = (e) => {
       if (e.candidate) {
@@ -163,26 +145,13 @@ class Distribute {
       }
     };
 
-    sendChannel.onopen = () => {
-      this.onSendChannelStateChange(targetClient);
-    };
-
-    sendChannel.onclose = () => {
-      this.onSendChannelStateChange(targetClient);
-    };
-
-    sendChannel.onmessage = (event) => {
-      this.onReceiveMessageCallback(targetClient, event.data);
-    };
-
     localConnection.ondatachannel = (event) => {
-      this.receiveChannelCallback(event, targetClient);
+      this.dataChannelCallback(event, targetClient);
     };
+
+    this.findOrCreateChannel(targetClient, localConnection);
 
     this.remoteConnections.set(targetClient, localConnection);
-    this.sendChannels.set(targetClient, sendChannel);
-    this.receiveChannels.set(targetClient, null);
-
     localConnection.createOffer().then(desc => {
       localConnection.setLocalDescription(desc);
       this.ws.send(JSON.stringify({ type: 'offer', target: targetClient, offer: desc }));
@@ -191,7 +160,7 @@ class Distribute {
 
   handleOffer(data) {
     const targetClient = data.from;
-
+    console.log('WE HAVE A OFFER ', data);
     if (!this.remoteConnections.get(targetClient)) {
       const servers = {
         iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
@@ -206,10 +175,30 @@ class Distribute {
       };
 
       remoteConnection.ondatachannel = (event) => {
-        this.receiveChannelCallback(event, targetClient);
+        this.dataChannelCallback(event, targetClient);
       };
 
-      const sendChannel = remoteConnection.createDataChannel('hamstersjs', this.dataConstraint);
+      remoteConnection.setRemoteDescription(new RTCSessionDescription(data.offer)).then(() => {
+        return remoteConnection.createAnswer();
+      }).then(desc => {
+        this.ws.send(JSON.stringify({ type: 'answer', target: targetClient, logicalCores: this.hamsters.maxThreads, userAgent: navigator.userAgent, answer: desc }));
+        return remoteConnection.setLocalDescription(desc);
+      }).catch(this.onCreateSessionDescriptionError.bind(this));
+
+      this.remoteConnections.set(targetClient, remoteConnection);
+      this.findOrCreateChannel(targetClient, remoteConnection);
+    }
+  }
+
+  findOrCreateChannel(targetClient, remoteConnection) {
+    let sendChannel = this.sendChannels.get(targetClient);
+    if(!sendChannel) {
+      const dataConstraint = {
+        ordered: true,
+        maxRetransmits: 3,
+        id: Math.floor(Math.random() * 65536)
+      };
+      sendChannel = remoteConnection.createDataChannel('hamstersjs', dataConstraint);
       
       sendChannel.onopen = () => {
         this.onSendChannelStateChange(targetClient);
@@ -223,16 +212,20 @@ class Distribute {
         this.onReceiveMessageCallback(targetClient, event.data);
       };
 
-      remoteConnection.setRemoteDescription(new RTCSessionDescription(data.offer)).then(() => {
-        return remoteConnection.createAnswer();
-      }).then(desc => {
-        remoteConnection.setLocalDescription(desc);
-        this.ws.send(JSON.stringify({ type: 'answer', target: targetClient, logicalCores: this.hamsters.maxThreads, userAgent: navigator.userAgent, answer: desc }));
-      }).catch(this.onCreateSessionDescriptionError.bind(this));
-
-      this.remoteConnections.set(targetClient, remoteConnection);
       this.sendChannels.set(targetClient, sendChannel);
     }
+    return sendChannel
+  }
+  
+  dataChannelCallback(event, targetClient) {
+    const dataChannel = event.channel;
+    const currentTargetClient = targetClient;
+
+    dataChannel.onmessage = (event) => {
+      this.onReceiveMessageCallback(currentTargetClient, event.data);
+    };
+
+    this.sendChannels.set(currentTargetClient, dataChannel);
   }
 
   storeClientConnectionInfo(data) {
@@ -247,6 +240,7 @@ class Distribute {
     this.storeClientConnectionInfo(data);
     const connection = this.remoteConnections.get(data.from);
     connection.setRemoteDescription(new RTCSessionDescription(data.answer));
+    this.remoteConnections.set(data.from, connection);
   }
 
   handleCandidate(data) {
@@ -256,10 +250,11 @@ class Distribute {
       connection = this.remoteConnections.get(data.from);
     }
     connection.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(this.onAddIceCandidateError.bind(this));
+    this.remoteConnections.set(data.from, connection);
   }
 
   distributeTask(task, hamsterFood, resolve, reject) {
-    const targetClient = this.getDistributedClient();
+    const targetClient = task.input.client || this.getDistributedClient();
     if (!targetClient) {
       if (this.hamsters.habitat.debug) {
         console.error(`Hamsters.js ${this.hamsters.version} no target client found.`);
@@ -277,8 +272,8 @@ class Distribute {
       messageId: messageId,
       type: 'task-request'
     };
-
-    this.pendingPromises.set(messageId, { resolve, reject });
+    const clients = [targetClient];
+    this.pendingPromises.set(messageId, { resolve, reject, clients });
     
     if (preparedList.transferCount > 0) {
       this.pendingTransfers.set(messageId, preparedList.transferList);
@@ -366,7 +361,7 @@ class Distribute {
     }
   }
 
-  handleTransferResponse(targetClient, data) {
+  handleTransferResponse(targetClient, transferData) {
     const lastRequestedTransfer = this.lastRequestedTransfers.get(targetClient);
     
     if (!lastRequestedTransfer) {
@@ -384,7 +379,7 @@ class Distribute {
 
     if (pendingTask && isRequestedTransfer) {
       // Convert ArrayBuffer back to the appropriate data type
-      pendingTask.hamsterFood[key] = this.convertFromArrayBuffer(data, key);
+      pendingTask.hamsterFood[key] = this.convertFromArrayBuffer(transferData, key);
 
       // Remove the transferred item from awaitingTransfers
       delete awaitingTransfers.transfers[key];
@@ -399,14 +394,14 @@ class Distribute {
         // More transfers needed
         this.awaitingTransfers.set(targetClient, awaitingTransfers);
         this.lastRequestedTransfers.delete(targetClient);
-        this.requestNextTransfer(targetClient);
+        this.requestNextTransfer(targetClient, lastRequestedTransfer.messageId);
       }
 
       if (this.hamsters.habitat.debug) {
         console.log(`Hamsters.js ${this.hamsters.version} processed transfer response for ${key} from ${targetClient}`);
       }
     } else if (key === 'output') {
-      this.handleTaskResponse(targetClient, { output: this.convertFromArrayBuffer(data), messageId, responseId });
+      this.handleTaskResponse(targetClient, { output: this.convertFromArrayBuffer(transferData), messageId, responseId });
     } else {
       console.error(`Hamsters.js ${this.hamsters.version} received unexpected transfer response for ${targetClient}`);
     }
@@ -444,12 +439,20 @@ class Distribute {
     }
   }
 
-  runDistributedTask(task, targetClient) {
-    this.hamsters.pool.runDistributedTask(task, targetClient);
+  runDistributedTask(taskMessage, targetClient) {
+    let task = taskMessage.task;
+    task.targetClient = targetClient;
+    task.messageId = taskMessage.messageId;
+    task.type = 'task-response';
+    console.log("RUNNING DISTRIBUTED TASK");
+    return new Promise((resolve, reject) => {
+      this.hamsters.scheduleTask(task, this.returnDistributedOutput, this.returnDistributedOutput);
+    });
   }
-
-  sendDataResponse(data) {
-    const { targetClient, messageId, output } = data;
+  
+  sendDataResponse(responseData) {
+    const { targetClient, messageId, output } = responseData;
+    console.log("SeNDING OUTPUT RESPNSE TO ", targetClient);
     this.initializeOutputTransfer(targetClient, output, messageId);
   }
 
@@ -488,18 +491,25 @@ class Distribute {
     }
   }
 
-  getArrayBuffer(data) {
-    if (ArrayBuffer.isView(data)) {
-      return data.buffer;
+  getArrayBuffer(transferredData) {
+    if (ArrayBuffer.isView(transferredData)) {
+      return transferredData.buffer;
     }
-    if (data instanceof ArrayBuffer) {
-      return data;
+    if (transferredData instanceof ArrayBuffer) {
+      return transferredData;
     }
-    return new Uint8Array(data).buffer
+    return new Uint8Array(transferredData).buffer
   }
 
   convertFromArrayBuffer(buffer, key) {
-    return new Uint8Array(buffer);
+    const originalArray = new Uint8Array(buffer);
+    if(this.hamsters.habitat.node) { //Node.js has stricter security and won't allow the transfer of buffers sent using node.js webrtc channels, clone into new array first
+      const newArrayBuffer = new ArrayBuffer(originalArray.byteLength);
+      const newTypedArray = new Uint8Array(newArrayBuffer);
+      newTypedArray.set(originalArray);
+      return newTypedArray;
+    }
+    return originalArray;
   }
 
   sendData({ targetClient, data }) {
@@ -530,20 +540,32 @@ class Distribute {
     }
   }
 
-  onReceiveMessageCallback(targetClient, data) {
-    if (data instanceof ArrayBuffer) {
-      // This is a transfer response
-      this.handleTransferResponse(targetClient, data);
-    } else if (typeof data === 'string') {
+  // Function to convert Blob to ArrayBuffer using Fetch API
+  async blobToArrayBuffer(blob) {
+    if (typeof fetch === 'function') { // Check if Fetch API is available
+        const response = new Response(blob);
+        return await response.arrayBuffer();
+    } else {
+        throw new Error('Fetch API is not supported in this environment.');
+    }
+  }
+
+  async onReceiveMessageCallback(targetClient, messageData) {
+    if(messageData instanceof Blob) {
+      messageData = await this.blobToArrayBuffer(messageData);
+    }
+    if (messageData instanceof ArrayBuffer) {
+      this.handleTransferResponse(targetClient, messageData);
+    } else if (typeof messageData === 'string') {
       let incomingMessage;
       try {
-        incomingMessage = JSON.parse(data);
+        incomingMessage = JSON.parse(messageData);
         this.handleIncomingMessage(targetClient, incomingMessage);
       } catch (error) {
         console.error(`Hamsters.js ${this.hamsters.version} error parsing message:`, error);
       }
     } else {
-      console.log("Received unexpected data type:", typeof data);
+      console.log("Received unexpected data type:", targetClient, messageData);
     }
   }
 
@@ -578,15 +600,16 @@ class Distribute {
 
   handleTaskResponse(targetClient, message) {
     const { messageId, responseId, awaitingTransfers } = message;
-    if (awaitingTransfers) {
-      this.requestOutputTransfer(targetClient, responseId, messageId);
-    } else {
-      // If no transfers are needed, resolve the promise immediately
-      const pendingPromise = this.pendingPromises.get(messageId);
-      if (pendingPromise) {
+    const pendingPromise = this.pendingPromises.get(messageId);
+    if (pendingPromise && pendingPromise.clients.indexOf(targetClient) !== -1) { //Ensure we only process responses we have a pending promise for the sending client
+      if(awaitingTransfers) {
+        this.requestOutputTransfer(targetClient, responseId, messageId);
+      } else {
         pendingPromise.resolve(message.output);
         this.pendingPromises.delete(messageId);
       }
+    } else {
+      console.warn(`Received a message from ${targetClient} but no matching promise found with messageId ${messageId}`);
     }
   }
 
@@ -666,13 +689,15 @@ class Distribute {
       // This is an input transfer
       const pendingTask = this.pendingTasks.get(targetClient);
       if (pendingTask && pendingTask.messageId === messageId) {
-        pendingTask.hamsterFood[key] = data;
+        pendingTask.hamsterFood[key] = this.convertFromArrayBuffer(data);
         
         const stillAwaiting = Object.values(pendingTask.hamsterFood).some(value => value === 'Awaiting Transfer');
         
-        if (!stillAwaiting) {
+        if (stillAwaiting) {
+          this.requestNextTransfer(targetClient, messageId);
+        } else {
           this.pendingTasks.delete(targetClient);
-          this.hamsters.pool.runDistributedTask(pendingTask, targetClient);
+          this.runDistributedTask(pendingTask, targetClient);
         }
       } else {
         console.warn(`Hamsters.js ${this.hamsters.version} no pending task found for targetClient: ${targetClient} and messageId: ${messageId}`);
@@ -684,24 +709,6 @@ class Distribute {
     }
   }
 
-  receiveChannelCallback(event, targetClient) {
-    const receiveChannel = event.channel;
-
-    receiveChannel.onmessage = (event) => {
-      this.onReceiveMessageCallback(targetClient, event.data);
-    };
-
-    receiveChannel.onopen = () => {
-      this.onReceiveChannelStateChange(targetClient);
-    };
-
-    receiveChannel.onclose = () => {
-      this.onReceiveChannelStateChange(targetClient);
-    };
-
-    this.receiveChannels.set(targetClient, receiveChannel);
-  }
-
   onSendChannelStateChange(targetClient) {
     const sendChannel = this.sendChannels.get(targetClient);
     if (sendChannel && sendChannel.readyState === 'open') {
@@ -709,13 +716,6 @@ class Distribute {
     }
     if (sendChannel && this.hamsters.habitat.debug) {
       console.log(`Hamsters.js ${this.hamsters.version} send channel state changed for ${targetClient}: ${sendChannel.readyState}`);
-    }
-  }
-
-  onReceiveChannelStateChange(targetClient) {
-    const receiveChannel = this.receiveChannels.get(targetClient);
-    if (receiveChannel && this.hamsters.habitat.debug) {
-      console.log(`Hamsters.js ${this.hamsters.version} receive channel state changed for ${targetClient}: ${receiveChannel.readyState}`);
     }
   }
 

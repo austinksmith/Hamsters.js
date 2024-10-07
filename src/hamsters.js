@@ -116,10 +116,10 @@ class hamstersjs {
   scheduleTask(task, resolve, reject) {
     if (task.input.memoize) {
       // Pass the task object to the memoized function
-      const memoizedFunction = this.memoize.memoize(() => this.pool.scheduleTask(task));
+      const memoizedFunction = this.memoize.memoize(() => this.pool.scheduleTask(task, resolve, reject));
       return memoizedFunction(task).then(resolve).catch(reject);
     }
-    return this.pool.scheduleTask(task).then(resolve).catch(reject);
+    return this.pool.scheduleTask(task, resolve, reject);
   }
 
   /**
