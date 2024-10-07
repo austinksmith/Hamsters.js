@@ -239,21 +239,13 @@ class Data {
     return indexes;
   }
 
-  prepareDistributedTask(task) {
-    Object.keys(task.input).forEach(key => {
-      if(Array.isArray(task.input[key])) {
-        task.input[key] = null;
-      }
-    });
-    return task;
-  }
-
-  getTransferList(hamsterFood, task) {
+  getTransferList(task) {
     const transferList = {};
-    task = this.prepareDistributedTask(task);
+    const hamsterFood = task.input;
     Object.keys(hamsterFood).forEach(item => {
       if (Array.isArray(hamsterFood[item])) {
         transferList[item] = hamsterFood[item];
+        task.input[item] = null;
         hamsterFood[item] = 'Awaiting Transfer';
       }
     });

@@ -21,6 +21,7 @@ class Task {
     'use strict';
 
     this.input = params;
+    this.type = 'task-local';
     this.output = [];
     this.scheduler = {
       count: 0,

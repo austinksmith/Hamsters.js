@@ -253,7 +253,7 @@ class Distribute {
     this.remoteConnections.set(data.from, connection);
   }
 
-  distributeTask(task, hamsterFood, resolve, reject) {
+  distributeTask(task, resolve, reject) {
     const targetClient = task.input.client || this.getDistributedClient();
     if (!targetClient) {
       if (this.hamsters.habitat.debug) {
@@ -264,10 +264,9 @@ class Distribute {
     }
 
     const messageId = this.generateUniqueId();
-    const preparedList = this.hamsters.data.getTransferList(hamsterFood, task);
+    const preparedList = this.hamsters.data.getTransferList(task);
     const distributedSubTask = {
       hamsterFood: preparedList.hamsterFood,
-      index: hamsterFood.index,
       task: preparedList.task,
       messageId: messageId,
       type: 'task-request'
@@ -443,11 +442,10 @@ class Distribute {
     let task = taskMessage.task;
     task.targetClient = targetClient;
     task.messageId = taskMessage.messageId;
+    task.input = taskMessage.hamsterFood;
     task.type = 'task-response';
     console.log("RUNNING DISTRIBUTED TASK");
-    return new Promise((resolve, reject) => {
-      this.hamsters.scheduleTask(task, this.returnDistributedOutput, this.returnDistributedOutput);
-    });
+    this.hamsters.scheduleTask(task, this.returnDistributedOutput, this.returnDistributedOutput);
   }
   
   sendDataResponse(responseData) {

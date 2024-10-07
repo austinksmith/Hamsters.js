@@ -175,12 +175,8 @@ class Pool {
     if(this.hamsters.habitat.maxThreads <= this.running.length()) {
       return this.addWorkToPending(index, task, resolve, reject);
     }
-    if(task.input.distribute) {
-      this.hamsters.distribute.distributeTask(task, hamsterFood, resolve, reject);
-    } else {
-      let hamster = this.fetchHamster(this.running.length());
-      return this.runTask(hamster, index, task, resolve, reject);
-    }
+    let hamster = this.fetchHamster(this.running.length());
+    return this.runTask(hamster, index, task, resolve, reject);
   }
 
   /**
@@ -284,7 +280,6 @@ class Pool {
   * @param {number} maxThreads - Maximum number of threads for this client
   */
   scheduleTask(task, resolve, reject) {
-    let i = 0;
     // if(this.hamsters.habitat.debug) {
     //   let metrics = task.scheduler.metrics;
     //   metrics.started_at = Date.now();
@@ -304,9 +299,14 @@ class Pool {
     // }
     //Process with debug mode disabled, no need for time stamping
   	// return new Promise((resolve, reject) => {
-      while (i < task.scheduler.threads) {
-        this.hamsterWheel(task.scheduler.indexes[i], task, resolve, reject);
-        i += 1;
+      if(task.input.distribute && task.type !== 'task-response') {
+        this.hamsters.distribute.distributeTask(task, resolve, reject);
+      } else {
+        let i = 0;
+        while (i < task.scheduler.threads) {
+          this.hamsterWheel(task.scheduler.indexes[i], task, resolve, reject);
+          i += 1;
+        }
       }
     // });
   }
