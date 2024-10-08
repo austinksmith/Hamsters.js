@@ -77,9 +77,9 @@ class Pool {
   * @param {number} id - Id of thread to track
   */
   keepTrackOfThread(task, id) {
-    if(this.hamsters.habitat.debug) {
-      task.scheduler.metrics.threads[id].started_at = Date.now();
-    }
+    // if(this.hamsters.habitat.debug) {
+    //   task.scheduler.metrics.threads[id].started_at = Date.now();
+    // }
     task.scheduler.workers.push(id); //Keep track of threads scoped to current task
     this.running.push(id); //Keep track of all currently running threads
   }
@@ -255,9 +255,9 @@ class Pool {
   trainHamster(index, task, threadId, hamster, resolve, reject) {
     let onThreadResponse = (message) => {
       this.hamsters.pool.processReturn(this.hamsters.habitat, index, message, task);
-      if(this.hamsters.habitat.debug) {
-        task.scheduler.metrics.threads[threadId].completed_at = Date.now();
-      }
+      // if(this.hamsters.habitat.debug) {
+      //   task.scheduler.metrics.threads[threadId].completed_at = Date.now();
+      // }
       this.hamsters.pool.removeFromRunning(task, threadId);
       if (task.scheduler.workers.length === 0 && task.scheduler.count === task.scheduler.threads) {
         this.hamsters.pool.returnOutputAndRemoveTask(task, resolve);

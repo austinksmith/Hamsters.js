@@ -80,7 +80,7 @@ class Task {
   setupDebugMetrics() {
     this.scheduler.metrics = {
       created_at: Date.now(),
-      started_at: null,
+      started_at: Date.now(),
       completed_at: null,
       threads: this.setupThreadMetrics()
     };

@@ -305,16 +305,24 @@ class Distribute {
   }
 
   initializeDistributedTask(targetClient, task, messageId) {
-    const awaitingTransfers = {};
-    
-    Object.keys(task.hamsterFood).forEach(key => {
-      if (task.hamsterFood[key] === 'Awaiting Transfer') {
-        awaitingTransfers[key] = 'Awaiting Transfer';
-      }
-    });
+    const transferList = Object.keys(task.hamsterFood)
+    .filter(key => task.hamsterFood[key] === 'Awaiting Transfer')
+    .reduce((transfers, key) => {
+      transfers[key] = 'Awaiting Transfer';
+      return transfers;
+    }, {});
+  
 
-    if (Object.keys(awaitingTransfers).length > 0) {
-      this.awaitingTransfers.set(targetClient, { transfers: awaitingTransfers, messageId });
+    if (Object.keys(transferList).length > 0) {
+      let currentAwaitingTransfers = this.awaitingTransfers.get(targetClient);
+      if(!currentAwaitingTransfers) {
+        currentAwaitingTransfers = [];
+      }
+      currentAwaitingTransfers.push({
+        messageId: messageId,
+        transferList: transferList
+      });
+      this.awaitingTransfers.set(targetClient, currentAwaitingTransfers);
       this.requestNextTransfer(targetClient, messageId);
     } else {
       this.runDistributedTask(task, targetClient);
@@ -322,90 +330,151 @@ class Distribute {
   }
 
   requestNextTransfer(targetClient, messageId) {
-    if (this.lastRequestedTransfers.get(targetClient)) {
-      // A transfer is already in progress for this client
-      return;
+    const requestedTransfers = this.lastRequestedTransfers.get(targetClient);
+    let lastRequestedTransfer = null;
+    if(requestedTransfers) {
+      lastRequestedTransfer = requestedTransfers.find(item => item.messageId === messageId);
+      if (lastRequestedTransfer) {
+        console.info("We already requested this transfer for this task");
+        return;
+      }
     }
-
-    const awaitingTransfersData = this.awaitingTransfers.get(targetClient);
-    if (!awaitingTransfersData) return;
-
-    const { transfers, messageId: awaitingMessageId} = awaitingTransfersData;
-    const keys = Object.keys(transfers);
-
-    if (keys.length > 0 && messageId === awaitingMessageId) {
-      const nextKey = keys.find(key => transfers[key] === 'Awaiting Transfer');
+    const currentAwaitingTransfers = this.awaitingTransfers.get(targetClient);
+    if (currentAwaitingTransfers) {
+      const awaitingTransfer = currentAwaitingTransfers.find(item => item.messageId === messageId);
+      if (awaitingTransfer) {
+        this.requestTransferFromList(awaitingTransfer, messageId, targetClient);
+      }
+    }
+  }
+  
+  requestTransferFromList(awaitingTransfer, messageId, targetClient) {
+    const transferKeys = Object.keys(awaitingTransfer.transferList);
+    if (transferKeys.length > 0) {
+      const nextKey = transferKeys.find(key => awaitingTransfer.transferList[key] === 'Awaiting Transfer');
       if (nextKey) {
+        this.updateTransferStatus(targetClient, messageId, nextKey, 'Requested Transfer');
         this.requestDataTransfer(nextKey, messageId, targetClient);
       }
     }
   }
-
-  requestDataTransfer(key, messageId, targetClient) {
-    const message = {
-      type: 'transfer-request',
-      key: key,
-      messageId: messageId
-    };
-    this.lastRequestedTransfers.set(targetClient, {key, messageId});
-    this.sendData({targetClient, data: message});
-
-    // Update the status of the transfer item
-    const awaitingTransfers = this.awaitingTransfers.get(targetClient) || {transfers: {}};
-    awaitingTransfers.transfers[key] = 'Requested Transfer';
-    this.awaitingTransfers.set(targetClient, awaitingTransfers);
-
-    if (this.hamsters.habitat.debug) {
-      console.log(`Hamsters.js ${this.hamsters.version} requested transfer for ${key} from ${targetClient}`);
-    }
-  }
-
-  handleTransferResponse(targetClient, transferData) {
-    const lastRequestedTransfer = this.lastRequestedTransfers.get(targetClient);
+  
+  updateTransferStatus(targetClient, messageId, key, status) {
+    // Get the current awaitingTransfers array for the target client
+    const currentAwaitingTransfers = this.awaitingTransfers.get(targetClient);
     
-    if (!lastRequestedTransfer) {
+    if (!currentAwaitingTransfers) {
+      console.error(`Hamsters.js ${this.hamsters.version} no awaiting transfers found for ${targetClient}`);
+      return;
+    }
+  
+    // Find the correct awaitingTransfer object by messageId
+    const awaitingTransfer = currentAwaitingTransfers.find(item => item.messageId === messageId);
+  
+    if (!awaitingTransfer) {
+      console.error(`Hamsters.js ${this.hamsters.version} no awaiting transfer found for messageId ${messageId}`);
+      return;
+    }
+  
+    // Update the status of the transfer key in the transferList
+    awaitingTransfer.transferList[key] = status;
+  
+    // Set the updated awaitingTransfers back to the client
+    this.awaitingTransfers.set(targetClient, currentAwaitingTransfers);
+  }
+  
+  
+  handleTransferResponse(targetClient, transferData) {
+    const requestedTransfers = this.lastRequestedTransfers.get(targetClient);
+  
+    if (!requestedTransfers || requestedTransfers.length === 0) {
       console.error(`Hamsters.js ${this.hamsters.version} received transfer response but no transfer was requested for ${targetClient}`);
       return;
     }
-
-    const key = lastRequestedTransfer.key;
-    const messageId = lastRequestedTransfer.messageId || null;
-    const responseId = lastRequestedTransfer.responseId || null;
-    const pendingTask = this.pendingTasks.get(targetClient);
-    const awaitingTransfers = this.awaitingTransfers.get(targetClient);
-
-    const isRequestedTransfer = awaitingTransfers && awaitingTransfers.transfers[key] === 'Requested Transfer';
-
-    if (pendingTask && isRequestedTransfer) {
-      // Convert ArrayBuffer back to the appropriate data type
-      pendingTask.hamsterFood[key] = this.convertFromArrayBuffer(transferData, key);
-
-      // Remove the transferred item from awaitingTransfers
-      delete awaitingTransfers.transfers[key];
-
-      if (Object.keys(awaitingTransfers.transfers).length === 0) {
-        // All transfers complete
-        this.awaitingTransfers.delete(targetClient);
-        this.pendingTasks.delete(targetClient);
-        this.lastRequestedTransfers.delete(targetClient);
-        this.runDistributedTask(pendingTask, targetClient);
-      } else {
-        // More transfers needed
-        this.awaitingTransfers.set(targetClient, awaitingTransfers);
-        this.lastRequestedTransfers.delete(targetClient);
-        this.requestNextTransfer(targetClient, lastRequestedTransfer.messageId);
-      }
-
-      if (this.hamsters.habitat.debug) {
-        console.log(`Hamsters.js ${this.hamsters.version} processed transfer response for ${key} from ${targetClient}`);
-      }
-    } else if (key === 'output') {
+  
+    const currentRequestedTransfer = requestedTransfers[0]; // Always get the first requested transfer
+    const key = currentRequestedTransfer.key;  // Use currentRequestedTransfer consistently
+    const messageId = currentRequestedTransfer.messageId || null;
+    const responseId = currentRequestedTransfer.responseId || null;
+  
+    // Proceed with processing using currentRequestedTransfer's key, messageId, and responseId    
+  
+    if (responseId && key === 'output') {
+      // Handle task response if the key is 'output'
       this.handleTaskResponse(targetClient, { output: this.convertFromArrayBuffer(transferData), messageId, responseId });
     } else {
-      console.error(`Hamsters.js ${this.hamsters.version} received unexpected transfer response for ${targetClient}`);
+      // Find the awaiting transfer for the specific messageId
+      const currentAwaitingTransfers = this.awaitingTransfers.get(targetClient);
+      if (!currentAwaitingTransfers) {
+        console.error(`Hamsters.js ${this.hamsters.version} no awaiting transfers found for ${targetClient}`);
+        return;
+      }
+  
+      const awaitingTransfer = currentAwaitingTransfers.find(item => item.messageId === messageId);
+      if (!awaitingTransfer) {
+        console.error(`Hamsters.js ${this.hamsters.version} no awaiting transfer found for messageId ${messageId}`);
+        return;
+      }
+  
+      // Check if the requested transfer exists and is in 'Requested Transfer' status
+      const isRequestedTransfer = awaitingTransfer.transferList[key] === 'Requested Transfer';
+      const pendingTasks = this.pendingTasks.get(targetClient); 
+      const currentTaskIndex = pendingTasks ? pendingTasks.findIndex(item => item.messageId === messageId) : -1;
+      const currentTask = currentTaskIndex > -1 ? pendingTasks[currentTaskIndex] : null;
+  
+      if (currentTask && isRequestedTransfer) {
+        // Convert ArrayBuffer back to the appropriate data type and update the pending task
+        currentTask.hamsterFood[key] = this.convertFromArrayBuffer(transferData, key);
+  
+        // Remove the transferred item from the awaitingTransfer's transferList
+        delete awaitingTransfer.transferList[key];
+  
+        // Check if there are more pending transfers in the transferList
+        if (Object.keys(awaitingTransfer.transferList).length === 0) {
+          // All transfers complete for this messageId
+          currentAwaitingTransfers.splice(currentAwaitingTransfers.indexOf(awaitingTransfer), 1); // Remove only this awaitingTransfer
+  
+          if (currentAwaitingTransfers.length === 0) {
+            this.awaitingTransfers.delete(targetClient); // If no more awaiting transfers, delete the entry
+          } else {
+            this.awaitingTransfers.set(targetClient, currentAwaitingTransfers); // Update the remaining awaitingTransfers
+          }
+  
+          pendingTasks.splice(currentTaskIndex, 1); // Remove only the currentTask from pendingTasks
+  
+          if (pendingTasks.length === 0) {
+            this.pendingTasks.delete(targetClient); // If no more pending tasks, delete the entry
+          } else {
+            this.pendingTasks.set(targetClient, pendingTasks); // Update remaining pending tasks
+          }
+  
+          this.runDistributedTask(currentTask, targetClient); // Run the distributed task
+        } else {
+          // There are more transfers to be made, continue the process
+          this.awaitingTransfers.set(targetClient, currentAwaitingTransfers); // Update the awaitingTransfers
+          this.requestNextTransfer(targetClient, messageId); // Request the next transfer
+        }
+      } else {
+        console.error(`Hamsters.js ${this.hamsters.version} received unexpected transfer response for ${targetClient}`);
+      }
     }
-  }
-
+  
+    // Cleanup logic to remove the processed transfer (common for both output and input)
+    // Remove the first transfer (FIFO) from the requestedTransfers array
+    requestedTransfers.shift(); // Removes the first item (currentRequestedTransfer)
+    
+    // If no more transfers are left, delete the entry from lastRequestedTransfers
+    if (requestedTransfers.length === 0) {
+      this.lastRequestedTransfers.delete(targetClient);
+    } else {
+      this.lastRequestedTransfers.set(targetClient, requestedTransfers); // Update remaining transfers
+    }
+  
+    if (this.hamsters.habitat.debug) {
+      console.log(`Hamsters.js ${this.hamsters.version} processed transfer response for ${key} from ${targetClient}`);
+    }
+  }  
+  
   measureLatency(targetClient) {
     const startTime = performance.now();
     this.sendPing(targetClient, startTime);
@@ -587,9 +656,14 @@ class Distribute {
   }
 
   handleTaskRequest(targetClient, incomingMessage) {
+    let currentPendingTasks = this.pendingTasks.get(targetClient);
+    if(!currentPendingTasks) {
+      currentPendingTasks = [];
+    }
+    currentPendingTasks.push(incomingMessage);
+    this.pendingTasks.set(targetClient, currentPendingTasks);
     const awaitingTransfers = Object.values(incomingMessage.hamsterFood).some(value => value === 'Awaiting Transfer');
     if (awaitingTransfers) {
-      this.pendingTasks.set(targetClient, incomingMessage);
       this.initializeDistributedTask(targetClient, incomingMessage, incomingMessage.messageId);
     } else {
       this.runDistributedTask(incomingMessage, targetClient);
@@ -599,9 +673,10 @@ class Distribute {
   handleTaskResponse(targetClient, message) {
     const { messageId, responseId, awaitingTransfers } = message;
     const pendingPromise = this.pendingPromises.get(messageId);
-    if (pendingPromise && pendingPromise.clients.indexOf(targetClient) !== -1) { //Ensure we only process responses we have a pending promise for the sending client
-      if(awaitingTransfers) {
-        this.requestOutputTransfer(targetClient, responseId, messageId);
+    
+    if (pendingPromise) {
+      if (awaitingTransfers) {
+        this.requestOutputTransfer(targetClient, responseId, messageId); // Independent request for each output
       } else {
         pendingPromise.resolve(message.output);
         this.pendingPromises.delete(messageId);
@@ -609,26 +684,36 @@ class Distribute {
     } else {
       console.warn(`Received a message from ${targetClient} but no matching promise found with messageId ${messageId}`);
     }
-  }
+  }  
 
   requestOutputTransfer(targetClient, responseId, messageId) {
+    let requestedTransfers = this.lastRequestedTransfers.get(targetClient);
+    if(!requestedTransfers) {
+      requestedTransfers = [];
+    }
     const outputTransferRequest = {
       type: 'output-transfer-request',
       key: 'output',
       responseId,
       messageId
     };
-    this.lastRequestedTransfers.set(targetClient, outputTransferRequest);
+    requestedTransfers.push(outputTransferRequest);
+    this.lastRequestedTransfers.set(targetClient, requestedTransfers);
     this.sendData({ targetClient, data: outputTransferRequest });
   }
 
   requestDataTransfer(key, messageId, targetClient) {
+    let requestedTransfers = this.lastRequestedTransfers.get(targetClient);
+    if(!requestedTransfers) {
+      requestedTransfers = [];
+    }
     const message = {
       type: 'transfer-request',
       key: key,
       messageId: messageId
     };
-    this.lastRequestedTransfers.set(targetClient, { key, messageId });
+    requestedTransfers.push(message);
+    this.lastRequestedTransfers.set(targetClient, requestedTransfers);
     this.sendData({targetClient, data: message});
 
     // Update the status of the transfer item
@@ -673,7 +758,7 @@ class Distribute {
 
   processTransferResponse(targetClient, incomingMessage) {
     const { key, data, messageId, responseId } = incomingMessage;
-    
+  
     if (responseId) {
       // This is an output transfer
       const pendingPromise = this.pendingPromises.get(messageId);
@@ -685,27 +770,55 @@ class Distribute {
       }
     } else {
       // This is an input transfer
-      const pendingTask = this.pendingTasks.get(targetClient);
-      if (pendingTask && pendingTask.messageId === messageId) {
-        pendingTask.hamsterFood[key] = this.convertFromArrayBuffer(data);
-        
-        const stillAwaiting = Object.values(pendingTask.hamsterFood).some(value => value === 'Awaiting Transfer');
-        
-        if (stillAwaiting) {
-          this.requestNextTransfer(targetClient, messageId);
+      const pendingTasks = this.pendingTasks.get(targetClient);
+      if (pendingTasks) {
+        const currentTaskIndex = pendingTasks.findIndex(item => item.messageId === messageId);
+  
+        if (currentTaskIndex > -1) {
+          const currentTask = pendingTasks[currentTaskIndex];
+          currentTask.hamsterFood[key] = this.convertFromArrayBuffer(data);
+  
+          const stillAwaiting = Object.values(currentTask.hamsterFood).some(value => value === 'Awaiting Transfer');
+  
+          if (stillAwaiting) {
+            this.requestNextTransfer(targetClient, messageId);
+          } else {
+            // Remove only the current task from the pendingTasks array
+            pendingTasks.splice(currentTaskIndex, 1);
+  
+            // If there are no more tasks for this client, clean up the pendingTasks map
+            if (pendingTasks.length === 0) {
+              this.pendingTasks.delete(targetClient);
+            } else {
+              this.pendingTasks.set(targetClient, pendingTasks); // Update remaining pending tasks
+            }
+  
+            // Run the task after all transfers have been completed
+            this.runDistributedTask(currentTask, targetClient);
+          }
         } else {
-          this.pendingTasks.delete(targetClient);
-          this.runDistributedTask(pendingTask, targetClient);
+          console.warn(`Hamsters.js ${this.hamsters.version} no pending task found for targetClient: ${targetClient} and messageId: ${messageId}`);
         }
       } else {
         console.warn(`Hamsters.js ${this.hamsters.version} no pending task found for targetClient: ${targetClient} and messageId: ${messageId}`);
       }
     }
-
+  
+    // Cleanup requested transfers
+    const requestedTransfers = this.lastRequestedTransfers.get(targetClient);
+    if (requestedTransfers) {
+      requestedTransfers.shift(); // Remove the first item (FIFO)
+      if (requestedTransfers.length === 0) {
+        this.lastRequestedTransfers.delete(targetClient);
+      } else {
+        this.lastRequestedTransfers.set(targetClient, requestedTransfers); // Update remaining transfers
+      }
+    }
+  
     if (this.hamsters.habitat.debug) {
       console.log(`Hamsters.js ${this.hamsters.version} processed transfer response for ${key} from ${targetClient}`);
     }
-  }
+  }  
 
   onSendChannelStateChange(targetClient) {
     const sendChannel = this.sendChannels.get(targetClient);
