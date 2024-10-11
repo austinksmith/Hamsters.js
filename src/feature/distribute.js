@@ -20,6 +20,7 @@ class Distribute {
     this.establishConnection = this.initWebSocket.bind(this);
     this.lastHeartbeat = {};
     this.heartBeatInterval = 30 * 1000; //Send heartbeat message every 30 seconds
+    this.deletedPromises = [];
     this.heartBeatTimeout = {};
   }
 
@@ -385,7 +386,7 @@ class Distribute {
   
   
   handleTransferResponse(targetClient, transferData) {
-    const requestedTransfers = this.lastRequestedTransfers.get(targetClient);
+    let requestedTransfers = this.lastRequestedTransfers.get(targetClient);
   
     if (!requestedTransfers || requestedTransfers.length === 0) {
       console.error(`Hamsters.js ${this.hamsters.version} received transfer response but no transfer was requested for ${targetClient}`);
@@ -461,14 +462,14 @@ class Distribute {
   
     // Cleanup logic to remove the processed transfer (common for both output and input)
     // Remove the first transfer (FIFO) from the requestedTransfers array
-    requestedTransfers.shift(); // Removes the first item (currentRequestedTransfer)
+    requestedTransfers = requestedTransfers.slice(1); // Removes the first item (currentRequestedTransfer)
     
     // If no more transfers are left, delete the entry from lastRequestedTransfers
-    if (requestedTransfers.length === 0) {
-      this.lastRequestedTransfers.delete(targetClient);
-    } else {
+    // if (requestedTransfers.length === 0) {
+    //   this.lastRequestedTransfers.delete(targetClient);
+    // } else {
       this.lastRequestedTransfers.set(targetClient, requestedTransfers); // Update remaining transfers
-    }
+    // }
   
     if (this.hamsters.habitat.debug) {
       console.log(`Hamsters.js ${this.hamsters.version} processed transfer response for ${key} from ${targetClient}`);
@@ -671,17 +672,21 @@ class Distribute {
   }
 
   handleTaskResponse(targetClient, message) {
-    const { messageId, responseId, awaitingTransfers } = message;
+    const { messageId, responseId, awaitingTransfers, output } = message;
     const pendingPromise = this.pendingPromises.get(messageId);
     
     if (pendingPromise) {
       if (awaitingTransfers) {
         this.requestOutputTransfer(targetClient, responseId, messageId); // Independent request for each output
       } else {
-        pendingPromise.resolve(message.output);
+        pendingPromise.resolve(output);
+        this.deletedPromises.push(messageId);
         this.pendingPromises.delete(messageId);
       }
     } else {
+      if(this.deletedPromises.indexOf(messageId) !== -1) {
+        console.log("We already deleted this promise ", messageId);
+      }
       console.warn(`Received a message from ${targetClient} but no matching promise found with messageId ${messageId}`);
     }
   }  
