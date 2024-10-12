@@ -7,7 +7,7 @@ limited free support is provided only for bugs within the Hamsters.js software p
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 5.4.x   |  🟢        
+| 5.6.x   |  🟢        
 | 5.0.x   |  🔴               
 | 4.0.x   |  🔴                
 | < 4.0   |  🔴               
