@@ -24,7 +24,6 @@ class Distribute {
     this.heartBeatTimeout = {};
     this.messageCounter = 0;
     this.generatedMessageIds = [];
-    this.messageToResponseMap = new Map();
     this.promiseTimeoutDuration = 60000; // 60 seconds timeout
     this.startPromiseCleanupInterval();
   }
@@ -546,7 +545,6 @@ class Distribute {
       const arrayBuffer = this.getArrayBuffer(pendingOutput.output);
       this.sendBlobData({ targetClient, data: arrayBuffer, dataType: 'arrayBuffer' });
       this.pendingOutputs.delete(responseId);
-      this.messageToResponseMap.delete(pendingOutput.messageId);
       if (this.hamsters.habitat.debug) {
         console.log(`Hamsters.js ${this.hamsters.version} sent output transfer for ${targetClient} (responseId: ${responseId})`);
       }
