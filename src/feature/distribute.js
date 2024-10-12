@@ -492,7 +492,7 @@ class Distribute {
         console.log(`Hamsters.js ${this.hamsters.version} sent pong to ${targetClient}`);
       }
       const clientInfo = this.clientInfo.get(targetClient);
-      if(!clientInfo.logicalCores && clientThreads) {
+      if(clientThreads) {
         clientInfo.logicalCores = clientThreads;
         this.clientInfo.set(targetClient, clientInfo);
       }
