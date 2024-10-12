@@ -487,6 +487,7 @@ class Distribute {
   handlePing(targetClient, startTime) {
     const sendChannel = this.sendChannels.get(targetClient);
     if (sendChannel && sendChannel.readyState === 'open') {
+      console.log("RECEIVED PING ", { type: 'pong', startTime, threads: this.hamsters.maxThreads });
       sendChannel.send(JSON.stringify({ type: 'pong', startTime, threads: this.hamsters.maxThreads }));
       if (this.hamsters.habitat.debug) {
         console.log(`Hamsters.js ${this.hamsters.version} sent pong to ${targetClient}`);
