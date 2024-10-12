@@ -30,18 +30,29 @@ class Observable {
     }
   }
 
-  set(key, value) {
+  emitEvents(emitType, eventData) {
+    if(emitType !== 'change') {
+      this.emit(emitType, eventData);
+    }
+    this.emit('change', eventData);
+  }
+
+  set(key, value, emitType = 'change') {
+    const isNewKey = !this.data[key];  // Check if it's a new entry
+
     if (typeof key === 'string') {
-        const keys = key.split('.');
-        let current = this.data;
-        for (let i = 0; i < keys.length - 1; i++) {
-            current = current[keys[i]];
-        }
-        current[keys[keys.length - 1]] = value;
+      const keys = key.split('.');
+      let current = this.data;
+      for (let i = 0; i < keys.length - 1; i++) {
+        current = current[keys[i]];
+      }
+      current[keys[keys.length - 1]] = value;
     } else if (typeof key === 'object') {
       this.data[key] = value;
     }
-    this.emit('change', this.data);
+
+    this.emitEvents(emitType, this.data);
+
     return value;
   }
 
@@ -55,24 +66,24 @@ class Observable {
 
   push(...items) {
     this.data.push(...items);
-    this.emit('change', this.data);
+    this.emitEvents('change', this.data);
   }
 
-  pop() {
+  pop(emitType = 'change') {
     const item = this.data.pop();
-    this.emit('change', this.data);
+    this.emitEvents(emitType, this.data);
     return item;
   }
 
-  shift() {
+  shift(emitType = 'change') {
     let item = this.data.shift();
-    this.emit('change', this.data);
+    this.emitEvents(emitType, this.data);
     return item;
   }
 
   splice(start, deleteCount, ...items) {
     const result = this.data.splice(start, deleteCount, ...items);
-    this.emit('change', this.data);
+    this.emitEvents('change', this.data);
     return result;
   }
 
@@ -84,10 +95,10 @@ class Observable {
     return this.data.length;
   }
 
-  delete(property) {
+  delete(property, emitType = 'change') {
     if (!Array.isArray(this.data)) {
       delete this.data[property];
-      this.emit('change', this.data);
+      this.emitEvents(emitType, this.data);
     }
   }
 

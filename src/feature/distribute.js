@@ -10,7 +10,7 @@ class Distribute {
     this.pcConstraint = null;
     this.ws = null;
     this.clientId = null;
-    this.pendingPromises = new hamsters.observable({});
+    this.pendingPromises = new Map(); // targetClient -> Map(messageId -> promiseDetails)
     this.pendingTasks = new hamsters.observable({});
     this.pendingTransfers = new hamsters.observable({});
     this.awaitingTransfers = new hamsters.observable({});
@@ -22,6 +22,11 @@ class Distribute {
     this.heartBeatInterval = 30 * 1000; //Send heartbeat message every 30 seconds
     this.deletedPromises = [];
     this.heartBeatTimeout = {};
+    this.messageCounter = 0;
+    this.generatedMessageIds = [];
+    this.messageToResponseMap = new Map();
+    this.promiseTimeoutDuration = 60000; // 60 seconds timeout
+    this.startPromiseCleanupInterval();
   }
 
   initWebSocket() {
@@ -100,11 +105,11 @@ class Distribute {
   handleClientDisconnect(clientId) {
     if (this.remoteConnections.get(clientId)) {
       this.remoteConnections.get(clientId).close();
-      this.remoteConnections.delete(clientId);
+      this.remoteConnections.delete(clientId, 'peer');
     }
     if (this.sendChannels.get(clientId)) {
       this.sendChannels.get(clientId).close();
-      this.sendChannels.delete(clientId);
+      this.sendChannels.delete(clientId, 'channel');
     }
     this.clientInfo.delete(clientId);
   }
@@ -186,7 +191,7 @@ class Distribute {
         return remoteConnection.setLocalDescription(desc);
       }).catch(this.onCreateSessionDescriptionError.bind(this));
 
-      this.remoteConnections.set(targetClient, remoteConnection);
+      this.remoteConnections.set(targetClient, remoteConnection, 'peer');
       this.findOrCreateChannel(targetClient, remoteConnection);
     }
   }
@@ -213,7 +218,7 @@ class Distribute {
         this.onReceiveMessageCallback(targetClient, event.data);
       };
 
-      this.sendChannels.set(targetClient, sendChannel);
+      this.sendChannels.set(targetClient, sendChannel, 'channel');
     }
     return sendChannel
   }
@@ -263,7 +268,7 @@ class Distribute {
       reject('No target client found.');
       return;
     }
-
+  
     const messageId = this.generateUniqueId();
     const preparedList = this.hamsters.data.getTransferList(task);
     const distributedSubTask = {
@@ -272,8 +277,11 @@ class Distribute {
       messageId: messageId,
       type: 'task-request'
     };
-    const clients = [targetClient];
-    this.pendingPromises.set(messageId, { resolve, reject, clients });
+  
+    if (!this.pendingPromises.has(targetClient)) {
+      this.pendingPromises.set(targetClient, new Map());
+    }
+    this.pendingPromises.get(targetClient).set(messageId, { resolve, reject, state: 'pending' });
     
     if (preparedList.transferCount > 0) {
       this.pendingTransfers.set(messageId, preparedList.transferList);
@@ -394,87 +402,76 @@ class Distribute {
     }
   
     const currentRequestedTransfer = requestedTransfers[0]; // Always get the first requested transfer
-    const key = currentRequestedTransfer.key;  // Use currentRequestedTransfer consistently
+    const key = currentRequestedTransfer.key;
     const messageId = currentRequestedTransfer.messageId || null;
     const responseId = currentRequestedTransfer.responseId || null;
   
-    // Proceed with processing using currentRequestedTransfer's key, messageId, and responseId    
-  
-    if (responseId && key === 'output') {
-      // Handle task response if the key is 'output'
-      this.handleTaskResponse(targetClient, { output: this.convertFromArrayBuffer(transferData), messageId, responseId });
-    } else {
-      // Find the awaiting transfer for the specific messageId
-      const currentAwaitingTransfers = this.awaitingTransfers.get(targetClient);
-      if (!currentAwaitingTransfers) {
-        console.error(`Hamsters.js ${this.hamsters.version} no awaiting transfers found for ${targetClient}`);
-        return;
-      }
-  
-      const awaitingTransfer = currentAwaitingTransfers.find(item => item.messageId === messageId);
-      if (!awaitingTransfer) {
-        console.error(`Hamsters.js ${this.hamsters.version} no awaiting transfer found for messageId ${messageId}`);
-        return;
-      }
-  
-      // Check if the requested transfer exists and is in 'Requested Transfer' status
-      const isRequestedTransfer = awaitingTransfer.transferList[key] === 'Requested Transfer';
-      const pendingTasks = this.pendingTasks.get(targetClient); 
-      const currentTaskIndex = pendingTasks ? pendingTasks.findIndex(item => item.messageId === messageId) : -1;
-      const currentTask = currentTaskIndex > -1 ? pendingTasks[currentTaskIndex] : null;
-  
-      if (currentTask && isRequestedTransfer) {
-        // Convert ArrayBuffer back to the appropriate data type and update the pending task
-        currentTask.hamsterFood[key] = this.convertFromArrayBuffer(transferData, key);
-  
-        // Remove the transferred item from the awaitingTransfer's transferList
-        delete awaitingTransfer.transferList[key];
-  
-        // Check if there are more pending transfers in the transferList
-        if (Object.keys(awaitingTransfer.transferList).length === 0) {
-          // All transfers complete for this messageId
-          currentAwaitingTransfers.splice(currentAwaitingTransfers.indexOf(awaitingTransfer), 1); // Remove only this awaitingTransfer
-  
-          if (currentAwaitingTransfers.length === 0) {
-            this.awaitingTransfers.delete(targetClient); // If no more awaiting transfers, delete the entry
-          } else {
-            this.awaitingTransfers.set(targetClient, currentAwaitingTransfers); // Update the remaining awaitingTransfers
+    if (responseId) {
+      // This is an output transfer
+      const clientPromises = this.pendingPromises.get(targetClient);
+      if (clientPromises) {
+        for (const [promiseMessageId, promiseDetails] of clientPromises) {
+          if (promiseDetails.responseId === responseId) {
+            const output = this.convertFromArrayBuffer(transferData, key);
+            promiseDetails.resolve(output);
+            clientPromises.delete(promiseMessageId);
+            if (clientPromises.size === 0) {
+              this.pendingPromises.delete(targetClient);
+            }
+            break;
           }
-  
-          pendingTasks.splice(currentTaskIndex, 1); // Remove only the currentTask from pendingTasks
-  
-          if (pendingTasks.length === 0) {
-            this.pendingTasks.delete(targetClient); // If no more pending tasks, delete the entry
-          } else {
-            this.pendingTasks.set(targetClient, pendingTasks); // Update remaining pending tasks
-          }
-  
-          this.runDistributedTask(currentTask, targetClient); // Run the distributed task
-        } else {
-          // There are more transfers to be made, continue the process
-          this.awaitingTransfers.set(targetClient, currentAwaitingTransfers); // Update the awaitingTransfers
-          this.requestNextTransfer(targetClient, messageId); // Request the next transfer
         }
       } else {
-        console.error(`Hamsters.js ${this.hamsters.version} received unexpected transfer response for ${targetClient}`);
+        console.warn(`Hamsters.js ${this.hamsters.version} no pending promises found for ${targetClient}`);
+      }
+    } else {
+      // This is an input transfer
+      const pendingTasks = this.pendingTasks.get(targetClient);
+      if (pendingTasks) {
+        const currentTaskIndex = pendingTasks.findIndex(item => item.messageId === messageId);
+  
+        if (currentTaskIndex > -1) {
+          const currentTask = pendingTasks[currentTaskIndex];
+          currentTask.hamsterFood[key] = this.convertFromArrayBuffer(transferData, key);
+  
+          const stillAwaiting = Object.values(currentTask.hamsterFood).some(value => value === 'Awaiting Transfer');
+  
+          if (stillAwaiting) {
+            this.requestNextTransfer(targetClient, messageId);
+          } else {
+            // Remove only the current task from the pendingTasks array
+            pendingTasks.splice(currentTaskIndex, 1);
+  
+            // If there are no more tasks for this client, clean up the pendingTasks map
+            if (pendingTasks.length === 0) {
+              this.pendingTasks.delete(targetClient);
+            } else {
+              this.pendingTasks.set(targetClient, pendingTasks); // Update remaining pending tasks
+            }
+  
+            // Run the task after all transfers have been completed
+            this.runDistributedTask(currentTask, targetClient);
+          }
+        } else {
+          console.warn(`Hamsters.js ${this.hamsters.version} no pending task found for targetClient: ${targetClient} and messageId: ${messageId}`);
+        }
+      } else {
+        console.warn(`Hamsters.js ${this.hamsters.version} no pending task found for targetClient: ${targetClient} and messageId: ${messageId}`);
       }
     }
   
-    // Cleanup logic to remove the processed transfer (common for both output and input)
-    // Remove the first transfer (FIFO) from the requestedTransfers array
+    // Cleanup requested transfers
     requestedTransfers = requestedTransfers.slice(1); // Removes the first item (currentRequestedTransfer)
-    
-    // If no more transfers are left, delete the entry from lastRequestedTransfers
-    // if (requestedTransfers.length === 0) {
-    //   this.lastRequestedTransfers.delete(targetClient);
-    // } else {
+    if (requestedTransfers.length === 0) {
+      this.lastRequestedTransfers.delete(targetClient);
+    } else {
       this.lastRequestedTransfers.set(targetClient, requestedTransfers); // Update remaining transfers
-    // }
+    }
   
     if (this.hamsters.habitat.debug) {
       console.log(`Hamsters.js ${this.hamsters.version} processed transfer response for ${key} from ${targetClient}`);
     }
-  }  
+  } 
   
   measureLatency(targetClient) {
     const startTime = performance.now();
@@ -520,23 +517,22 @@ class Distribute {
   
   sendDataResponse(responseData) {
     const { targetClient, messageId, output } = responseData;
-    console.log("SeNDING OUTPUT RESPNSE TO ", targetClient);
-    this.initializeOutputTransfer(targetClient, output, messageId);
+    const responseId = this.generateUniqueId();
+    this.initializeOutputTransfer(targetClient, output, messageId, responseId);
   }
 
-  initializeOutputTransfer(targetClient, output, messageId) {
-    const responseId = this.generateUniqueId();
+  initializeOutputTransfer(targetClient, output, messageId, responseId) {
     this.pendingOutputs.set(responseId, { targetClient, output, messageId });
-
+  
     const initialResponse = {
       type: 'task-response',
       messageId,
       responseId,
       awaitingTransfers: true
     };
-
+  
     this.sendData({ targetClient, data: initialResponse });
-
+  
     if (this.hamsters.habitat.debug) {
       console.log(`Hamsters.js ${this.hamsters.version} initialized output transfer for ${targetClient} (responseId: ${responseId})`);
     }
@@ -550,7 +546,7 @@ class Distribute {
       const arrayBuffer = this.getArrayBuffer(pendingOutput.output);
       this.sendBlobData({ targetClient, data: arrayBuffer, dataType: 'arrayBuffer' });
       this.pendingOutputs.delete(responseId);
-
+      this.messageToResponseMap.delete(pendingOutput.messageId);
       if (this.hamsters.habitat.debug) {
         console.log(`Hamsters.js ${this.hamsters.version} sent output transfer for ${targetClient} (responseId: ${responseId})`);
       }
@@ -671,25 +667,47 @@ class Distribute {
     }
   }
 
+  startPromiseCleanupInterval() {
+    setInterval(() => this.cleanupStalePendingPromises(), 30000); // Check every 30 seconds
+  }
+  
+  cleanupStalePendingPromises() {
+    const now = Date.now();
+    for (const [targetClient, clientPromises] of this.pendingPromises) {
+      for (const [messageId, promiseDetails] of clientPromises) {
+        if (now - promiseDetails.timestamp > this.promiseTimeoutDuration) {
+          promiseDetails.reject(new Error('Task timed out'));
+          clientPromises.delete(messageId);
+        }
+      }
+      if (clientPromises.size === 0) {
+        this.pendingPromises.delete(targetClient);
+      }
+    }
+  }
+
   handleTaskResponse(targetClient, message) {
     const { messageId, responseId, awaitingTransfers, output } = message;
-    const pendingPromise = this.pendingPromises.get(messageId);
+    const clientPromises = this.pendingPromises.get(targetClient);
     
-    if (pendingPromise) {
-      if (awaitingTransfers) {
-        this.requestOutputTransfer(targetClient, responseId, messageId); // Independent request for each output
+    if (clientPromises && clientPromises.has(messageId)) {
+      const promiseDetails = clientPromises.get(messageId);
+      
+      if (awaitingTransfers && responseId) {
+        promiseDetails.state = 'awaitingTransfer';
+        promiseDetails.responseId = responseId;
+        this.requestOutputTransfer(targetClient, responseId, messageId);
       } else {
-        pendingPromise.resolve(output);
-        this.deletedPromises.push(messageId);
-        this.pendingPromises.delete(messageId);
+        promiseDetails.resolve(output);
+        clientPromises.delete(messageId);
+        if (clientPromises.size === 0) {
+          this.pendingPromises.delete(targetClient);
+        }
       }
     } else {
-      if(this.deletedPromises.indexOf(messageId) !== -1) {
-        console.log("We already deleted this promise ", messageId);
-      }
       console.warn(`Received a message from ${targetClient} but no matching promise found with messageId ${messageId}`);
     }
-  }  
+  }
 
   requestOutputTransfer(targetClient, responseId, messageId) {
     let requestedTransfers = this.lastRequestedTransfers.get(targetClient);
@@ -835,9 +853,12 @@ class Distribute {
     }
   }
 
-  generateUniqueId() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
-  }
+ generateUniqueId() {
+  const timestamp = Date.now().toString(36);
+  const random = Math.random().toString(36).substr(2, 5);
+  this.messageCounter = (this.messageCounter + 1) % 1000000;
+  return `${timestamp}-${random}-${this.messageCounter.toString(36).padStart(5, '0')}`;
+}
 
   onCreateSessionDescriptionError(error) {
     if (this.hamsters.habitat.debug) {
