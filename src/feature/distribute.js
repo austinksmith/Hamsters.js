@@ -25,7 +25,6 @@ class Distribute {
     this.messageCounter = 0;
     this.generatedMessageIds = [];
     this.promiseTimeoutDuration = 60000; // 60 seconds timeout
-    this.startPromiseCleanupInterval();
   }
 
   initWebSocket() {
@@ -38,6 +37,7 @@ class Distribute {
         logicalCores: this.hamsters.maxThreads
       }));
       this.sendHeartBeat(this.heartBeatInterval);
+      this.startPromiseCleanupInterval(this.promiseTimeoutDuration);
     };
 
     this.ws.onmessage = (event) => {
@@ -480,24 +480,25 @@ class Distribute {
   sendPing(targetClient, startTime) {
     const sendChannel = this.sendChannels.get(targetClient);
     if (sendChannel && sendChannel.readyState === 'open') {
-      sendChannel.send(JSON.stringify({ type: 'ping', startTime }));
+      sendChannel.send(JSON.stringify({ type: 'ping', startTime}));
     }
   }
 
   handlePing(targetClient, startTime) {
     const sendChannel = this.sendChannels.get(targetClient);
     if (sendChannel && sendChannel.readyState === 'open') {
-      sendChannel.send(JSON.stringify({ type: 'pong', startTime }));
+      sendChannel.send(JSON.stringify({ type: 'pong', startTime, threads: this.hamsters.maxThreads }));
       if (this.hamsters.habitat.debug) {
         console.log(`Hamsters.js ${this.hamsters.version} sent pong to ${targetClient}`);
       }
     }
   }
 
-  handlePong(targetClient, startTime) {
+  handlePong(targetClient, startTime, clientThreads) {
     const latency = performance.now() - startTime;
     const clientInfo = this.clientInfo.get(targetClient) || {};
     clientInfo.latency = latency;
+    clientInfo.logicalCores = clientThreads;
     this.clientInfo.set(targetClient, clientInfo);
     if (this.hamsters.habitat.debug) {
       console.log(`Hamsters.js ${this.hamsters.version} received pong from ${targetClient} with latency: ${latency.toFixed(2)}ms`);
@@ -639,7 +640,7 @@ class Distribute {
       'output-transfer-request': this.handleOutputTransferRequest.bind(this),
       'task-response': this.handleTaskResponse.bind(this),
       'ping': (client, message) => this.handlePing(client, message.startTime),
-      'pong': (client, message) => this.handlePong(client, message.startTime)
+      'pong': (client, message) => this.handlePong(client, message.startTime, message.threads)
     };
 
     const handler = handlers[incomingMessage.type];
@@ -665,8 +666,8 @@ class Distribute {
     }
   }
 
-  startPromiseCleanupInterval() {
-    setInterval(() => this.cleanupStalePendingPromises(), 30000); // Check every 30 seconds
+  startPromiseCleanupInterval(cleanupInterval) {
+    setInterval(() => this.cleanupStalePendingPromises(), cleanupInterval);
   }
   
   cleanupStalePendingPromises() {
