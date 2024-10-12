@@ -480,17 +480,21 @@ class Distribute {
   sendPing(targetClient, startTime) {
     const sendChannel = this.sendChannels.get(targetClient);
     if (sendChannel && sendChannel.readyState === 'open') {
-      sendChannel.send(JSON.stringify({ type: 'ping', startTime}));
+      sendChannel.send(JSON.stringify({ type: 'ping', startTime, threads: this.hamsters.maxThreads }));
     }
   }
 
-  handlePing(targetClient, startTime) {
+  handlePing(targetClient, startTime, clientThreads) {
     const sendChannel = this.sendChannels.get(targetClient);
     if (sendChannel && sendChannel.readyState === 'open') {
-      console.log("RECEIVED PING ", { type: 'pong', startTime, threads: this.hamsters.maxThreads });
       sendChannel.send(JSON.stringify({ type: 'pong', startTime, threads: this.hamsters.maxThreads }));
       if (this.hamsters.habitat.debug) {
         console.log(`Hamsters.js ${this.hamsters.version} sent pong to ${targetClient}`);
+      }
+      const clientInfo = this.clientInfo.get(targetClient);
+      if(!clientInfo.logicalCores && clientThreads) {
+        clientInfo.logicalCores = clientThreads;
+        this.clientInfo.set(targetClient, clientInfo);
       }
     }
   }
@@ -640,7 +644,7 @@ class Distribute {
       'transfer-response': this.processTransferResponse.bind(this),
       'output-transfer-request': this.handleOutputTransferRequest.bind(this),
       'task-response': this.handleTaskResponse.bind(this),
-      'ping': (client, message) => this.handlePing(client, message.startTime),
+      'ping': (client, message) => this.handlePing(client, message.startTime, message.threads),
       'pong': (client, message) => this.handlePong(client, message.startTime, message.threads)
     };
 
