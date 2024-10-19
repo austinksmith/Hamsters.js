@@ -39,7 +39,7 @@ class Task {
       this.setupModernTask(hamsters, params, functionToRun);
     }
 
-    if (hamsters.habitat.debug) {
+    if (hamsters.habitat.debug || params.distribute) {
       this.setupDebugMetrics();
     }
   }
