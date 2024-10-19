@@ -491,8 +491,9 @@ class Distribute {
       if (this.hamsters.habitat.debug) {
         console.log(`Hamsters.js ${this.hamsters.version} sent pong to ${targetClient}`);
       }
-      const clientInfo = this.clientInfo.get(targetClient);
+      const clientInfo = this.clientInfo.get(targetClient) || {};
       if(clientThreads) {
+        clientInfo.latency = performance.now() - startTime;
         clientInfo.logicalCores = clientThreads;
         this.clientInfo.set(targetClient, clientInfo);
       }
