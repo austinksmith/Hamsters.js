@@ -561,25 +561,58 @@ class Distribute {
   }
 
   getArrayBuffer(transferredData) {
-    if (ArrayBuffer.isView(transferredData)) {
-      return transferredData.buffer;
-    }
-    if (transferredData instanceof ArrayBuffer) {
-      return transferredData;
-    }
-    return new Uint8Array(transferredData).buffer
+    // Convert object/array to JSON string
+    const jsonString = JSON.stringify(transferredData);
+    
+    // Encode string as a Uint8Array
+    const encoder = new TextEncoder();
+    const encodedArray = encoder.encode(jsonString);
+    
+    // Return the buffer from the typed array
+    return encodedArray.buffer;
   }
 
   convertFromArrayBuffer(buffer, key) {
+    // Create a typed array from the buffer
     const originalArray = new Uint8Array(buffer);
-    if(this.hamsters.habitat.node) { //Node.js has stricter security and won't allow the transfer of buffers sent using node.js webrtc channels, clone into new array first
-      const newArrayBuffer = new ArrayBuffer(originalArray.byteLength);
-      const newTypedArray = new Uint8Array(newArrayBuffer);
-      newTypedArray.set(originalArray);
-      return newTypedArray;
-    }
-    return originalArray;
-  }
+    
+    // Decode the Uint8Array back to a string
+    const decoder = new TextDecoder();
+    const jsonString = decoder.decode(originalArray);
+    
+    // Parse the JSON string to get the original object back
+    return JSON.parse(jsonString);
+  }  
+  
+
+  // getArrayBuffer(transferredData) {
+  //   if (ArrayBuffer.isView(transferredData)) {
+  //     return transferredData.buffer;
+  //   }
+  //   if (transferredData instanceof ArrayBuffer) {
+  //     return transferredData;
+  //   }
+  //   // Convert object/array to JSON string
+  //   const jsonString = JSON.stringify(transferredData);
+    
+  //   // Encode string as a Uint8Array
+  //   const encoder = new TextEncoder();
+  //   const encodedArray = encoder.encode(jsonString);
+    
+  //   // Return the buffer from the typed array
+  //   return encodedArray.buffer;
+  // }
+
+  // convertFromArrayBuffer(buffer, key) {
+  //   const originalArray = new Uint8Array(buffer);
+  //   if(this.hamsters.habitat.node) { //Node.js has stricter security and won't allow the transfer of buffers sent using node.js webrtc channels, clone into new array first
+  //     const newArrayBuffer = new ArrayBuffer(originalArray.byteLength);
+  //     const newTypedArray = new Uint8Array(newArrayBuffer);
+  //     newTypedArray.set(originalArray);
+  //     return newTypedArray;
+  //   }
+  //   return originalArray;
+  // }
 
   sendData({ targetClient, data }) {
     const sendChannel = this.sendChannels.get(targetClient);

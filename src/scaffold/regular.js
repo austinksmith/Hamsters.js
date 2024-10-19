@@ -19,9 +19,13 @@ class Regular {
                 if (this.params.sharedBuffer) {
                     this.params.sharedArray = typedArrayFromBuffer(this.params.dataType, this.params.sharedBuffer);
                 }
-                eval(this.params.hamstersJob);
-                const buffers = handleDataType(this.rtn);
-                returnResponse(this.rtn, buffers);
+                try {
+                  new Function(this.params.hamstersJob)();
+                  const buffers = handleDataType(this.rtn);
+                  returnResponse(this.rtn, buffers);
+                } catch(e) {
+                  returnResponse([{error: e.message}]);
+                }
             }.bind(this);
 
             function handleDataType(rtn) {
