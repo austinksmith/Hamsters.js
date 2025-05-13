@@ -8,12 +8,12 @@
   "scripts": {
     "build": "rm -rf ./build && webpack --config ./webpack.config.js && npm run copy-common && npm run copy-build",
     "build-react-native": "rm -rf ./build && webpack --config ./webpack.config.js && npm run copy-common && cp -r ./build/* ../react-native-hamsters/examples/HamstersJS/node_modules/hamsters.js/build/",
-    "build-node": "npm run build && cp -r ./build/. ../hamsters-io/node_modules/hamsters.js/build/.",
+    "build-node": "npm run build && cp -r ./build/. ../hamsters.io/node_modules/hamsters.js/build/.",
     "build-challenge": "npm run build && cp -r ./build/. ../1-billion-row-challenge/node_modules/hamsters.js/build/.",
     "build-socket": "npm run build && cp -r ./build/. ../hamsters-socket/public/.",
     "build-compute": "npm run build && cp -r ./build/. ../distributed-compute-node/node_modules/hamsters.js/build/.",
     "copy-common": "mkdir ./build/common && cp -a ./src/common/. ./build/common/",
-    "copy-build": "cp -r ./build/. ../hamsters-io/public/js/benchmark/.",
+    "copy-build": "cp -r ./build/. ../hamsters.io/public/js/benchmark/.",
     "test": "karma start --reporters dots",
     "push": "git push origin && git push gitlab && git push bitbucket"
   },
@@ -64,7 +64,7 @@
     "karma-jasmine": "^5.1.0",
     "karma-webpack": "^5.0.0",
     "terser-webpack-plugin": "^5.3.10",
-    "webpack": "^5.94.0", 
+    "webpack": "^5.94.0",
     "webpack-cli": "^5.1.4"
   },
   "directories": {
