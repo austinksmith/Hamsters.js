@@ -34,7 +34,7 @@ describe("Hamsters.js", () => {
     it("hamstersRun should execute a function using callbacks", (done) => {
       const params = {
         array: [1, 2, 3, 4, 5, 6, 7, 8],
-        threads: i + 1,
+        threads: i + 1
       };
   
       hamsters.run(params, function () {

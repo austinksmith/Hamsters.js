@@ -71,6 +71,7 @@ class Task {
     } else {
       this.scheduler.indexes = params.indexes || hamsters.data.getSubArrayIndexes(params.array, this.scheduler.threads);
     }
+    this.input.aggregate = ((typeof this.input.aggregate !== 'undefined') ? this.input.aggregate : true);
   }
 
   /**

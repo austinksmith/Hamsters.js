@@ -188,9 +188,6 @@ class Pool {
     if(task.scheduler.sharedBuffer) {
       task.output = this.hamsters.data.processDataType(task.input.dataType, task.scheduler.sharedBuffer);
     }
-    if(task.input.aggregate) {
-      task.output = this.hamsters.data.aggregateThreadOutputs(task.output, task.input.dataType);
-    }
     if(task.input.sort) {
       task.output = this.hamsters.data.sortOutput(task.output, task.input.sort)
     }
@@ -219,10 +216,14 @@ class Pool {
     } else if(typeof message.data.data !== "undefined") {
       output = message.data.data;
     }
-    if(task.scheduler.threads !== 1 && task.input.aggregate) {
-      this.hamsters.data.addThreadOutputWithIndex(task, index, output);
+    if(task.scheduler.threads === 1) {
+      task.output = output;
     } else {
-      task.output.push(output);
+      if(task.input.aggregate) {
+        this.hamsters.data.addThreadOutputWithIndex(task, index, output);
+      } else {
+        task.output.push(output);
+      }
     }
   }
 
