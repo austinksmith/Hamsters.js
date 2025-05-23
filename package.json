@@ -11,7 +11,7 @@
     "build-node": "npm run build && cp -r ./build/. ../hamsters.io/node_modules/hamsters.js/build/.",
     "build-challenge": "npm run build && cp -r ./build/. ../1-billion-row-challenge/node_modules/hamsters.js/build/.",
     "build-socket": "npm run build && cp -r ./build/. ../hamsters-socket/public/.",
-    "build-compute": "npm run build && cp -r ./build/. ../distributed-compute-node/node_modules/hamsters.js/build/.",
+    "build-compute": "npm run build && cp -r ./build/. ../hamsterscomputenode/node_modules/hamsters.js/build/.",
     "copy-common": "mkdir ./build/common && cp -a ./src/common/. ./build/common/",
     "copy-build": "cp -r ./build/. ../hamsters.io/public/js/benchmark/.",
     "test": "karma start --reporters dots",

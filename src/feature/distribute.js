@@ -135,7 +135,7 @@ class Distribute {
       iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
     };
 
-    const localConnection = new RTCPeerConnection(servers, this.pcConstraint);
+    const localConnection = new this.hamsters.habitat.RTCPeerConnection(servers, this.pcConstraint);
 
     localConnection.onicecandidate = (e) => {
       if (e.candidate) {
@@ -171,7 +171,7 @@ class Distribute {
         iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
       };
 
-      const remoteConnection = new RTCPeerConnection(servers, this.pcConstraint);
+      const remoteConnection = new this.hamsters.habitat.RTCPeerConnection(servers, this.pcConstraint);
 
       remoteConnection.onicecandidate = (e) => {
         if (e.candidate) {
@@ -183,7 +183,7 @@ class Distribute {
         this.dataChannelCallback(event, targetClient);
       };
 
-      remoteConnection.setRemoteDescription(new RTCSessionDescription(data.offer)).then(() => {
+      remoteConnection.setRemoteDescription(new this.hamsters.habitat.RTCSessionDescription(data.offer)).then(() => {
         return remoteConnection.createAnswer();
       }).then(desc => {
         this.ws.send(JSON.stringify({ type: 'answer', target: targetClient, logicalCores: this.hamsters.maxThreads, userAgent: navigator.userAgent, answer: desc }));
@@ -244,7 +244,7 @@ class Distribute {
   handleAnswer(data) {
     this.storeClientConnectionInfo(data);
     const connection = this.remoteConnections.get(data.from);
-    connection.setRemoteDescription(new RTCSessionDescription(data.answer));
+    connection.setRemoteDescription(new this.hamsters.habitat.RTCSessionDescription(data.answer));
     this.remoteConnections.set(data.from, connection);
   }
 
@@ -254,7 +254,7 @@ class Distribute {
       this.storeClientConnectionInfo(data);
       connection = this.remoteConnections.get(data.from);
     }
-    connection.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(this.onAddIceCandidateError.bind(this));
+    connection.addIceCandidate(new this.hamsters.habitat.RTCIceCandidate(data.candidate)).catch(this.onAddIceCandidateError.bind(this));
     this.remoteConnections.set(data.from, connection);
   }
 

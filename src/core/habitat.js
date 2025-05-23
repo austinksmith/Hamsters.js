@@ -22,6 +22,9 @@ class Habitat {
     this.debug = false;
     this.importScripts = null;
     this.relay = null;
+    this.RTCPeerConnection = this.getRTCPeerConnection();
+    this.RTCSessionDescription = this.getRTCSessionDescription();
+    this.RTCIceCandidate = this.getRTCIceCandidate();
     this.memoize = false;
     this.persistence = true;
     this.browser = this.isBrowser();
@@ -235,6 +238,27 @@ class Habitat {
     return 'data:text/javascript,' + encodeURIComponent(this.generateWorkerString(this.hamsters.scaffold.regular.scaffold));
   }
 
+  getRTCPeerConnection() {
+    if(typeof RTCPeerConnection === 'undefined') {
+      return null;
+    }
+    return RTCPeerConnection;
+  }
+
+  getRTCSessionDescription() {
+    if(typeof RTCSessionDescription === 'undefined') {
+      return null;
+    }
+    return RTCSessionDescription;
+  }
+
+  getRTCIceCandidate() {
+    if(typeof RTCIceCandidate === 'undefined') {
+      return null;
+    }
+    return RTCIceCandidate;
+  }
+
   /**
   * @function getHabitatKeys - Returns keys for this Habitat instance
   */
@@ -247,7 +271,9 @@ class Habitat {
       'shell','node','debug',
       'persistence','importscripts',
       'maxthreads', 'parentport',
-      'webworker', 'relay'
+      'webworker', 'relay',
+      'rtcpeerconnection', 'rtcicecandidate',
+      'rtcsessiondescription'
     ];
   }
 }

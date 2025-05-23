@@ -219,10 +219,10 @@ class Pool {
     } else if(typeof message.data.data !== "undefined") {
       output = message.data.data;
     }
-    if(task.scheduler.threads !== 1) {
+    if(task.scheduler.threads !== 1 && task.input.aggregate) {
       this.hamsters.data.addThreadOutputWithIndex(task, index, output);
     } else {
-      task.output = output;
+      task.output.push(output);
     }
   }
 

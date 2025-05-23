@@ -63,16 +63,18 @@ class hamstersjs {
     this.memoize = new Memoize(this, 100); //Set a maximum of 100 memoized function results, LRU cache
     this.distribute = new Distribute(this);
     this.processStartOptions(startOptions);
-    
+
     if(!this.habitat.legacy && this.habitat.persistence === true) {
       this.pool.spawnHamsters(this.habitat.maxThreads);
     }
+
     this.maxThreads = this.habitat.maxThreads;
 
     if(this.habitat.relay) {
       console.info(`Hamsters.js ${this.version} establishing connection to relay`);
       this.distribute.establishConnection();
     }
+    
     const end = performance.now();
     console.info(`Hamsters.js ${this.version} initialized using up to ${this.habitat.maxThreads} threads in ${end - start}ms`);
   }
